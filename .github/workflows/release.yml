@@ -1,0 +1,15 @@
+name: Release
+
+on:
+  # TODO After publishing repository change this to trigger on push to main and test
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    # Don't forget to configure production environment after repository is made public to require approval before triggering!
+    name: 'Build project, run CI checks and publish new release'
+    uses: fingerprintjs/dx-team-toolkit/.github/workflows/release-typescript-project.yml@v1
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+      NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
