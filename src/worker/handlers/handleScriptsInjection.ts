@@ -38,7 +38,6 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
               html: true,
             })
 
-            // When agent.iife.js is requested, we will fetch it from our CDN
             element.append(`<script src="${getScriptUrl('agent.iife.js', env)}"> </script>`, { html: true })
             element.append(`<script src="${getScriptUrl('instrumentation.iife.js', env)}"> </script>`, { html: true })
           },
