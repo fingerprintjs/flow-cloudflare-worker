@@ -1,5 +1,5 @@
 import { Env } from '../types'
-import { hasContentType } from '../../utils/headers'
+import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
 
 export async function handleInstrumentationInjection(request: Request, env: Env): Promise<Response> {

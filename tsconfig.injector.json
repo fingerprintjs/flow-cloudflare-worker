@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.injector.tsbuildinfo",
+    "lib": [
+      "DOM",
+      "ES2020"
+    ],
+    "types": [
+      "vite/client"
+    ],
+    "noEmit": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "./src/injector/**/*"
+  ]
+}
