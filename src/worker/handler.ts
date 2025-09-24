@@ -1,7 +1,8 @@
 import { EnvWithAssets } from './types'
 import { matchUrl } from './urlMatching'
-import { handleInstrumentationInjection } from './handlers/handleInstrumentationInjection'
-import { handleInjectScript } from './handlers/handleInjectScript'
+import { handleScriptsInjection } from './handlers/handleScriptsInjection'
+import { handleScript } from './handlers/handleScript'
+import { getPublicKey } from './env'
 
 export async function handleRequest(request: Request, env: EnvWithAssets): Promise<Response> {
   console.info('Handling request', request)
@@ -11,14 +12,19 @@ export async function handleRequest(request: Request, env: EnvWithAssets): Promi
 
     switch (matchedUrl?.type) {
       case 'identification':
-        return handleInstrumentationInjection(request, env)
+        return handleScriptsInjection(request, env)
 
       case 'script':
         if (!env.ASSETS) {
           throw new Error('Assets are not available.')
         }
 
-        return handleInjectScript(request, matchedUrl.script, env.ASSETS)
+        return handleScript({
+          request: request,
+          script: matchedUrl.script,
+          publicApiKey: getPublicKey(env),
+          assets: env.ASSETS,
+        })
       default:
         console.info('No matched url')
 

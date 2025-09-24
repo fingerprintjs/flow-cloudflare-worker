@@ -1,4 +1,4 @@
-import { Script } from './scripts'
+import { Script, validateScript } from './scripts'
 import { Env } from './types'
 import { getScriptBehaviourPath } from './env'
 
@@ -21,7 +21,8 @@ export function matchUrl(url: URL, env: Env): UrlType | undefined {
   if (url.pathname.includes(scriptBehaviourPath)) {
     console.info('Matched script behaviour path', url.pathname)
 
-    const script = url.pathname.replace(`/${scriptBehaviourPath}/`, '') as Script
+    const script = url.pathname.replace(`/${scriptBehaviourPath}/`, '')
+    validateScript(script)
     console.info('Matched script', script)
 
     return {
@@ -30,6 +31,7 @@ export function matchUrl(url: URL, env: Env): UrlType | undefined {
     }
   }
 
+  // For now, assume that the root path is the "identification" page
   if (url.pathname === '/') {
     console.info('Matched identification page')
 
