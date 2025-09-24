@@ -17,8 +17,8 @@
     "build:injector": "vite build --config vite.instrumentation.ts",
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
     "wrangler:deploy": "pnpm build:worker && wrangler deploy"
   },
   "main": "dist/flow-cloudflare-worker.cjs.js",
@@ -45,6 +45,7 @@
     "@fingerprintjs/prettier-config-dx-team": "^0.2.0",
     "@fingerprintjs/tsconfig-dx-team": "^0.0.2",
     "@types/node": "^24.5.2",
+    "@vitest/coverage-v8": "^3.2.4",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
