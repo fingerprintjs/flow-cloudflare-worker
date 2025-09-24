@@ -12,7 +12,7 @@ export async function handleRequest(request: Request, env: EnvWithAssets): Promi
 
     switch (matchedUrl?.type) {
       case 'identification':
-        return handleScriptsInjection(request, env)
+        return handleScriptsInjection({ request: request, env: env })
 
       case 'script':
         if (!env.ASSETS) {

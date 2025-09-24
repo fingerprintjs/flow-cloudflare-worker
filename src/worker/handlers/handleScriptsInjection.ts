@@ -3,7 +3,22 @@ import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
 import { getScriptBehaviourPath } from '../env'
 
-export async function handleScriptsInjection(request: Request, env: Env): Promise<Response> {
+type HandleScriptsInjectionParams = {
+  request: Request
+  env: Env
+}
+
+/**
+ * Handles the injection of instrumentation scripts into HTML responses.
+ * If the response's content type is HTML, the method appends specified scripts to the `<head>` element of the document.
+ *
+ * @param {Object} params - The parameters for the function.
+ * @param {Request} params.request - The incoming HTTP request.
+ * @param {Object} params.env - The environment configuration object containing necessary script and resource paths.
+ *
+ * @return {Promise<Response>} A Promise that resolves to an HTTP Response, potentially modified with injected scripts if the content type is HTML.
+ */
+export async function handleScriptsInjection({ request, env }: HandleScriptsInjectionParams): Promise<Response> {
   console.info('Injecting instrumentation script for page:', request.url)
 
   // Propagate a request to the origin

@@ -9,7 +9,17 @@ type HandleScriptParams = {
   assets: Fetcher
 }
 
-export async function handleScript({ request, script, publicApiKey, assets }: HandleScriptParams) {
+/**
+ * Handles the execution and processing of specific scripts based on the provided parameters.
+ *
+ * @param {Object} params - The parameters for handling the script.
+ * @param {Request} params.request - The request object used to resolve script URLs or handle fetching.
+ * @param {string} params.script - The name of the script to be handled.
+ * @param {string} params.publicApiKey - The public API key used for authentication or script generation.
+ * @param {Object} params.assets - An object to handle asset fetching operations.
+ * @return {Promise<Response>} A promise that resolves to the script response.
+ */
+export async function handleScript({ request, script, publicApiKey, assets }: HandleScriptParams): Promise<Response> {
   switch (script) {
     case 'instrumentation.iife.js': {
       return assets.fetch(new URL(injectorUrl, request.url))
