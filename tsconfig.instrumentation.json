@@ -14,6 +14,6 @@
     "isolatedModules": true
   },
   "include": [
-    "./src/injector/**/*"
+    "./src/instrumentation/**/*"
   ]
 }
