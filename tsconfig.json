@@ -1,15 +1,28 @@
 {
   "extends": "@fingerprintjs/tsconfig-dx-team/tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist",
+    "composite": true,
     "module": "es6",
     "moduleResolution": "node",
     "target": "es2020",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
+    "types": [
+      "@cloudflare/workers-types/2023-07-01",
+      "vite/client"
+    ],
+    "lib": ["DOM", "ES2020"]
   },
-  "files": ["src/index.ts"],
   "exclude": [
     "dist",
     "node_modules",
     "**/*.test.ts"
+  ],
+  "references": [
+    {
+      "path": "tsconfig.app.json"
+    },
+    {
+      "path": "tsconfig.typecheck.json"
+    }
   ]
 }

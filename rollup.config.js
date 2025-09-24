@@ -7,7 +7,7 @@ import { join } from 'path'
 
 const { dependencies = {}, main, module, types } = require('./package.json')
 
-const inputFile = 'src/index.ts'
+const inputFile = 'src/worker/index.ts'
 
 const commonBanner = licensePlugin({
   banner: {

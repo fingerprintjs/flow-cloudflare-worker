@@ -1,0 +1,41 @@
+{
+  "name": "flow-cloudflare-worker",
+  "main": "./src/worker/index.ts",
+  "workers_dev": true,
+  "compatibility_date": "2025-09-15",
+  "routes": [
+    {
+      "pattern": "pz-fingerprint.org/*",
+      "zone_id": "f0118aee4c11b68cf196d61c2292dd99"
+    },
+    {
+      "pattern": "www.pz-fingerprint.org/*",
+      "zone_id": "f0118aee4c11b68cf196d61c2292dd99"
+    }
+  ],
+  "assets": {
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "FPJS_CDN_URL": "",
+    "FPJS_INGRESS_BASE_HOST": "",
+    "SCRIPTS_BEHAVIOUR_PATH": "W0cuVtnPs",
+    "PUBLIC_KEY": "",
+    "PROTECTION_CONFIG": {
+      "identificationPageUrls": [
+        "pz-fingerprint.org/"
+      ],
+      "protectedApis": [
+        {
+          "method": "POST",
+          "url": "pz-fingerprint.org/api/*",
+          "ruleSetId": "1"
+        }
+      ]
+    }
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

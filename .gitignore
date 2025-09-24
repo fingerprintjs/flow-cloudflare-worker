@@ -1,6 +1,6 @@
 # Project artifacts
-/dist/
-/node_modules/
+**/dist/
+**/node_modules/
 
 # Coverage report
 /coverage/
@@ -12,3 +12,9 @@ coverage.txt
 .vscode/
 yarn-error.log
 docs
+
+# Cloudflare
+.wrangler
+
+# Public built assets
+/public/*.js
