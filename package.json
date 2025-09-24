@@ -8,7 +8,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fingerprintjs/library-template-typescript.git"
+    "url": "https://github.com/fingerprintjs/flow-cloudflare-worker.git"
   },
   "scripts": {
     "serve": "vite",
@@ -21,13 +21,6 @@
     "test:coverage": "vitest --coverage",
     "wrangler:deploy": "pnpm build:worker && wrangler deploy"
   },
-  "main": "dist/flow-cloudflare-worker.cjs.js",
-  "module": "dist/flow-cloudflare-worker.esm.js",
-  "types": "dist/flow-cloudflare-worker.d.ts",
-  "sideEffects": false,
-  "files": [
-    "dist"
-  ],
   "lint-staged": {
     "*.{js,ts}": "pnpm run lint:fix"
   },
