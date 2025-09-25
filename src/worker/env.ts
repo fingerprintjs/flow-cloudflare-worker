@@ -1,15 +1,19 @@
 import { Env } from './types'
+import { MissingVariableError } from './errors'
 
-const defaults: Env = {
+const defaults = {
   FPJS_CDN_URL: 'fpcdn.io',
   FPJS_INGRESS_BASE_HOST: 'api.fpjs.io',
-  PUBLIC_KEY: '',
-  SCRIPTS_BEHAVIOUR_PATH: '',
   PROTECTION_CONFIG: {
     protectedApis: [],
     identificationPageUrls: [],
   },
-  SECRET_KEY: '',
+} satisfies Partial<Env>
+
+function assertVariableIsSet(env: Env, key: keyof Env) {
+  if (!env[key]) {
+    throw new MissingVariableError(key)
+  }
 }
 
 export function getCDNUrl(env: Env) {
@@ -25,13 +29,19 @@ export function getProtectionConfig(env: Env) {
 }
 
 export function getPublicKey(env: Env) {
-  return env.PUBLIC_KEY || defaults.PUBLIC_KEY
+  assertVariableIsSet(env, 'PUBLIC_KEY')
+
+  return env.PUBLIC_KEY
 }
 
 export function getSecretKey(env: Env) {
-  return env.SECRET_KEY || defaults.SECRET_KEY
+  assertVariableIsSet(env, 'SECRET_KEY')
+
+  return env.SECRET_KEY
 }
 
 export function getScriptBehaviourPath(env: Env) {
-  return env.SCRIPTS_BEHAVIOUR_PATH || defaults.SCRIPTS_BEHAVIOUR_PATH
+  assertVariableIsSet(env, 'SCRIPTS_BEHAVIOUR_PATH')
+
+  return env.SCRIPTS_BEHAVIOUR_PATH
 }

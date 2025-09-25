@@ -4,6 +4,9 @@ import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
 import { getPublicKey } from './env'
 
+import { handleError } from './handlers/handleError'
+import { AssetsNotAvailableError } from './errors'
+
 export async function handleRequest(request: Request, env: EnvWithAssets): Promise<Response> {
   console.info('Handling request', request)
 
@@ -16,7 +19,7 @@ export async function handleRequest(request: Request, env: EnvWithAssets): Promi
 
       case 'script':
         if (!env.ASSETS) {
-          throw new Error('Assets are not available.')
+          throw new AssetsNotAvailableError()
         }
 
         return handleScript({
@@ -31,8 +34,6 @@ export async function handleRequest(request: Request, env: EnvWithAssets): Promi
         return fetch(request)
     }
   } catch (error) {
-    console.error('Error handling request', error)
-
-    return new Response('Internal Flow Error', { status: 500 })
+    return handleError(error)
   }
 }
