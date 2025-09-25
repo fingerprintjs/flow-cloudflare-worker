@@ -1,7 +1,6 @@
 import { Env } from '../types'
 import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
-import { getScriptBehaviourPath } from '../env'
 
 type HandleScriptsInjectionParams = {
   request: Request
@@ -32,11 +31,6 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
         .on('head', {
           element(element) {
             console.info('Injecting instrumentation and agent into <head> element.')
-
-            // Expose __FP_FLOW_SCRIPT_PATH__ that is the script behaviour path to the browser, so that we can pass it to the agent loader.
-            element.append(`<script>window.__FP_FLOW_SCRIPT_PATH__ = "${getScriptBehaviourPath(env)}"</script>`, {
-              html: true,
-            })
 
             element.append(`<script src="${getScriptUrl('agent.iife.js', env)}"> </script>`, { html: true })
             element.append(`<script src="${getScriptUrl('instrumentation.iife.js', env)}"> </script>`, { html: true })
