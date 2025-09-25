@@ -13,6 +13,7 @@
   "scripts": {
     "serve": "vite",
     "prepare": "husky && pnpm build:injector",
+    "build": "pnpm build:worker && pnpm build:injector",
     "build:worker": "vite build --config vite.worker.ts",
     "build:injector": "vite build --config vite.instrumentation.ts",
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore --max-warnings 0 .",
