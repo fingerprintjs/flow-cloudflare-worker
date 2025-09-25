@@ -4,7 +4,7 @@
  * @param {string} publicApiKey - The public API key used to generate the script URL.
  * @return {Promise<Response>} A promise that resolves to a Response object containing the fetched IIFE script with the 'Content-Type' header set to 'application/javascript'.
  */
-export async function getAgentIIFE(publicApiKey: string): Promise<Response> {
+export async function getAgentLoader(publicApiKey: string): Promise<Response> {
   const fpScriptUrl = `https://fpjscdn.net/v3/${publicApiKey}/iife.min.js`
 
   const agentLoaderCode = await fetch(fpScriptUrl).then((response) => response.text())
