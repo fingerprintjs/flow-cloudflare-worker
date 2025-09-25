@@ -15,6 +15,7 @@ docs
 
 # Cloudflare
 .wrangler
+wrangler.jsonc
 
 # Public built assets
 /public/*.js
