@@ -40,6 +40,8 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
     } catch (error) {
       console.error('Error injecting instrumentation script:', error)
     }
+  } else {
+    console.warn('Received non-HTML content, skipping instrumentation script injection.')
   }
 
   return response
