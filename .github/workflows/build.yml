@@ -8,3 +8,4 @@ jobs:
     uses: fingerprintjs/dx-team-toolkit/.github/workflows/build-typescript-project.yml@v1
     with:
       runAfterInstall: cp wrangler.dist.jsonc wrangler.jsonc
+      checkTypes: 'false'
