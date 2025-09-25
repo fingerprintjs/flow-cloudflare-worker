@@ -10,7 +10,7 @@ jobs:
     name: 'Build project, run CI checks and publish new release'
     uses: fingerprintjs/dx-team-toolkit/.github/workflows/release-typescript-project.yml@v1
     with:
-      runAfterInstall: cp wrangler.dist.jsonc wrangler.toml
+      runAfterInstall: cp wrangler.dist.jsonc wrangler.jsonc
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
