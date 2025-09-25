@@ -10,12 +10,12 @@ type HandleScriptParams = {
 }
 
 /**
- * Handles the execution and processing of specific scripts based on the provided parameters.
+ * Handles fetching of the specific scripts based on the provided parameters.
  *
  * @param {Object} params - The parameters for handling the script.
  * @param {Request} params.request - The request object used to resolve script URLs or handle fetching.
  * @param {string} params.script - The name of the script to be handled.
- * @param {string} params.publicApiKey - The public API key used for authentication or script generation.
+ * @param {string} params.publicApiKey - The public API key used for fetching the agent loader.
  * @param {Object} params.assets - An object to handle asset fetching operations.
  * @return {Promise<Response>} A promise that resolves to the script response.
  */
