@@ -38,7 +38,7 @@ describe('Flow Cloudflare Worker', () => {
 
   describe('Scripts injection', () => {
     it('should inject scripts on request to identification page', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
         new Response(sampleHtml, {
           headers: {
             'Content-Type': 'text/html',
