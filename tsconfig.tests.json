@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
+    "lib": [
+      "ES2021"
+    ],
+    "types": [
+      "vite/client",
+      "@cloudflare/vitest-pool-workers"
+    ],
+    "noEmit": true,
+    "isolatedModules": true,
+    "sourceMap": true
+  },
+  "include": [
+    "./vite-env.d.ts",
+    "./worker-configuration.d.ts",
+    "./__tests__/**/*",
+    "vitest.config.ts",
+    "./src/**/*"
+  ]
+}

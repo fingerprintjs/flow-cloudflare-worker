@@ -14,7 +14,8 @@
     }
   ],
   "assets": {
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "directory": "./public"
   },
   "vars": {
     "FPJS_CDN_URL": "",

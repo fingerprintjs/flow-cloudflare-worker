@@ -17,6 +17,9 @@
     },
     {
       "path": "tsconfig.instrumentation.json"
+    },
+    {
+      "path": "tsconfig.tests.json"
     }
   ]
 }
