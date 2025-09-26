@@ -26,7 +26,7 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
   window.fetch = (...params) => {
     console.debug('Incoming fetch request', params)
 
-    const requestData = resolvePatcherRequest(...params)
+    const requestData = resolvePatcherRequest(params)
     console.debug('Resolved fetch request:', requestData)
 
     if (requestData && isProtectedUrl(requestData, protectedApis)) {
@@ -68,13 +68,13 @@ function setHeaderForRequestInit(name: string, value: string, fetchParams: Fetch
     headers.set(name, value)
 
     // If no requestInit was provided, create it as a second argument
-    fetchParams[1] = {
+    fetchParams.push({
       headers,
-    }
+    })
   }
 }
 
-function resolvePatcherRequest(...params: Parameters<typeof fetch>): PatcherRequest | undefined {
+function resolvePatcherRequest(params: Parameters<typeof fetch>): PatcherRequest | undefined {
   // fetch("https://example.com", {...})
   if (typeof params[0] === 'string') {
     const requestInit = params[1]

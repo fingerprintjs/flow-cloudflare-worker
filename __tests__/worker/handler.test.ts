@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import handler from '../src/worker'
-import { Env } from '../src/worker/types'
+import handler from '../../src/worker'
+import { Env } from '../../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 
 const sampleHtml = `
