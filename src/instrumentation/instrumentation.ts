@@ -11,8 +11,8 @@ export async function setupInstrumentation() {
   }
 
   const patcherCtx = new WritablePatcherContext()
+  await setupSignalsCollection(patcherCtx)
+
   const protectedApis = getProtectedApis()
   patchFetch({ protectedApis, ctx: patcherCtx })
-
-  setupSignalsCollection(patcherCtx)
 }
