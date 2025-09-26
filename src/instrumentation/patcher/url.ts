@@ -1,6 +1,7 @@
 import { ProtectedApi } from '../../shared/types'
 import { PatcherRequest } from './types'
 
+// TODO: When available, use url matcher here.
 export function isProtectedUrl(request: PatcherRequest, protectedApis: ProtectedApi[]) {
   return protectedApis.some((protectedApi) => {
     const methodMatch = protectedApi.method === request.method
