@@ -24,24 +24,28 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
   const originalFetch = window.fetch
 
   window.fetch = async (...params) => {
-    console.debug('Incoming fetch request', params)
+    try {
+      console.debug('Incoming fetch request', params)
 
-    const requestData = resolvePatcherRequest(params)
-    console.debug('Resolved fetch request:', requestData)
+      const requestData = resolvePatcherRequest(params)
+      console.debug('Resolved fetch request:', requestData)
 
-    if (requestData && isProtectedUrl(requestData, protectedApis)) {
-      console.debug('Patching fetch request:', requestData.url)
+      if (requestData && isProtectedUrl(requestData, protectedApis)) {
+        console.debug('Patching fetch request:', requestData.url)
 
-      const signals = await ctx.getSignals()
+        const signals = await ctx.getSignals()
 
-      if (signals) {
-        console.debug('Adding signals header for:', requestData.url)
-        requestData.setHeader(SIGNALS_HEADER, signals)
+        if (signals) {
+          console.debug('Adding signals header for:', requestData.url)
+          requestData.setHeader(SIGNALS_HEADER, signals)
+        } else {
+          console.warn('No signals data found.')
+        }
       } else {
-        console.warn('No signals data found.')
+        console.debug('Skipping patching fetch request:', requestData?.url)
       }
-    } else {
-      console.debug('Skipping patching fetch request:', requestData?.url)
+    } catch (error) {
+      console.error('Patched fetch fetch:', error)
     }
 
     return originalFetch(...params)

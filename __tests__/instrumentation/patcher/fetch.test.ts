@@ -193,5 +193,18 @@ describe('Fetch Patcher', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(123, { method: 'GET' })
     })
+
+    it('should call original fetch on error', async () => {
+      vi.mocked(urlUtils.isProtectedUrl).mockImplementation(() => {
+        throw new Error('Test error')
+      })
+
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      await window.fetch('https://example.org')
+
+      expect(mockFetch).toHaveBeenCalledWith('https://example.org')
+    })
   })
 })
