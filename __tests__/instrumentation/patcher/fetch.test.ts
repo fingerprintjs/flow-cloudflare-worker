@@ -36,7 +36,7 @@ describe('Fetch Patcher', () => {
     })
 
     const writableContext = new WritablePatcherContext()
-    writableContext.setSignals('test-signals-data')
+    writableContext.setSignalsProvider(async () => 'test-signals-data')
     mockContext = writableContext
   })
 

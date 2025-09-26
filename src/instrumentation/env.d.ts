@@ -1,4 +1,4 @@
-import { load, LoadOptions } from '@fingerprintjs/fingerprintjs-pro'
+import type { load, LoadOptions } from '@fingerprintjs/fingerprintjs-pro'
 import { ProtectedApi } from '../shared/types'
 
 declare global {
@@ -9,5 +9,3 @@ declare global {
     }
   }
 }
-
-export {}

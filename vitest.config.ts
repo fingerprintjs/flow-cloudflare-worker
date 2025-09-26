@@ -6,6 +6,7 @@ export default defineConfig({
     projects: [
       {
         test: {
+          environment: 'happy-dom',
           name: {
             label: 'Instrumentation',
             color: 'green',

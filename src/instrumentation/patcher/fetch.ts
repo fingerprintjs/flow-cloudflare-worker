@@ -23,7 +23,7 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
 
   const originalFetch = window.fetch
 
-  window.fetch = (...params) => {
+  window.fetch = async (...params) => {
     console.debug('Incoming fetch request', params)
 
     const requestData = resolvePatcherRequest(params)
@@ -32,7 +32,7 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
     if (requestData && isProtectedUrl(requestData, protectedApis)) {
       console.debug('Patching fetch request:', requestData.url)
 
-      const signals = ctx.getSignals()
+      const signals = await ctx.getSignals()
 
       if (signals) {
         console.debug('Adding signals header for:', requestData.url)

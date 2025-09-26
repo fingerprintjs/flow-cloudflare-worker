@@ -1,6 +1,7 @@
 import { getProtectedApis } from './protectedApis'
 import { patchFetch } from './patcher/fetch'
 import { WritablePatcherContext } from './patcher/context'
+import { setupSignalsCollection } from './signals'
 
 async function main() {
   const FingerprintJS = window.FingerprintJS
@@ -9,18 +10,11 @@ async function main() {
     return
   }
 
-  const agent = await FingerprintJS.load()
-
   const patcherCtx = new WritablePatcherContext()
   const protectedApis = getProtectedApis()
   patchFetch({ protectedApis, ctx: patcherCtx })
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    const signals = await agent.collect()
-    patcherCtx.setSignals(signals)
-
-    console.info('DOMContentLoaded triggered.', { signals })
-  })
+  setupSignalsCollection(patcherCtx)
 }
 
 main().catch((error) => {
