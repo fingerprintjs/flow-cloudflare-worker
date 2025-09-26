@@ -1,8 +1,7 @@
 import { PatcherContext } from './context'
 import { PatcherRequest } from './types'
-import { isProtectedUrl } from './url'
 import { ProtectedApi } from '../../shared/types'
-import { SIGNALS_HEADER } from '../../shared/const'
+import { handleSignalsInjection } from './signalsInjection'
 
 /**
  * Parameters required for patching the fetch API.
@@ -50,22 +49,11 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
     try {
       console.debug('Incoming fetch request', params)
 
-      const requestData = resolvePatcherRequest(params)
-      console.debug('Resolved fetch request:', requestData)
+      const request = resolvePatcherRequest(params)
 
-      if (requestData && isProtectedUrl(requestData, protectedApis)) {
-        console.debug('Patching fetch request:', requestData.url)
-
-        const signals = await ctx.getSignals()
-
-        if (signals) {
-          console.debug('Adding signals header for:', requestData.url)
-          requestData.setHeader(SIGNALS_HEADER, signals)
-        } else {
-          console.warn('No signals data found.')
-        }
-      } else {
-        console.debug('Skipping patching fetch request:', requestData?.url)
+      if (request) {
+        console.debug('Resolved fetch request:', request)
+        await handleSignalsInjection({ request, protectedApis, ctx })
       }
     } catch (error) {
       console.error('Patched fetch fetch:', error)
