@@ -1,3 +1,5 @@
+import { ProtectedApi } from '../shared/types'
+
 export type Env = {
   FPJS_CDN_URL: string
   FPJS_INGRESS_BASE_HOST: string
@@ -12,12 +14,6 @@ export type Env = {
 
 export type EnvWithAssets = Env & {
   ASSETS: Fetcher
-}
-
-export type ProtectedApi = {
-  method: 'POST' // Only POST is supported for now
-  url: string
-  ruleSetId: string
 }
 
 export type ProtectionConfig = {

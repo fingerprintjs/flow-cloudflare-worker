@@ -1,1 +1,3 @@
 export const PROTECTED_APIS_WINDOW_KEY = '__FP_FLOW_PROTECTED_APIS__'
+
+export const SIGNALS_HEADER = 'FP-Signals'
