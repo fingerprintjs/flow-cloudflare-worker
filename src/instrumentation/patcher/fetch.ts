@@ -4,11 +4,34 @@ import { isProtectedUrl } from './url'
 import { ProtectedApi } from '../../shared/types'
 import { SIGNALS_HEADER } from '../../shared/const'
 
+/**
+ * Parameters required for patching the fetch API.
+ */
 export type PatchFetchParams = {
+  /** Array of protected APIs that should have signals attached to their requests */
   protectedApis: ProtectedApi[]
+  /** Context object providing access to signals and other patcher functionality */
   ctx: PatcherContext
 }
 
+/**
+ * Patches the global fetch API to automatically add Fingerprint signals to requests made to protected APIs.
+ *
+ * This function intercepts all fetch requests and checks if they target protected URLs. For protected
+ * requests, it adds a signals' header before forwarding the request.
+ *
+ * @param params - Configuration object containing protected APIs and patcher context
+ * @param params.protectedApis - Array of protected API configurations to monitor
+ * @param params.ctx - Patcher context providing access to signals and other functionality
+ *
+ * @example
+ * ```typescript
+ * patchFetch({
+ *   protectedApis: [{ url: 'https://api.example.com', method: 'POST' }],
+ *   ctx: patcherContext
+ * });
+ * ```
+ */
 export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
   if (typeof window.fetch !== 'function') {
     console.warn('window.fetch is not available.')
@@ -54,12 +77,28 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
   console.debug('Fetch patched successfully.')
 }
 
+/**
+ * Resolves the HTTP method from a RequestInit object, defaulting to 'GET' if not specified.
+ *
+ * @param requestInit - Optional RequestInit object that may contain a method property
+ * @returns The HTTP method string, defaults to 'GET' if not provided
+ */
 function resolveMethod(requestInit?: RequestInit) {
   return requestInit?.method ?? 'GET'
 }
 
 type FetchParamsWithRequestInit = [any, RequestInit | undefined]
 
+/**
+ * Sets a header for a fetch request by modifying the RequestInit object in the fetch parameters.
+ *
+ * If a RequestInit object exists, it updates the headers. If no RequestInit exists, it creates
+ * a new one with the specified header.
+ *
+ * @param name - The header name to set
+ * @param value - The header value to set
+ * @param fetchParams - Array containing fetch parameters where the second element is RequestInit
+ */
 function setHeaderForRequestInit(name: string, value: string, fetchParams: FetchParamsWithRequestInit) {
   const requestInit = fetchParams[1]
 
@@ -78,6 +117,17 @@ function setHeaderForRequestInit(name: string, value: string, fetchParams: Fetch
   }
 }
 
+/**
+ * Resolves fetch parameters into a standardized PatcherRequest object.
+ *
+ * Supports three types of fetch calls:
+ * - fetch(url, requestInit) - URL as string
+ * - fetch(urlObject, requestInit) - URL as URL object
+ * - fetch(request) - Request object
+ *
+ * @param params - The parameters passed to the fetch function
+ * @returns A PatcherRequest object with URL, method, and setHeader function, or undefined if unsupported
+ */
 function resolvePatcherRequest(params: Parameters<typeof fetch>): PatcherRequest | undefined {
   // fetch("https://example.com", {...})
   if (typeof params[0] === 'string') {
