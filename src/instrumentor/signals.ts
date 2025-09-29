@@ -8,17 +8,21 @@ import { WritablePatcherContext } from './patcher/context'
  * document is already loaded and when it's still loading.
  *
  * @param patcherCtx - Writable patcher context to configure with signals' provider
+ * @param documentReadyState - Current document ready state (document.readyState)
  */
-export async function setupSignalsCollection(patcherCtx: WritablePatcherContext) {
-  if (/complete|interactive|loaded/.test(document.readyState)) {
+export async function setupSignalsCollection(patcherCtx: WritablePatcherContext, documentReadyState: () => string) {
+  if (/complete|interactive|loaded/.test(documentReadyState())) {
     // In case the document has finished parsing, document's readyState will
     // be one of "complete", "interactive" or (non-standard) "loaded".
     await setSignalsProvider(patcherCtx)
   } else {
     // The document is not ready yet, so wait for the DOMContentLoaded event
-    document.addEventListener('DOMContentLoaded', async () => {
+    const listener = async () => {
       await setSignalsProvider(patcherCtx)
-    })
+      document.removeEventListener('DOMContentLoaded', listener)
+    }
+
+    document.addEventListener('DOMContentLoaded', listener)
   }
 }
 

@@ -3,6 +3,10 @@ import { getProtectedApis } from './protectedApis'
 import { patchFetch } from './patcher/fetch'
 import { setupSignalsCollection } from './signals'
 
+export type InstrumentationParams = {
+  documentReadyState: () => string
+}
+
 /**
  * Sets up the complete instrumentation system for signals collection and request patching.
  *
@@ -11,7 +15,7 @@ import { setupSignalsCollection } from './signals'
  * automatically add security signals to requests targeting protected endpoints.
  *
  */
-export async function setupInstrumentation() {
+export async function setupInstrumentor({ documentReadyState }: InstrumentationParams) {
   const FingerprintJS = window.FingerprintJS
   if (!FingerprintJS) {
     console.warn('FingerprintJS is not available, check your worker configuration.')
@@ -19,7 +23,7 @@ export async function setupInstrumentation() {
   }
 
   const patcherCtx = new WritablePatcherContext()
-  await setupSignalsCollection(patcherCtx)
+  await setupSignalsCollection(patcherCtx, documentReadyState)
 
   const protectedApis = getProtectedApis()
   patchFetch({ protectedApis, ctx: patcherCtx })

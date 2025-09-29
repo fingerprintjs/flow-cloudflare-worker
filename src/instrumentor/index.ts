@@ -1,5 +1,7 @@
-import { setupInstrumentation } from './instrumentation'
+import { setupInstrumentor } from './instrumentor'
 
-setupInstrumentation().catch((error) => {
+setupInstrumentor({
+  documentReadyState: () => document.readyState,
+}).catch((error) => {
   console.error('Error during instrumentation:', error)
 })
