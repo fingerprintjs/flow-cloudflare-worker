@@ -1,31 +1,34 @@
 import { Script } from '../scripts'
-import injectorUrl from '../../../public/instrumentation.iife.js?url'
+// This bundles the instrumentator code with the worker: https://vite.dev/guide/assets.html#importing-asset-as-string
+import instrumentatorCode from '../../../public/instrumentor.iife.js?raw'
 import { getAgentLoader } from '../fingerprint/agent'
 
 type HandleScriptParams = {
-  request: Request
   script: Script
   publicApiKey: string
-  assets: Fetcher
+  cdnHost: string
 }
 
 /**
  * Handles fetching of the specific scripts based on the provided parameters.
  *
  * @param {Object} params - The parameters for handling the script.
- * @param {Request} params.request - The request object used to resolve script URLs or handle fetching.
  * @param {string} params.script - The name of the script to be handled.
  * @param {string} params.publicApiKey - The public API key used for fetching the agent loader.
- * @param {Object} params.assets - An object to handle asset fetching operations.
+ * @param {string} params.cdnHost - Hostname of the Fingerprint CDN.
  * @return {Promise<Response>} A promise that resolves to the script response.
  */
-export async function handleScript({ request, script, publicApiKey, assets }: HandleScriptParams): Promise<Response> {
+export async function handleScript({ script, publicApiKey, cdnHost }: HandleScriptParams): Promise<Response> {
   switch (script) {
-    case 'instrumentation.iife.js': {
-      return assets.fetch(new URL(injectorUrl, request.url))
+    case 'instrumentor.iife.js': {
+      return new Response(instrumentatorCode, {
+        headers: {
+          'Content-Type': 'application/javascript',
+        },
+      })
     }
 
     case 'agent.iife.js':
-      return getAgentLoader(publicApiKey)
+      return getAgentLoader(publicApiKey, cdnHost)
   }
 }

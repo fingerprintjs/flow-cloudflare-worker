@@ -1,9 +1,9 @@
-import { Env } from './types'
-import { getScriptBehaviourPath } from './env'
+import { TypedEnv } from './types'
+import { getScriptBehaviorPath } from './env'
 
-export type Script = 'instrumentation.iife.js' | 'agent.iife.js'
+export type Script = 'instrumentor.iife.js' | 'agent.iife.js'
 
-const scripts: Script[] = ['instrumentation.iife.js', 'agent.iife.js']
+const scripts: Script[] = ['instrumentor.iife.js', 'agent.iife.js']
 
 export function validateScript(script: string): asserts script is Script {
   if (!scripts.includes(script as Script)) {
@@ -11,6 +11,6 @@ export function validateScript(script: string): asserts script is Script {
   }
 }
 
-export function getScriptUrl(script: Script, env: Env) {
-  return `/${getScriptBehaviourPath(env)}/${script}`
+export function getScriptUrl(script: Script, env: TypedEnv) {
+  return `/${getScriptBehaviorPath(env)}/${script}`
 }

@@ -1,22 +1,21 @@
 {
   "extends": "@fingerprintjs/tsconfig-dx-team/tsconfig.json",
   "compilerOptions": {
-    "composite": true,
     "module": "es6",
     "moduleResolution": "node",
     "target": "es2020"
   },
   "exclude": [
     "dist",
-    "node_modules",
-    "**/*.test.ts"
+    "node_modules"
   ],
+  "files": [],
   "references": [
     {
       "path": "tsconfig.worker.json"
     },
     {
-      "path": "tsconfig.instrumentation.json"
+      "path": "tsconfig.instrumentor.json"
     },
     {
       "path": "tsconfig.tests.json"

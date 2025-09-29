@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "target": "es2021",
     "module": "es2022",
     "moduleResolution": "bundler",
@@ -12,7 +13,6 @@
       "vite/client",
       "@cloudflare/vitest-pool-workers"
     ],
-    "noEmit": true,
     "isolatedModules": true,
     "sourceMap": true
   },

@@ -1,3 +1,9 @@
-export function hasContentType(headers: Headers, contentType: string) {
-  return headers.get('Content-Type')?.includes(contentType)
+export function hasContentType(headers: Headers, expectedContentType: string) {
+  const contentType = headers.get('Content-Type')?.toLowerCase()
+
+  if (contentType) {
+    return contentType.startsWith(expectedContentType)
+  }
+
+  return false
 }

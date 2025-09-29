@@ -5,17 +5,17 @@ export default defineConfig({
   plugins: [
     checker({
       typescript: {
-        tsconfigPath: './tsconfig.instrumentation.json',
+        tsconfigPath: './tsconfig.instrumentor.json',
       },
     }),
   ],
   build: {
     outDir: 'public',
     lib: {
-      entry: 'src/instrumentation/index.ts',
+      entry: 'src/instrumentor/index.ts',
       formats: ['iife'],
-      name: 'instrumentation',
-      fileName: 'instrumentation',
+      name: 'instrumentor',
+      fileName: 'instrumentor',
     },
   },
 })

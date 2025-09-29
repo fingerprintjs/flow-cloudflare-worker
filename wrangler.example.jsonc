@@ -2,16 +2,13 @@
   "name": "flow-cloudflare-worker",
   "main": "./src/worker/index.ts",
   "compatibility_date": "2025-09-15",
-  "assets": {
-    "binding": "ASSETS",
-    "directory": "./public"
-  },
   "vars": {
     "FPJS_CDN_URL": "",
     "FPJS_INGRESS_BASE_HOST": "",
-    "SCRIPTS_BEHAVIOUR_PATH": "",
+    "SCRIPTS_BEHAVIOR_PATH": "",
     "PUBLIC_KEY": "",
     "SECRET_KEY": "",
+    "FP_RULESET_ID": "",
     "PROTECTION_CONFIG": {
       "identificationPageUrls": [],
       "protectedApis": []

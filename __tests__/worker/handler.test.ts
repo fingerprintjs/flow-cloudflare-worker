@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../../src/worker'
-import { Env } from '../../src/worker/types'
+import { EnvWithAssets, TypedEnv } from '../../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 
 const sampleHtml = `
@@ -17,7 +17,7 @@ const sampleHtml = `
 </html>
 `
 
-const mockEnv: Env = {
+const mockEnv: TypedEnv = {
   FPJS_CDN_URL: 'fpcdn.io',
   FPJS_INGRESS_BASE_HOST: 'api.fpjs.io',
   PROTECTION_CONFIG: {
@@ -26,8 +26,12 @@ const mockEnv: Env = {
   },
   PUBLIC_KEY: 'public_key',
   SECRET_KEY: 'secret_key',
-  SCRIPTS_BEHAVIOUR_PATH: 'scripts',
+  SCRIPTS_BEHAVIOR_PATH: 'scripts',
+  FP_RULESET_ID: '',
 }
+
+// Fix for Cloudflare types: https://developers.cloudflare.com/workers/testing/vitest-integration/write-your-first-test/#unit-tests
+const CloudflareRequest = Request<unknown, IncomingRequestCfProperties>
 
 describe('Flow Cloudflare Worker', () => {
   beforeEach(() => {
@@ -47,19 +51,15 @@ describe('Flow Cloudflare Worker', () => {
         })
       )
 
-      const request = new Request('https://example.com/')
+      const request = new CloudflareRequest('https://example.com/')
       const ctx = createExecutionContext()
 
-      const response = await handler.fetch(request, env, ctx)
+      const response = await handler.fetch(request, env as EnvWithAssets)
       await waitOnExecutionContext(ctx)
       const html = await response.text()
 
       expect(html).toContain('<script src="/scripts/agent.iife.js"></script>')
-      expect(html).toContain('<script src="/scripts/instrumentation.iife.js"></script>')
-
-      await waitOnExecutionContext(ctx)
-
-      await handler.fetch(request, env)
+      expect(html).toContain('<script src="/scripts/instrumentor.iife.js"></script>')
     })
   })
 })

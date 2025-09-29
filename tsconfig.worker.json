@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "target": "es2021",
     "module": "es2022",
     "moduleResolution": "bundler",
@@ -11,7 +12,6 @@
     "types": [
       "vite/client"
     ],
-    "noEmit": true,
     "isolatedModules": true
   },
   "include": [

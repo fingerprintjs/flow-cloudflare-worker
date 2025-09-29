@@ -1,4 +1,4 @@
-import { Env } from '../types'
+import { TypedEnv } from '../types'
 import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
 import { PROTECTED_APIS_WINDOW_KEY } from '../../shared/const'
@@ -6,7 +6,7 @@ import { getProtectionConfig } from '../env'
 
 type HandleScriptsInjectionParams = {
   request: Request
-  env: Env
+  env: TypedEnv
 }
 
 /**
@@ -27,7 +27,7 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
 
   if (hasContentType(response.headers, 'text/html')) {
     try {
-      console.info('Received HTML content, injecting instrumentation script.')
+      console.info('Received HTML content, injecting agent and instrumentation scripts.')
 
       return new HTMLRewriter()
         .on('head', {
@@ -40,8 +40,8 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
               { html: true }
             )
 
-            element.append(`<script src="${getScriptUrl('agent.iife.js', env)}"></script>`, { html: true })
-            element.append(`<script src="${getScriptUrl('instrumentation.iife.js', env)}"></script>`, { html: true })
+            element.append(`<script src="${getScriptUrl('agent.iife.js', env)}"></script>\n`, { html: true })
+            element.append(`<script src="${getScriptUrl('instrumentor.iife.js', env)}"></script>\n`, { html: true })
           },
         })
         .transform(response)
