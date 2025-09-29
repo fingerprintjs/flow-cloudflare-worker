@@ -6,6 +6,7 @@ import { getAgentLoader } from '../fingerprint/agent'
 type HandleScriptParams = {
   script: Script
   publicApiKey: string
+  cdnHost: string
 }
 
 /**
@@ -14,9 +15,10 @@ type HandleScriptParams = {
  * @param {Object} params - The parameters for handling the script.
  * @param {string} params.script - The name of the script to be handled.
  * @param {string} params.publicApiKey - The public API key used for fetching the agent loader.
+ * @param {string} params.cdnHost - Hostname of the Fingerprint CDN.
  * @return {Promise<Response>} A promise that resolves to the script response.
  */
-export async function handleScript({ script, publicApiKey }: HandleScriptParams): Promise<Response> {
+export async function handleScript({ script, publicApiKey, cdnHost }: HandleScriptParams): Promise<Response> {
   switch (script) {
     case 'instrumentor.iife.js': {
       return new Response(instrumentatorCode, {
@@ -27,6 +29,6 @@ export async function handleScript({ script, publicApiKey }: HandleScriptParams)
     }
 
     case 'agent.iife.js':
-      return getAgentLoader(publicApiKey)
+      return getAgentLoader(publicApiKey, cdnHost)
   }
 }

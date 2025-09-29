@@ -17,7 +17,7 @@ function assertVariableIsSet(env: TypedEnv, key: keyof TypedEnv) {
   }
 }
 
-export function getCDNUrl(env: TypedEnv) {
+export function getCDNHost(env: TypedEnv) {
   return env.FPJS_CDN_URL || defaults.FPJS_CDN_URL
 }
 

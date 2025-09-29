@@ -2,7 +2,7 @@ import { EnvWithAssets } from './types'
 import { matchUrl } from './urlMatching'
 import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
-import { getPublicKey } from './env'
+import { getCDNHost, getPublicKey } from './env'
 
 import { handleError } from './handlers/handleError'
 
@@ -20,6 +20,7 @@ export async function handleRequest(request: Request, env: EnvWithAssets): Promi
         return handleScript({
           script: matchedUrl.script,
           publicApiKey: getPublicKey(env),
+          cdnHost: getCDNHost(env),
         })
       default:
         console.info('No matched url')
