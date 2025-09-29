@@ -5,7 +5,7 @@
   "vars": {
     "FPJS_CDN_URL": "",
     "FPJS_INGRESS_BASE_HOST": "",
-    "SCRIPTS_BEHAVIOUR_PATH": "",
+    "SCRIPTS_BEHAVIOR_PATH": "",
     "PUBLIC_KEY": "",
     "SECRET_KEY": "",
     "FP_RULESET_ID": "",

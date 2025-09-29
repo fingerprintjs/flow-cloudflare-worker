@@ -45,8 +45,8 @@ export function getRulesetId(env: TypedEnv) {
   return env.FP_RULESET_ID || ''
 }
 
-export function getScriptBehaviourPath(env: TypedEnv) {
-  assertVariableIsSet(env, 'SCRIPTS_BEHAVIOUR_PATH')
+export function getScriptBehaviorPath(env: TypedEnv) {
+  assertVariableIsSet(env, 'SCRIPTS_BEHAVIOR_PATH')
 
-  return env.SCRIPTS_BEHAVIOUR_PATH
+  return env.SCRIPTS_BEHAVIOR_PATH
 }

@@ -26,7 +26,7 @@ const mockEnv: TypedEnv = {
   },
   PUBLIC_KEY: 'public_key',
   SECRET_KEY: 'secret_key',
-  SCRIPTS_BEHAVIOUR_PATH: 'scripts',
+  SCRIPTS_BEHAVIOR_PATH: 'scripts',
   FP_RULESET_ID: '',
 }
 
