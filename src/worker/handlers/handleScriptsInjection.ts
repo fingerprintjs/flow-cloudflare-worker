@@ -36,7 +36,7 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
 
             // Inject URLs for the protected APIs for instrumentation
             element.append(
-              `<script>window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify(getProtectionConfig(env).protectedApis)}</script>`,
+              `<script>window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify(getProtectionConfig(env).protectedApis)}</script>\n`,
               { html: true }
             )
 
