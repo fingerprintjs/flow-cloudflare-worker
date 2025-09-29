@@ -1,5 +1,5 @@
 import { Script } from '../scripts'
-import injectorUrl from '../../../public/instrumentation.iife.js?url'
+import injectorUrl from '../../../public/instrumentor.iife.js?url'
 import { getAgentLoader } from '../fingerprint/agent'
 
 type HandleScriptParams = {
@@ -21,7 +21,7 @@ type HandleScriptParams = {
  */
 export async function handleScript({ request, script, publicApiKey, assets }: HandleScriptParams): Promise<Response> {
   switch (script) {
-    case 'instrumentation.iife.js': {
+    case 'instrumentor.iife.js': {
       return assets.fetch(new URL(injectorUrl, request.url))
     }
 

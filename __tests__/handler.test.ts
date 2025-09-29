@@ -55,7 +55,7 @@ describe('Flow Cloudflare Worker', () => {
       const html = await response.text()
 
       expect(html).toContain('<script src="/scripts/agent.iife.js"></script>')
-      expect(html).toContain('<script src="/scripts/instrumentation.iife.js"></script>')
+      expect(html).toContain('<script src="/scripts/instrumentor.iife.js"></script>')
 
       await waitOnExecutionContext(ctx)
 
