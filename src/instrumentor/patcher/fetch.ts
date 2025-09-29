@@ -44,6 +44,9 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
   }
 
   const originalFetch = window.fetch
+  if (originalFetch.toString() !== 'function fetch() { [native code] }') {
+    console.warn('window.fetch is not a native function, unexpected behavior may occur.')
+  }
 
   window.fetch = async (...params) => {
     try {
