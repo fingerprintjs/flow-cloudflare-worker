@@ -15,6 +15,9 @@
       "path": "tsconfig.worker.json"
     },
     {
+      "path": "tsconfig.worker.tests.json"   
+    },
+    {
       "path": "tsconfig.instrumentor.json"
     },
     {
