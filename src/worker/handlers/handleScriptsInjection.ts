@@ -32,8 +32,8 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
           element(element) {
             console.info('Injecting instrumentation and agent into <head> element.')
 
-            element.append(`<script src="${getScriptUrl('agent.iife.js', env)}"></script>`, { html: true })
-            element.append(`<script src="${getScriptUrl('instrumentor.iife.js', env)}"></script>`, { html: true })
+            element.append(`<script src="${getScriptUrl('agent.iife.js', env)}"></script>\n`, { html: true })
+            element.append(`<script src="${getScriptUrl('instrumentor.iife.js', env)}"></script>\n`, { html: true })
           },
         })
         .transform(response)
