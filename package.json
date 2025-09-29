@@ -12,7 +12,7 @@
   },
   "scripts": {
     "serve": "vite",
-    "prepare": "husky && pnpm build:injector",
+    "prepare": "husky && pnpm build:instrumentor",
     "build": "pnpm build:worker && pnpm build:instrumentor",
     "build:worker": "vite build --config vite.worker.ts",
     "build:instrumentor": "vite build --config vite.instrumentor.ts",
@@ -54,6 +54,7 @@
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
     "vite-plugin-checker": "^0.10.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "wrangler": "^4.40.2"
   }
 }
