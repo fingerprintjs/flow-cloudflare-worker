@@ -11,7 +11,6 @@
     "url": "https://github.com/fingerprintjs/flow-cloudflare-worker.git"
   },
   "scripts": {
-    "serve": "vite",
     "prepare": "husky && pnpm build:instrumentor",
     "build": "pnpm build:worker && pnpm build:instrumentor",
     "build:worker": "vite build --config vite.worker.ts",
