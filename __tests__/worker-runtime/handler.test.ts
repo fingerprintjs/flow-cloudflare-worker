@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../../src/worker'
 import { EnvWithAssets, TypedEnv } from '../../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
+import { PROTECTED_APIS_WINDOW_KEY } from '../../src/shared/const'
 
 const sampleHtml = `
 <!doctype html>
@@ -21,7 +22,12 @@ const mockEnv: TypedEnv = {
   FPJS_CDN_URL: 'fpcdn.io',
   FPJS_INGRESS_BASE_HOST: 'api.fpjs.io',
   PROTECTION_CONFIG: {
-    protectedApis: [],
+    protectedApis: [
+      {
+        method: 'POST',
+        url: '/api/*',
+      },
+    ],
     identificationPageUrls: [],
   },
   PUBLIC_KEY: 'public_key',
@@ -60,6 +66,9 @@ describe('Flow Cloudflare Worker', () => {
 
       expect(html).toContain('<script src="/scripts/agent.iife.js"></script>')
       expect(html).toContain('<script src="/scripts/instrumentor.iife.js"></script>')
+      expect(html).toContain(
+        `window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify((env as EnvWithAssets).PROTECTION_CONFIG.protectedApis)}`
+      )
     })
   })
 })
