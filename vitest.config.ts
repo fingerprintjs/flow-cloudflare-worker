@@ -14,13 +14,14 @@ export default defineConfig({
           include: ['__tests__/instrumentor/**/*.test.ts'],
         },
       },
+      // Tests in worker-runtime will use a separate worker project for a more accurate runtime
       defineWorkersProject({
         test: {
           name: {
-            label: 'Worker',
+            label: 'Worker runtime',
             color: 'blue',
           },
-          include: ['__tests__/worker/**/*.test.ts'],
+          include: ['__tests__/worker-runtime/**/*.test.ts'],
           inspector: {
             port: 3456,
           },
@@ -33,6 +34,17 @@ export default defineConfig({
           },
         },
       }),
+      // Other unit tests for worker can run using node, for easier debugging
+      {
+        test: {
+          environment: 'node',
+          name: {
+            label: 'Worker',
+            color: 'green',
+          },
+          include: ['__tests__/worker/**/*.test.ts'],
+        },
+      },
     ],
   },
 })
