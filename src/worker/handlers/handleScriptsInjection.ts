@@ -25,7 +25,7 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
 
   if (hasContentType(response.headers, 'text/html')) {
     try {
-      console.info('Received HTML content, injecting instrumentation script.')
+      console.info('Received HTML content, injecting agent and instrumentation scripts.')
 
       return new HTMLRewriter()
         .on('head', {
