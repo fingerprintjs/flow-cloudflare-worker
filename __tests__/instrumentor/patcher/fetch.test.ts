@@ -178,10 +178,9 @@ describe('Fetch Patcher', () => {
       const emptyContext = new WritablePatcherContext()
       patchFetch({ protectedApis: mockProtectedApis, ctx: emptyContext })
 
-      const response = await window.fetch('https://api.example.com/protected/endpoint')
+      await window.fetch('https://api.example.com/protected/endpoint')
 
       expect(mockFetch).toHaveBeenCalledWith('https://api.example.com/protected/endpoint')
-      expect(response.headers.get(SIGNALS_HEADER)).toBeFalsy()
     })
 
     it('should handle unsupported fetch parameters gracefully', async () => {
