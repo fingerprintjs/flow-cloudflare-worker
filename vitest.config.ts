@@ -8,10 +8,10 @@ export default defineConfig({
         test: {
           environment: 'happy-dom',
           name: {
-            label: 'Instrumentation',
+            label: 'Instrumentor',
             color: 'green',
           },
-          include: ['__tests__/instrumentation/**/*.test.ts'],
+          include: ['__tests__/instrumentor/**/*.test.ts'],
         },
       },
       defineWorkersProject({

@@ -1,3 +1,5 @@
-document.addEventListener('DOMContentLoaded', (event: Event) => {
-  console.info('DOMContentLoaded triggered.', event)
+import { setupInstrumentation } from './instrumentation'
+
+setupInstrumentation().catch((error) => {
+  console.error('Error during instrumentation:', error)
 })

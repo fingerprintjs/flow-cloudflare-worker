@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, Mock, vi } from 'vitest'
-import { patchFetch } from '../../../src/instrumentation/patcher/fetch'
-import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentation/patcher/context'
+import { patchFetch } from '../../../src/instrumentor/patcher/fetch'
+import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
 import { SIGNALS_HEADER } from '../../../src/shared/const'
 
-import * as urlUtils from '../../../src/instrumentation/patcher/url'
+import * as urlUtils from '../../../src/instrumentor/patcher/url'
 
 describe('Fetch Patcher', () => {
   let mockFetch: Mock
