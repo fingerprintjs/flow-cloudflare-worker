@@ -1,7 +1,6 @@
 {
   "extends": "@fingerprintjs/tsconfig-dx-team/tsconfig.json",
   "compilerOptions": {
-    "composite": true,
     "module": "es6",
     "moduleResolution": "node",
     "target": "es2020"
