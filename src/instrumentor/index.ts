@@ -1,3 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
-  console.info('DOMContentLoaded triggered.')
+document.addEventListener('DOMContentLoaded', (event: Event) => {
+  console.info('DOMContentLoaded triggered.', event)
 })
