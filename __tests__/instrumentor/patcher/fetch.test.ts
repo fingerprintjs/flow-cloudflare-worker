@@ -15,7 +15,6 @@ describe('Fetch Patcher', () => {
     {
       method: 'POST',
       url: '/protected',
-      ruleSetId: '1',
     },
   ]
 
@@ -204,6 +203,146 @@ describe('Fetch Patcher', () => {
       await window.fetch('https://example.org')
 
       expect(mockFetch).toHaveBeenCalledWith('https://example.org')
+    })
+
+    it('should call original fetch if signal collection fails', async () => {
+      vi.mocked(urlUtils.isProtectedUrl).mockImplementation(() => {
+        throw new Error('Test error')
+      })
+      const context = new WritablePatcherContext()
+      context.setSignalsProvider(() => {
+        throw new Error('Failed to collect signals')
+      })
+
+      patchFetch({ protectedApis: mockProtectedApis, ctx: context })
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      await window.fetch('https://example.org')
+
+      expect(mockFetch).toHaveBeenCalledWith('https://example.org')
+    })
+
+    it('should handle original fetch throwing error', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      const fetchError = new Error('Network error')
+      mockFetch.mockRejectedValue(fetchError)
+
+      await expect(window.fetch('https://example.com')).rejects.toThrow('Network error')
+    })
+
+    it('should handle existing Headers object in RequestInit', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const existingHeaders = new Headers({ 'Content-Type': 'application/json' })
+      const url = 'https://api.example.com/protected'
+
+      await window.fetch(url, {
+        method: 'POST',
+        headers: existingHeaders,
+      })
+
+      const callArgs = mockFetch.mock.calls[0]
+      const headers = callArgs[1]?.headers as Headers
+      expect(headers.get('Content-Type')).toBe('application/json')
+      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
+    it('should overwrite existing signals header', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected'
+      const headers = { [SIGNALS_HEADER]: 'old-signals-data' }
+
+      await window.fetch(url, { method: 'POST', headers })
+
+      const callArgs = mockFetch.mock.calls[0]
+      const resultHeaders = callArgs[1]?.headers as Headers
+      expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
+    it('should handle Request object with existing headers', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const request = new Request('https://api.example.com/protected', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer token',
+        },
+      })
+
+      await window.fetch(request)
+
+      expect(request.headers.get('Content-Type')).toBe('application/json')
+      expect(request.headers.get('Authorization')).toBe('Bearer token')
+      expect(request.headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
+    it('should handle URLs with query parameters', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected?param1=value1&param2=value2'
+
+      await window.fetch(url, { method: 'GET' })
+
+      expect(urlUtils.isProtectedUrl).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url,
+          method: 'GET',
+        }),
+        mockProtectedApis
+      )
+    })
+
+    it('should handle URLs with fragments', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected#section'
+
+      await window.fetch(url, { method: 'POST' })
+
+      expect(urlUtils.isProtectedUrl).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url,
+          method: 'POST',
+        }),
+        mockProtectedApis
+      )
+    })
+
+    it('should handle URL object with query parameters and fragments', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = new URL('https://api.example.com/protected?test=1#fragment')
+
+      await window.fetch(url, { method: 'PATCH' })
+
+      expect(urlUtils.isProtectedUrl).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: url.toString(),
+          method: 'PATCH',
+        }),
+        mockProtectedApis
+      )
     })
   })
 })
