@@ -1,10 +1,10 @@
-import { Env } from '../types'
+import { TypedEnv } from '../types'
 import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
 
 type HandleScriptsInjectionParams = {
   request: Request
-  env: Env
+  env: TypedEnv
 }
 
 /**

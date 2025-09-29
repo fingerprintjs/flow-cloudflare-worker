@@ -22,7 +22,7 @@
     "test:coverage": "vitest --coverage",
     "test:attach": "vitest --inspect=9229 --no-file-parallelism",
     "wrangler:deploy": "pnpm build:worker && wrangler deploy",
-    "wrangler:types": "wrangler types"
+    "wrangler:types": "wrangler types --strict-vars=false"
   },
   "lint-staged": {
     "*.{js,ts}": "pnpm run lint:fix"

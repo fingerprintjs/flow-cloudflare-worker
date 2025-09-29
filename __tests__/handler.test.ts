@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../src/worker'
-import { Env } from '../src/worker/types'
+import { TypedEnv } from '../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 
 const sampleHtml = `
@@ -17,7 +17,7 @@ const sampleHtml = `
 </html>
 `
 
-const mockEnv: Env = {
+const mockEnv: TypedEnv = {
   FPJS_CDN_URL: 'fpcdn.io',
   FPJS_INGRESS_BASE_HOST: 'api.fpjs.io',
   PROTECTION_CONFIG: {

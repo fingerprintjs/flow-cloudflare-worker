@@ -1,4 +1,4 @@
-import { Env } from './types'
+import { TypedEnv } from './types'
 import { getScriptBehaviourPath } from './env'
 
 export type Script = 'instrumentor.iife.js' | 'agent.iife.js'
@@ -11,6 +11,6 @@ export function validateScript(script: string): asserts script is Script {
   }
 }
 
-export function getScriptUrl(script: Script, env: Env) {
+export function getScriptUrl(script: Script, env: TypedEnv) {
   return `/${getScriptBehaviourPath(env)}/${script}`
 }

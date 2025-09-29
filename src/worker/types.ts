@@ -1,17 +1,8 @@
-export type Env = {
-  FPJS_CDN_URL: string
-  FPJS_INGRESS_BASE_HOST: string
-  PUBLIC_KEY: string
+export type TypedEnv = Env & {
   PROTECTION_CONFIG: ProtectionConfig
-  FP_RULESET_ID: string
-
-  // Random prefix for script paths
-  SCRIPTS_BEHAVIOUR_PATH: string
-
-  SECRET_KEY: string
 }
 
-export type EnvWithAssets = Env & {
+export type EnvWithAssets = TypedEnv & {
   ASSETS: Fetcher
 }
 

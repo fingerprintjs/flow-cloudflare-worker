@@ -1,4 +1,4 @@
-import { Env } from './types'
+import { TypedEnv } from './types'
 
 export type FlowErrorParams = {
   message: string
@@ -15,7 +15,7 @@ export class FlowError extends Error {
 }
 
 export class MissingVariableError extends FlowError {
-  constructor(variable: keyof Env) {
+  constructor(variable: keyof TypedEnv) {
     super({
       message: `${variable} is not set.`,
     })

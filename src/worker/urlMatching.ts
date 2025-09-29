@@ -1,5 +1,5 @@
 import { Script, validateScript } from './scripts'
-import { Env } from './types'
+import { TypedEnv } from './types'
 import { getScriptBehaviourPath } from './env'
 
 export type UrlType =
@@ -14,7 +14,7 @@ export type UrlType =
       script: Script
     }
 
-export function matchUrl(url: URL, env: Env): UrlType | undefined {
+export function matchUrl(url: URL, env: TypedEnv): UrlType | undefined {
   // TODO After url matching library is published, use it here.
 
   const scriptBehaviourPath = getScriptBehaviourPath(env)
