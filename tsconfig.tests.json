@@ -12,7 +12,6 @@
       "vite/client",
       "@cloudflare/vitest-pool-workers"
     ],
-    "noEmit": true,
     "isolatedModules": true,
     "sourceMap": true
   },
