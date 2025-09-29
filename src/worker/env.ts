@@ -8,6 +8,7 @@ const defaults = {
     protectedApis: [],
     identificationPageUrls: [],
   },
+  FP_RULESET_ID: '',
 } satisfies Partial<Env>
 
 function assertVariableIsSet(env: Env, key: keyof Env) {
@@ -38,6 +39,10 @@ export function getSecretKey(env: Env) {
   assertVariableIsSet(env, 'SECRET_KEY')
 
   return env.SECRET_KEY
+}
+
+export function getRulesetId(env: Env) {
+  return env.FP_RULESET_ID || ''
 }
 
 export function getScriptBehaviourPath(env: Env) {

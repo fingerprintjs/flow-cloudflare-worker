@@ -12,6 +12,7 @@
     "SCRIPTS_BEHAVIOUR_PATH": "",
     "PUBLIC_KEY": "",
     "SECRET_KEY": "",
+    "FP_RULESET_ID": "",
     "PROTECTION_CONFIG": {
       "identificationPageUrls": [],
       "protectedApis": []
