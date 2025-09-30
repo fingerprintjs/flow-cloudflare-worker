@@ -74,7 +74,7 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
  * @param requestInit - Optional RequestInit object that may contain a method property
  * @returns The HTTP method string, defaults to 'GET' if not provided
  */
-function resolveMethod(requestInit?: RequestInit) {
+function resolveRequestInitMethod(requestInit?: RequestInit) {
   return requestInit?.method ?? 'GET'
 }
 
@@ -130,7 +130,7 @@ function resolvePatcherRequest(params: Parameters<typeof fetch>): PatcherRequest
 
     return {
       url: params[0],
-      method: resolveMethod(requestInit),
+      method: resolveRequestInitMethod(requestInit),
 
       setHeader: (name, value) => {
         setHeaderForRequestInit(name, value, params as FetchParamsWithRequestInit)
@@ -144,7 +144,7 @@ function resolvePatcherRequest(params: Parameters<typeof fetch>): PatcherRequest
 
     return {
       url: params[0].toString(),
-      method: resolveMethod(requestInit),
+      method: resolveRequestInitMethod(requestInit),
 
       setHeader: (name, value) => {
         setHeaderForRequestInit(name, value, params as FetchParamsWithRequestInit)
