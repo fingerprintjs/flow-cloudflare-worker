@@ -231,7 +231,7 @@ describe('Fetch Patcher', () => {
       await expect(window.fetch('https://example.com')).rejects.toThrow('Network error')
     })
 
-    it('should handle existing Headers object in RequestInit', async () => {
+    it('should handle existing Headers instance in RequestInit', async () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
@@ -243,6 +243,46 @@ describe('Fetch Patcher', () => {
       await window.fetch(url, {
         method: 'POST',
         headers: existingHeaders,
+      })
+
+      const callArgs = mockFetch.mock.calls[0]
+      const headers = callArgs[1]?.headers as Headers
+      expect(headers.get('Content-Type')).toBe('application/json')
+      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
+    it('should handle existing Headers object in RequestInit', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected'
+
+      await window.fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const callArgs = mockFetch.mock.calls[0]
+      const headers = callArgs[1]?.headers as Headers
+      expect(headers.get('Content-Type')).toBe('application/json')
+      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
+    it('should handle existing Headers tuple in RequestInit', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected'
+
+      await window.fetch(url, {
+        method: 'POST',
+        headers: [['Content-Type', 'application/json']],
       })
 
       const callArgs = mockFetch.mock.calls[0]
@@ -279,6 +319,27 @@ describe('Fetch Patcher', () => {
           'Content-Type': 'application/json',
           Authorization: 'Bearer token',
         },
+      })
+
+      await window.fetch(request)
+
+      expect(request.headers.get('Content-Type')).toBe('application/json')
+      expect(request.headers.get('Authorization')).toBe('Bearer token')
+      expect(request.headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
+    it('should handle Request object with existing headers instance', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const request = new Request('https://api.example.com/protected', {
+        method: 'POST',
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer token',
+        }),
       })
 
       await window.fetch(request)
