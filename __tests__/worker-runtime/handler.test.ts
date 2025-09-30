@@ -64,9 +64,7 @@ describe('Flow Cloudflare Worker', () => {
 
       expect(html).toContain('<script src="/scripts/agent.iife.js"></script>')
       expect(html).toContain('<script src="/scripts/instrumentor.iife.js"></script>')
-      expect(html).toContain(
-        `window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify((env as TypedEnv).PROTECTED_APIS)}`
-      )
+      expect(html).toContain(`window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify(env.PROTECTED_APIS)}`)
     })
 
     it('should return normal response on page with broken HTML', async () => {
