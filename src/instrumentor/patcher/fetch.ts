@@ -93,19 +93,23 @@ type FetchParamsWithRequestInit = [any, RequestInit | undefined]
 function setHeaderForRequestInit(name: string, value: string, fetchParams: FetchParamsWithRequestInit) {
   const requestInit = fetchParams[1]
 
+  let headers: Headers
+
   if (requestInit) {
-    const headers = new Headers(requestInit.headers)
-    headers.set(name, value)
-    requestInit.headers = headers
+    if (requestInit.headers instanceof Headers) {
+      headers = requestInit.headers
+    } else {
+      headers = new Headers(requestInit.headers)
+      requestInit.headers = headers
+    }
   } else {
-    const headers = new Headers()
-    headers.set(name, value)
+    headers = new Headers()
 
     // If no requestInit was provided, create it as a second argument
-    fetchParams.push({
-      headers,
-    })
+    fetchParams[1] = { headers }
   }
+
+  headers.set(name, value)
 }
 
 /**
