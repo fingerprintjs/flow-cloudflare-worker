@@ -1,7 +1,7 @@
 /**
  * Represents a standardised request object used by the patchers.
  *
- * This type provides a uniform interface for handling different types of fetch requests within the patchers.
+ * This type provides a uniform interface for handling different types of requests within the patchers.
  */
 export type PatcherRequest = {
   /** The URL of the request as a string */
