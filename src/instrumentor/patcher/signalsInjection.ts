@@ -1,7 +1,7 @@
 import { PatcherRequest } from './types'
 import { ProtectedApi } from '../../shared/types'
 import { PatcherContext } from './context'
-import { isProtectedUrl } from './url'
+import { isProtectedUrl } from '../../shared/protectedApi'
 import { SIGNALS_HEADER } from '../../shared/const'
 
 /**
@@ -38,7 +38,7 @@ type HandleSignalsInjectionParams = {
  * ```
  */
 export async function handleSignalsInjection({ request, protectedApis, ctx }: HandleSignalsInjectionParams) {
-  if (!isProtectedUrl(request, protectedApis)) {
+  if (!isProtectedUrl({ url: request.url, method: request.method, protectedApis: protectedApis })) {
     console.debug('Skipping signals injection:', request?.url)
     return
   }

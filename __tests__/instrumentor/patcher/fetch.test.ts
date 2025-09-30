@@ -4,7 +4,7 @@ import { PatcherContext, WritablePatcherContext } from '../../../src/instrumento
 import { ProtectedApi } from '../../../src/shared/types'
 import { SIGNALS_HEADER } from '../../../src/shared/const'
 
-import * as urlUtils from '../../../src/instrumentor/patcher/url'
+import * as urlUtils from '../../../src/shared/protectedApi'
 
 describe('Fetch Patcher', () => {
   let mockFetch: Mock
@@ -114,8 +114,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url: url.toString(),
           method: 'GET',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
       expect(mockFetch).toHaveBeenCalledWith(
         url,
@@ -147,8 +147,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url: request.url,
           method: 'PUT',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
 
       // Request headers should be modified directly
@@ -363,8 +363,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url,
           method: 'GET',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
     })
 
@@ -382,8 +382,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url,
           method: 'POST',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
     })
 
@@ -401,8 +401,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url: url.toString(),
           method: 'PATCH',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
     })
   })
