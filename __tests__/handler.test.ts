@@ -61,5 +61,32 @@ describe('Flow Cloudflare Worker', () => {
       expect(html).toContain('<script src="/scripts/agent.iife.js"></script>')
       expect(html).toContain('<script src="/scripts/instrumentor.iife.js"></script>')
     })
+
+    it('should return normal response on page with broken HTML', async () => {
+      const brokenHtml = `
+    <!doctype html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    `
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response(brokenHtml, {
+          headers: {
+            'Content-Type': 'text/html+maybe; charset=utf-16',
+          },
+          status: 200,
+        })
+      )
+
+      const request = new CloudflareRequest('https://example.com/')
+      const ctx = createExecutionContext()
+
+      const response = await handler.fetch(request, env as EnvWithAssets)
+      await waitOnExecutionContext(ctx)
+      const html = await response.text()
+
+      expect(html).toEqual(brokenHtml)
+    })
   })
 })
