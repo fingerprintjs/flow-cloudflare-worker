@@ -1,8 +1,6 @@
-export type TypedEnv = Omit<Env, 'ASSETS'> & {
+export type TypedEnv = Env & {
   PROTECTION_CONFIG: ProtectionConfig
 }
-
-export type EnvWithAssets = TypedEnv & Pick<Env, 'ASSETS'>
 
 export type ProtectedApi = {
   method: 'POST' // Only POST is supported for now

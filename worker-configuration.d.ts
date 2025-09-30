@@ -13,7 +13,6 @@ declare namespace Cloudflare {
     SECRET_KEY: string
     FP_RULESET_ID: string
     PROTECTION_CONFIG: object
-    ASSETS: Fetcher
   }
 }
 interface Env extends Cloudflare.Env {}

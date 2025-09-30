@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../src/worker'
-import { EnvWithAssets, TypedEnv } from '../src/worker/types'
+import { TypedEnv } from '../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 
 const sampleHtml = `
@@ -54,7 +54,7 @@ describe('Flow Cloudflare Worker', () => {
       const request = new CloudflareRequest('https://example.com/')
       const ctx = createExecutionContext()
 
-      const response = await handler.fetch(request, env as EnvWithAssets)
+      const response = await handler.fetch(request, env as TypedEnv)
       await waitOnExecutionContext(ctx)
       const html = await response.text()
 
@@ -82,7 +82,7 @@ describe('Flow Cloudflare Worker', () => {
       const request = new CloudflareRequest('https://example.com/')
       const ctx = createExecutionContext()
 
-      const response = await handler.fetch(request, env as EnvWithAssets)
+      const response = await handler.fetch(request, env as TypedEnv)
       await waitOnExecutionContext(ctx)
       const html = await response.text()
 
