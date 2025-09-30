@@ -4,7 +4,3 @@ export type ProtectedApi = {
   method: ProtectedApiHttpMethod
   url: string
 }
-
-export function isValidHttpMethod(method: string): method is ProtectedApiHttpMethod {
-  return method === 'POST'
-}
