@@ -59,7 +59,7 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
         await handleSignalsInjection({ request, protectedApis, ctx })
       }
     } catch (error) {
-      console.error('Patched fetch fetch:', error)
+      console.error('Patched fetch error:', error)
     }
 
     return originalFetch(...params)
