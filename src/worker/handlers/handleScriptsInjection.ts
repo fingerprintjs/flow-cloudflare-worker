@@ -1,6 +1,7 @@
 import { TypedEnv } from '../types'
 import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
+import { fetchOrigin } from '../utils/origin'
 import { PROTECTED_APIS_WINDOW_KEY } from '../../shared/const'
 import { getProtectionConfig } from '../env'
 
@@ -23,7 +24,7 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
   console.info('Injecting instrumentation script for page:', request.url)
 
   // Propagate a request to the origin
-  const response = await fetch(request)
+  const response = await fetchOrigin(request)
 
   if (hasContentType(response.headers, 'text/html')) {
     try {

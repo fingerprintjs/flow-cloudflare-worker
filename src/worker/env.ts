@@ -4,10 +4,8 @@ import { MissingVariableError } from './errors'
 const defaults = {
   FPJS_CDN_URL: 'fpcdn.io',
   FPJS_INGRESS_BASE_HOST: 'api.fpjs.io',
-  PROTECTION_CONFIG: {
-    protectedApis: [],
-    identificationPageUrls: [],
-  },
+  PROTECTED_APIS: [],
+  IDENTIFICATION_PAGE_URLS: [],
   FP_RULESET_ID: '',
 } satisfies Partial<TypedEnv>
 
@@ -24,9 +22,12 @@ export function getCDNHost(env: TypedEnv) {
 export function getIngressBaseHost(env: TypedEnv) {
   return env.FPJS_INGRESS_BASE_HOST || defaults.FPJS_INGRESS_BASE_HOST
 }
+export function getProtectedApis(env: TypedEnv) {
+  return env.PROTECTED_APIS ?? defaults.PROTECTED_APIS
+}
 
-export function getProtectionConfig(env: TypedEnv) {
-  return env.PROTECTION_CONFIG || defaults.PROTECTION_CONFIG
+export function getIdentificationPageUrls(env: TypedEnv) {
+  return env.IDENTIFICATION_PAGE_URLS ?? defaults.IDENTIFICATION_PAGE_URLS
 }
 
 export function getPublicKey(env: TypedEnv) {

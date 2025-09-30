@@ -3,7 +3,8 @@
   "compilerOptions": {
     "module": "es6",
     "moduleResolution": "node",
-    "target": "es2020"
+    "target": "es2020",
+    "sourceMap": true
   },
   "exclude": [
     "dist",
