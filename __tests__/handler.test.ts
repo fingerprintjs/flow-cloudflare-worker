@@ -20,10 +20,8 @@ const sampleHtml = `
 const mockEnv: TypedEnv = {
   FPJS_CDN_URL: 'fpcdn.io',
   FPJS_INGRESS_BASE_HOST: 'api.fpjs.io',
-  PROTECTION_CONFIG: {
-    protectedApis: [],
-    identificationPageUrls: [],
-  },
+  PROTECTED_APIS: [],
+  IDENTIFICATION_PAGE_URLS: [],
   PUBLIC_KEY: 'public_key',
   SECRET_KEY: 'secret_key',
   SCRIPTS_BEHAVIOR_PATH: 'scripts',
