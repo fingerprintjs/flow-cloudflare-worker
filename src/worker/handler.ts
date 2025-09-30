@@ -5,6 +5,7 @@ import { handleScript } from './handlers/handleScript'
 import { getCDNHost, getPublicKey } from './env'
 
 import { handleError } from './handlers/handleError'
+import { fetchOrigin } from './utils/origin'
 
 export async function handleRequest(request: Request, env: EnvWithAssets): Promise<Response> {
   console.info('Handling request', request)
@@ -25,7 +26,7 @@ export async function handleRequest(request: Request, env: EnvWithAssets): Promi
       default:
         console.info('No matched url')
 
-        return fetch(request)
+        return fetchOrigin(request)
     }
   } catch (error) {
     return handleError(error)
