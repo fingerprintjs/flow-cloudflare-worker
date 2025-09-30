@@ -3,7 +3,7 @@ import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
 import { fetchOrigin } from '../utils/origin'
 import { PROTECTED_APIS_WINDOW_KEY } from '../../shared/const'
-import { getProtectionConfig } from '../env'
+import { getProtectedApis } from '../env'
 
 type HandleScriptsInjectionParams = {
   request: Request
@@ -37,7 +37,7 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
 
             // Inject URLs for the protected APIs for instrumentation
             element.append(
-              `<script>window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify(getProtectionConfig(env).protectedApis)}</script>\n`,
+              `<script>window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify(getProtectedApis(env))}</script>\n`,
               { html: true }
             )
 

@@ -25,7 +25,7 @@ const mockEnv: TypedEnv = {
     {
       method: 'POST',
       url: '/api/*',
-    }
+    },
   ],
   IDENTIFICATION_PAGE_URLS: [],
   PUBLIC_KEY: 'public_key',
