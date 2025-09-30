@@ -2,9 +2,10 @@ import { WritablePatcherContext } from './patcher/context'
 import { getProtectedApis } from './protectedApis'
 import { patchFetch } from './patcher/fetch/fetch'
 import { setupSignalsCollection } from './signals'
+import { DocumentReadyStateFn } from './types'
 
 export type InstrumentationParams = {
-  documentReadyState: () => string
+  documentReadyState: DocumentReadyStateFn
 }
 
 /**
@@ -23,7 +24,11 @@ export async function setupInstrumentor({ documentReadyState }: InstrumentationP
   }
 
   const patcherCtx = new WritablePatcherContext()
-  await setupSignalsCollection(patcherCtx, documentReadyState)
+  await setupSignalsCollection({
+    patcherCtx: patcherCtx,
+    documentReadyState: documentReadyState,
+    fingerprintJs: FingerprintJS,
+  })
 
   const protectedApis = getProtectedApis()
   patchFetch({ protectedApis, ctx: patcherCtx })

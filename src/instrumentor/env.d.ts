@@ -1,11 +1,9 @@
-import type { load, LoadOptions } from '@fingerprintjs/fingerprintjs-pro'
 import { ProtectedApi } from '../shared/types'
+import { FingerprintJSLoader } from './types'
 
 declare global {
   interface Window {
     __FP_FLOW_PROTECTED_APIS__?: ProtectedApi[]
-    FingerprintJS?: {
-      load: (options?: Omit<LoadOptions, 'apiKey'>) => ReturnType<typeof load>
-    }
+    FingerprintJS?: FingerprintJSLoader
   }
 }
