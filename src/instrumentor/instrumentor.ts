@@ -1,6 +1,6 @@
 import { WritablePatcherContext } from './patcher/context'
 import { getProtectedApis } from './protectedApis'
-import { patchFetch } from './patcher/fetch'
+import { patchFetch } from './patcher/fetch/fetch'
 import { setupSignalsCollection } from './signals'
 
 export type InstrumentationParams = {

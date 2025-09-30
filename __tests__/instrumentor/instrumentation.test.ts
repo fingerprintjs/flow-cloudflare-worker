@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { patchFetch } from '../../src/instrumentor/patcher/fetch'
+import { patchFetch } from '../../src/instrumentor/patcher/fetch/fetch'
 import { setupInstrumentor } from '../../src/instrumentor/instrumentor'
 
 vi.mock('../../src/instrumentor/patcher/fetch')

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, Mock, vi } from 'vitest'
-import { patchFetch } from '../../../src/instrumentor/patcher/fetch'
+import { patchFetch } from '../../../src/instrumentor/patcher/fetch/fetch'
 import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
 import { SIGNALS_HEADER } from '../../../src/shared/const'
