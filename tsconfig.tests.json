@@ -18,7 +18,7 @@
   },
   "exclude": [
     "./__tests__/worker-runtime/**/*",
-    "./src/worker/**/*",
+    "./src/worker/**/*"
   ],
   "include": [
     "./vite-env.d.ts",
