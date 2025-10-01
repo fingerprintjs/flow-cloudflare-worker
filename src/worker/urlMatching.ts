@@ -1,7 +1,8 @@
 import { validateScript } from './scripts'
 import { TypedEnv } from './types'
-import { getScriptBehaviorPath } from './env'
+import { getProtectedApis, getScriptBehaviorPath } from './env'
 import { Script } from '../shared/scripts'
+import { isProtectedUrl } from '../shared/protectedApi'
 
 export type UrlType =
   | {
