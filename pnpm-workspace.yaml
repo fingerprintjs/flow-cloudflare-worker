@@ -1,0 +1,8 @@
+packages:
+  - test-apps/*
+  - ./
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - workerd
