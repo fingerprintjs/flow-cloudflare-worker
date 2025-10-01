@@ -9,7 +9,7 @@ import { FetchParamsWithRequestInit, resolveRequestInitMethod, setHeaderForReque
  * - fetch(urlObject, requestInit) - URL as URL object
  * - fetch(request) - Request object
  *
- * @param params - The parameters passed to the fetch function
+ * @param params - The parameters passed to the fetch function. Can be modified via the `setHeader` method of the returned PatcherRequest object.
  * @returns A PatcherRequest object with URL, method, and setHeader function, or undefined if unsupported
  */
 export function resolvePatcherRequest(params: Parameters<typeof fetch>): PatcherRequest | undefined {
