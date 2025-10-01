@@ -6,12 +6,13 @@ import { getCDNHost, getPublicKey } from './env'
 
 import { handleError } from './handlers/handleError'
 import { fetchOrigin } from './utils/origin'
+import { handleProtectedApiCall } from './handlers/handleProtectedApi'
 
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
 
   try {
-    const matchedUrl = matchUrl(new URL(request.url), env)
+    const matchedUrl = matchUrl(new URL(request.url), request.method, env)
 
     switch (matchedUrl?.type) {
       case 'identification':
@@ -23,6 +24,10 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           publicApiKey: getPublicKey(env),
           cdnHost: getCDNHost(env),
         })
+
+      case 'protection':
+        return handleProtectedApiCall({ request, env })
+
       default:
         console.info('No matched url')
 

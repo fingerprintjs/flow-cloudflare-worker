@@ -29,3 +29,29 @@ export class AssetsNotAvailableError extends FlowError {
     })
   }
 }
+
+export class SignalsNotAvailableError extends FlowError {
+  constructor() {
+    super({
+      message: 'Signals were not found in this protected API call.',
+      httpStatus: 403,
+    })
+  }
+}
+
+export class HeaderMissingError extends FlowError {
+  constructor(header: string) {
+    super({
+      message: `${header} header is missing.`,
+      httpStatus: 403,
+    })
+  }
+}
+
+export class IngressRequestFailedError extends FlowError {
+  constructor(message: string, status: number) {
+    super({
+      message: `Ingress request failed with ${status} status: ${message}`,
+    })
+  }
+}

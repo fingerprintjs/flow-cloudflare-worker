@@ -10,7 +10,8 @@
     "SECRET_KEY": "",
     "FP_RULESET_ID": "",
     "PROTECTED_APIS": [],
-    "IDENTIFICATION_PAGE_URLS": []
+    "IDENTIFICATION_PAGE_URLS": [],
+    "FINGERPRINT_REGION": "us"
   },
   "observability": {
     "enabled": true,
