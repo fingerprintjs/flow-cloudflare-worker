@@ -21,7 +21,7 @@ export async function setupInstrumentor({ fingerprintJs }: InstrumentationParams
 
   await setupSignalsCollection({
     patcherCtx: patcherCtx,
-    fingerprintJs: await fingerprintJs,
+    fingerprintJs,
   })
 
   const protectedApis = getProtectedApis()

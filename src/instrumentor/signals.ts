@@ -4,7 +4,7 @@ import { FingerprintJSLoader } from './types'
 export type SetupSignalsCollectionParams = {
   // Writable patcher context to configure with signals' provider
   patcherCtx: WritablePatcherContext
-  fingerprintJs: FingerprintJSLoader
+  fingerprintJs: Promise<FingerprintJSLoader>
 }
 
 /**
@@ -15,6 +15,8 @@ export type SetupSignalsCollectionParams = {
  * document is already loaded and when it's still loading.
  */
 export async function setupSignalsCollection({ patcherCtx, fingerprintJs }: SetupSignalsCollectionParams) {
+  console.debug('Setting up signals collection...', document.readyState)
+
   const listener = async () => {
     await setSignalsProvider(patcherCtx, fingerprintJs)
     document.removeEventListener('DOMContentLoaded', listener)
@@ -30,10 +32,10 @@ export async function setupSignalsCollection({ patcherCtx, fingerprintJs }: Setu
  * with a signals' provider that collects fingerprinting data when called.
  *
  * @param patcherCtx - Writable patcher context to configure with the signals' provider
- * @param fingerprintJS - FingerprintJS loader.
+ * @param fingerprintJS - Promise that resolves to the FingerprintJS loader.
  */
-async function setSignalsProvider(patcherCtx: WritablePatcherContext, fingerprintJS: FingerprintJSLoader) {
-  const agent = await fingerprintJS.load()
+async function setSignalsProvider(patcherCtx: WritablePatcherContext, fingerprintJS: Promise<FingerprintJSLoader>) {
+  const agent = await fingerprintJS.then((loader) => loader.load())
 
   console.debug('FingerprintJS agent loaded', agent)
 

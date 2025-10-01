@@ -1,18 +1,14 @@
-import { SIGNALS_HEADER } from '../../shared/const'
-import { TypedEnv } from '../types'
-import { getIngressBaseHost } from '../env'
-import { getIngressUrl, IngressClient } from '../fingerprint/ingress'
+import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../shared/const'
+import { IngressClient, SendResult } from '../fingerprint/ingress'
 import { fetchOrigin } from '../utils/origin'
 
 export type HandleProtectedApiCallParams = {
   request: Request
-  env: TypedEnv
   ingressClient: IngressClient
 }
 
 export async function handleProtectedApiCall({
   request,
-  env,
   ingressClient,
 }: HandleProtectedApiCallParams): Promise<Response> {
   const signals = request.headers.get(SIGNALS_HEADER)
@@ -22,16 +18,30 @@ export async function handleProtectedApiCall({
     // TODO Use response text from env
     return new Response('', { status: 403 })
   }
+  const [ingressResponse, originResponse] = await Promise.all([ingressClient.send(request), fetchOrigin(request)])
 
-  const { agentData, setCookieHeaders, products } = await ingressClient.send(request)
+  const originResponseHeaders = new Headers(originResponse.headers)
 
-  const originResponse = await fetchOrigin(request)
+  setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
+
+  // Re-create the response, because by default its headers are immutable
+  return new Response(originResponse.body, {
+    status: originResponse.status,
+    headers: originResponseHeaders,
+    statusText: originResponse.statusText,
+    cf: originResponse.cf,
+  })
+}
+
+function setHeadersFromIngressToOrigin(ingressResponse: SendResult, originResponseHeaders: Headers) {
+  const { agentData, setCookieHeaders } = ingressResponse
+  console.debug('Adding agent data header', agentData)
+  originResponseHeaders.set(AGENT_DATA_HEADER, agentData)
 
   if (setCookieHeaders.length) {
+    console.debug('Adding set-cookie headers from ingress response', setCookieHeaders)
     setCookieHeaders.forEach((cookie) => {
-      originResponse.headers.append('Set-Cookie', cookie)
+      originResponseHeaders.append('Set-Cookie', cookie)
     })
   }
-
-  return originResponse
 }

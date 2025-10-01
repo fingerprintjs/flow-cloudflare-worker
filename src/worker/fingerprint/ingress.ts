@@ -1,9 +1,9 @@
 import { Region } from './region'
 import { SIGNALS_HEADER } from '../../shared/const'
-import { HeaderMissingError, IngressRequestFailedError, SignalsNotAvailableError } from '../errors'
-import type { EventsGetResponse } from '@fingerprintjs/fingerprintjs-pro-server-api'
+import { IngressRequestFailedError, SignalsNotAvailableError } from '../errors'
+import { getHeaderOrThrow } from '../utils/headers'
 
-type SendBod2y = {
+type SendBody = {
   fingerprintData: string
   clientHost: string
   clientIP: string
@@ -11,13 +11,13 @@ type SendBod2y = {
   clientCookie?: string
   clientHeaders?: Record<string, string>
 
-  ruleset_context: {
+  ruleset_context?: {
     ruleset_id: string
   }
 }
 
-export type SendResponse = EventsGetResponse & {
-  agentData: unknown
+export type SendResponse = {
+  agentData: string
 }
 
 export type SendResult = SendResponse & {
@@ -25,7 +25,7 @@ export type SendResult = SendResponse & {
 }
 
 export class IngressClient {
-  private url: URL
+  private readonly url: URL
 
   constructor(
     region: Region,
@@ -33,7 +33,9 @@ export class IngressClient {
     private readonly apiKey: string,
     private readonly ruleSetId: string
   ) {
-    this.url = new URL(IngressClient.resolveUrl(region, baseUrl))
+    const resolvedUrl = IngressClient.resolveUrl(region, baseUrl)
+    console.debug('Resolved ingress URL:', resolvedUrl)
+    this.url = new URL(resolvedUrl)
   }
 
   async send(incomingRequest: Request): Promise<SendResult> {
@@ -42,27 +44,16 @@ export class IngressClient {
       throw new SignalsNotAvailableError()
     }
 
-    const getHeaderOrThrow = (header: string) => {
-      const value = incomingRequest.headers.get(header)
-      if (!value) {
-        throw new HeaderMissingError(header)
-      }
-      return value
-    }
-
-    const clientIP = getHeaderOrThrow('cf-connecting-ip')
-    const clientHost = getHeaderOrThrow('host')
-    const clientUserAgent = getHeaderOrThrow('user-agent')
+    const clientIP = getHeaderOrThrow(incomingRequest.headers, 'cf-connecting-ip')
+    const clientHost = getHeaderOrThrow(incomingRequest.headers, 'host')
+    const clientUserAgent = getHeaderOrThrow(incomingRequest.headers, 'user-agent')
     const clientCookie = incomingRequest.headers.get('cookie')
 
     const headers = new Headers()
     headers.set('Content-Type', 'application/json')
     headers.set('Auth-API-Key', this.apiKey)
 
-    const clientHeaders = new Headers()
-    incomingRequest.headers.forEach((value, key) => {
-      clientHeaders.set(key, value)
-    })
+    const clientHeaders = incomingRequest.clone().headers
 
     let cookieToSend: string | undefined
     if (clientCookie) {
@@ -80,6 +71,10 @@ export class IngressClient {
       clientHost,
       clientUserAgent,
       fingerprintData: signals,
+
+      ruleset_context: {
+        ruleset_id: this.ruleSetId,
+      },
     }
 
     if (cookieToSend) {
@@ -120,13 +115,13 @@ export class IngressClient {
     }
   }
 
-  private static resolveUrl(region: Region, baseUrl: string) {
+  private static resolveUrl(region: Region, host: string) {
     switch (region) {
       case 'us':
-        return `${baseUrl}`
+        return `https://${host}`
 
       default:
-        return `${region}.${baseUrl}`
+        return `https://${region}.${host}`
     }
   }
 }

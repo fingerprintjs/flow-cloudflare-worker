@@ -2,14 +2,26 @@ import { TypedEnv } from './types'
 import { matchUrl } from './urlMatching'
 import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
-import { getCDNHost, getProtectedApis, getPublicKey, getScriptBehaviorPath } from './env'
+import {
+  getCDNHost,
+  getIngressBaseHost,
+  getProtectedApis,
+  getPublicKey,
+  getRulesetId,
+  getScriptBehaviorPath,
+  getSecretKey,
+} from './env'
 
 import { handleError } from './handlers/handleError'
 import { fetchOrigin } from './utils/origin'
 import { handleProtectedApiCall } from './handlers/handleProtectedApi'
+import { IngressClient } from './fingerprint/ingress'
 
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
+
+  // TODO Take region from env
+  const ingressClient = new IngressClient('us', getIngressBaseHost(env), getSecretKey(env), getRulesetId(env))
 
   try {
     const matchedUrl = matchUrl(new URL(request.url), request.method, env)
@@ -28,7 +40,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
         })
 
       case 'protection':
-        return handleProtectedApiCall({ request, env })
+        return handleProtectedApiCall({ request, ingressClient })
 
       default:
         console.info('No matched url')
