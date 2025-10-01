@@ -1,12 +1,14 @@
-import { Script } from '../scripts'
+import { injectProtectedApis, Script } from '../scripts'
 // This bundles the instrumentator code with the worker: https://vite.dev/guide/assets.html#importing-asset-as-string
 import instrumentatorCode from '../../../public/instrumentor.iife.js?raw'
 import { getAgentLoader } from '../fingerprint/agent'
+import { ProtectedApi } from '../../shared/types'
 
 type HandleScriptParams = {
   script: Script
   publicApiKey: string
   cdnHost: string
+  protectedApis: ProtectedApi[]
 }
 
 /**
@@ -16,12 +18,18 @@ type HandleScriptParams = {
  * @param {string} params.script - The name of the script to be handled.
  * @param {string} params.publicApiKey - The public API key used for fetching the agent loader.
  * @param {string} params.cdnHost - Hostname of the Fingerprint CDN.
+ * @param {ProtectedApi[]} params.protectedApis - Array of protected APIs to be injected into the instrumentation code.
  * @return {Promise<Response>} A promise that resolves to the script response.
  */
-export async function handleScript({ script, publicApiKey, cdnHost }: HandleScriptParams): Promise<Response> {
+export async function handleScript({
+  script,
+  publicApiKey,
+  cdnHost,
+  protectedApis,
+}: HandleScriptParams): Promise<Response> {
   switch (script) {
     case 'instrumentor.iife.js': {
-      return new Response(instrumentatorCode, {
+      return new Response(injectProtectedApis(instrumentatorCode, protectedApis), {
         headers: {
           'Content-Type': 'application/javascript',
         },

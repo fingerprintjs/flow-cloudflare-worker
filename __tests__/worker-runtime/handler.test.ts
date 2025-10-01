@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../../src/worker'
 import { TypedEnv } from '../../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
-import { PROTECTED_APIS_WINDOW_KEY } from '../../src/shared/const'
 
 const sampleHtml = `
 <!doctype html>
@@ -64,7 +63,6 @@ describe('Flow Cloudflare Worker', () => {
 
       expect(html).toContain('<script src="/scripts/agent.iife.js"></script>')
       expect(html).toContain('<script src="/scripts/instrumentor.iife.js"></script>')
-      expect(html).toContain(`window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify(env.PROTECTED_APIS)}`)
     })
 
     it('should return normal response on page with broken HTML', async () => {

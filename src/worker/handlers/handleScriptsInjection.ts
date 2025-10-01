@@ -2,8 +2,6 @@ import { TypedEnv } from '../types'
 import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
 import { fetchOrigin } from '../utils/origin'
-import { PROTECTED_APIS_WINDOW_KEY } from '../../shared/const'
-import { getProtectedApis } from '../env'
 
 type HandleScriptsInjectionParams = {
   request: Request
@@ -34,12 +32,6 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
         .on('head', {
           element(element) {
             console.info('Injecting instrumentation and agent into <head> element.')
-
-            // Inject URLs for the protected APIs for instrumentation
-            element.append(
-              `<script>window.${PROTECTED_APIS_WINDOW_KEY} = ${JSON.stringify(getProtectedApis(env))}</script>\n`,
-              { html: true }
-            )
 
             element.append(`<script src="${getScriptUrl('agent.iife.js', env)}"></script>\n`, { html: true })
             element.append(`<script src="${getScriptUrl('instrumentor.iife.js', env)}"></script>\n`, { html: true })
