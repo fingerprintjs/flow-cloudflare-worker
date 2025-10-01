@@ -44,7 +44,7 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
   }
 
   const originalFetch = window.fetch
-  if (originalFetch.toString() !== 'function fetch() { [native code] }') {
+  if (!originalFetch.toString().includes('[native code]')) {
     console.debug('window.fetch is not a native function, unexpected behavior may occur.')
   }
 

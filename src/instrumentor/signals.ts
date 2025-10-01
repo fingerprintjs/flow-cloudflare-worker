@@ -1,13 +1,9 @@
 import { WritablePatcherContext } from './patcher/context'
-import { DocumentReadyStateFn, FingerprintJSLoader } from './types'
+import { FingerprintJSLoader } from './types'
 
 export type SetupSignalsCollectionParams = {
   // Writable patcher context to configure with signals' provider
   patcherCtx: WritablePatcherContext
-
-  // Current document ready state (document.readyState)
-  documentReadyState: DocumentReadyStateFn
-
   fingerprintJs: FingerprintJSLoader
 }
 
@@ -18,24 +14,13 @@ export type SetupSignalsCollectionParams = {
  * to be ready and then loading the FingerprintJS agent. It handles both cases where the
  * document is already loaded and when it's still loading.
  */
-export async function setupSignalsCollection({
-  patcherCtx,
-  documentReadyState,
-  fingerprintJs,
-}: SetupSignalsCollectionParams) {
-  if (/complete|interactive|loaded/.test(documentReadyState())) {
-    // In case the document has finished parsing, document's readyState will
-    // be one of "complete", "interactive" or (non-standard) "loaded".
+export async function setupSignalsCollection({ patcherCtx, fingerprintJs }: SetupSignalsCollectionParams) {
+  const listener = async () => {
     await setSignalsProvider(patcherCtx, fingerprintJs)
-  } else {
-    // The document is not ready yet, so wait for the DOMContentLoaded event
-    const listener = async () => {
-      await setSignalsProvider(patcherCtx, fingerprintJs)
-      document.removeEventListener('DOMContentLoaded', listener)
-    }
-
-    document.addEventListener('DOMContentLoaded', listener)
+    document.removeEventListener('DOMContentLoaded', listener)
   }
+
+  document.addEventListener('DOMContentLoaded', listener)
 }
 
 /**
@@ -50,7 +35,14 @@ export async function setupSignalsCollection({
 async function setSignalsProvider(patcherCtx: WritablePatcherContext, fingerprintJS: FingerprintJSLoader) {
   const agent = await fingerprintJS.load()
 
-  patcherCtx.setSignalsProvider(() => agent.collect())
+  console.debug('FingerprintJS agent loaded', agent)
+
+  patcherCtx.setSignalsProvider(async () => {
+    console.debug('Collecting signals...')
+    const signals = await agent.collect()
+    console.debug('Signals collected:', signals)
+    return signals
+  })
 
   console.debug('Patcher context prepared.')
 }

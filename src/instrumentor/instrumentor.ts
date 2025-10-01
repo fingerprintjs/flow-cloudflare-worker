@@ -2,10 +2,10 @@ import { WritablePatcherContext } from './patcher/context'
 import { getProtectedApis } from './protectedApis'
 import { patchFetch } from './patcher/fetch/fetch'
 import { setupSignalsCollection } from './signals'
-import { DocumentReadyStateFn } from './types'
+import { FingerprintJSLoader } from './types'
 
 export type InstrumentationParams = {
-  documentReadyState: DocumentReadyStateFn
+  fingerprintJs: Promise<FingerprintJSLoader>
 }
 
 /**
@@ -16,18 +16,12 @@ export type InstrumentationParams = {
  * automatically add security signals to requests targeting protected endpoints.
  *
  */
-export async function setupInstrumentor({ documentReadyState }: InstrumentationParams) {
-  const FingerprintJS = window.FingerprintJS
-  if (!FingerprintJS) {
-    console.warn('FingerprintJS is not available, check your worker configuration.')
-    return
-  }
-
+export async function setupInstrumentor({ fingerprintJs }: InstrumentationParams) {
   const patcherCtx = new WritablePatcherContext()
+
   await setupSignalsCollection({
     patcherCtx: patcherCtx,
-    documentReadyState: documentReadyState,
-    fingerprintJs: FingerprintJS,
+    fingerprintJs: await fingerprintJs,
   })
 
   const protectedApis = getProtectedApis()

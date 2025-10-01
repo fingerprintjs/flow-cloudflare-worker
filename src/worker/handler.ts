@@ -2,7 +2,7 @@ import { TypedEnv } from './types'
 import { matchUrl } from './urlMatching'
 import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
-import { getCDNHost, getPublicKey } from './env'
+import { getCDNHost, getProtectedApis, getPublicKey, getScriptBehaviorPath } from './env'
 
 import { handleError } from './handlers/handleError'
 import { fetchOrigin } from './utils/origin'
@@ -23,6 +23,8 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           script: matchedUrl.script,
           publicApiKey: getPublicKey(env),
           cdnHost: getCDNHost(env),
+          protectedApis: getProtectedApis(env),
+          scriptBehaviorPath: getScriptBehaviorPath(env),
         })
 
       case 'protection':

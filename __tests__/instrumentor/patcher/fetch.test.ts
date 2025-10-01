@@ -405,5 +405,35 @@ describe('Fetch Patcher', () => {
         })
       )
     })
+
+    it('should handle no-cors Request', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected'
+
+      await window.fetch(new Request(url, { method: 'POST', mode: 'no-cors' }))
+
+      const callArgs = mockFetch.mock.calls[0]
+      const resultHeaders = callArgs[0]?.headers as Headers
+      expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
+    it('should handle cors Request', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected'
+
+      await window.fetch(new Request(url, { method: 'POST', mode: 'cors' }))
+
+      const callArgs = mockFetch.mock.calls[0]
+      const resultHeaders = callArgs[0]?.headers as Headers
+      expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
   })
 })
