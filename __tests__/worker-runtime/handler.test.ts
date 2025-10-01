@@ -61,7 +61,7 @@ describe('Flow Cloudflare Worker', () => {
       await waitOnExecutionContext(ctx)
       const html = await response.text()
 
-      expect(html).toContain('<script src="/scripts/instrumentor.iife.js"></script>')
+      expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
     })
 
     it('should return normal response on page with broken HTML', async () => {
