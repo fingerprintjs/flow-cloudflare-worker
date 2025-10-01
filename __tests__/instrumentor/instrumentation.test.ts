@@ -26,7 +26,7 @@ describe('Instrumentor', () => {
 
   it('should load FingerprintJS when dom is ready', async () => {
     await setupInstrumentor({
-      documentReadyState: () => 'loading',
+      documentReadyStateFn: () => 'loading',
       fingerprintJs: Promise.resolve(mockFingerprintLoader),
     })
 
@@ -37,7 +37,7 @@ describe('Instrumentor', () => {
 
   it('should load FingerprintJS when document ready state is ready', async () => {
     await setupInstrumentor({
-      documentReadyState: () => 'interactive',
+      documentReadyStateFn: () => 'interactive',
       fingerprintJs: Promise.resolve(mockFingerprintLoader),
     })
 
@@ -51,7 +51,7 @@ describe('Instrumentor', () => {
     mockLoad.mockResolvedValue({ collect: mockCollect })
 
     await setupInstrumentor({
-      documentReadyState: () => 'interactive',
+      documentReadyStateFn: () => 'interactive',
       fingerprintJs: Promise.resolve(mockFingerprintLoader),
     })
 

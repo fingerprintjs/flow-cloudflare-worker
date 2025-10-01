@@ -5,7 +5,7 @@ import { setupSignalsCollection } from './signals'
 import { DocumentReadyStateFn, FingerprintJSLoader } from './types'
 
 export type InstrumentationParams = {
-  documentReadyState: DocumentReadyStateFn
+  documentReadyStateFn: DocumentReadyStateFn
   fingerprintJs: Promise<FingerprintJSLoader>
 }
 
@@ -17,11 +17,11 @@ export type InstrumentationParams = {
  * automatically add security signals to requests targeting protected endpoints.
  *
  */
-export async function setupInstrumentor({ documentReadyState, fingerprintJs }: InstrumentationParams) {
+export async function setupInstrumentor({ documentReadyStateFn, fingerprintJs }: InstrumentationParams) {
   const patcherCtx = new WritablePatcherContext()
   await setupSignalsCollection({
     patcherCtx: patcherCtx,
-    documentReadyState: documentReadyState,
+    documentReadyStateFn: documentReadyStateFn,
     fingerprintJs: await fingerprintJs,
   })
 

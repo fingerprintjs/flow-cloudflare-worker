@@ -2,7 +2,7 @@ import { setupInstrumentor } from './instrumentor'
 import { importFingerprintLoader } from './fingerprint'
 
 setupInstrumentor({
-  documentReadyState: () => document.readyState,
+  documentReadyStateFn: () => document.readyState,
   fingerprintJs: importFingerprintLoader().then((loader) => {
     console.debug('Fetched FingerprintJS loader:', loader)
 

@@ -6,7 +6,7 @@ export type SetupSignalsCollectionParams = {
   patcherCtx: WritablePatcherContext
 
   // Current document ready state (document.readyState)
-  documentReadyState: DocumentReadyStateFn
+  documentReadyStateFn: DocumentReadyStateFn
 
   fingerprintJs: FingerprintJSLoader
 }
@@ -20,10 +20,10 @@ export type SetupSignalsCollectionParams = {
  */
 export async function setupSignalsCollection({
   patcherCtx,
-  documentReadyState,
+  documentReadyStateFn,
   fingerprintJs,
 }: SetupSignalsCollectionParams) {
-  if (/complete|interactive|loaded/.test(documentReadyState())) {
+  if (/complete|interactive|loaded/.test(documentReadyStateFn())) {
     // In case the document has finished parsing, document's readyState will
     // be one of "complete", "interactive" or (non-standard) "loaded".
     await setSignalsProvider(patcherCtx, fingerprintJs)
