@@ -50,7 +50,14 @@ export async function setupSignalsCollection({
 async function setSignalsProvider(patcherCtx: WritablePatcherContext, fingerprintJS: FingerprintJSLoader) {
   const agent = await fingerprintJS.load()
 
-  patcherCtx.setSignalsProvider(() => agent.collect())
+  console.debug('FingerprintJS agent loaded', agent)
+
+  patcherCtx.setSignalsProvider(async () => {
+    console.debug('Collecting signals...')
+    const signals = await agent.collect()
+    console.debug('Signals collected:', signals)
+    return signals
+  })
 
   console.debug('Patcher context prepared.')
 }

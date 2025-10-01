@@ -7,6 +7,9 @@ vi.mock('../../src/instrumentor/patcher/fetch/fetch')
 describe('Instrumentor', () => {
   const mockLoad = vi.fn()
   const mockPatchFetch = vi.mocked(patchFetch)
+  const mockFingerprintLoader = {
+    load: mockLoad,
+  }
 
   beforeEach(() => {
     vi.resetAllMocks()
@@ -24,6 +27,7 @@ describe('Instrumentor', () => {
   it('should load FingerprintJS when dom is ready', async () => {
     await setupInstrumentor({
       documentReadyState: () => 'loading',
+      fingerprintJs: Promise.resolve(mockFingerprintLoader),
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -34,6 +38,7 @@ describe('Instrumentor', () => {
   it('should load FingerprintJS when document ready state is ready', async () => {
     await setupInstrumentor({
       documentReadyState: () => 'interactive',
+      fingerprintJs: Promise.resolve(mockFingerprintLoader),
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -47,6 +52,7 @@ describe('Instrumentor', () => {
 
     await setupInstrumentor({
       documentReadyState: () => 'interactive',
+      fingerprintJs: Promise.resolve(mockFingerprintLoader),
     })
 
     expect(mockLoad).toHaveBeenCalledTimes(1)

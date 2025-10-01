@@ -31,9 +31,8 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
       return new HTMLRewriter()
         .on('head', {
           element(element) {
-            console.info('Injecting instrumentation and agent into <head> element.')
+            console.info('Injecting instrumentation into <head> element.')
 
-            element.append(`<script src="${getScriptUrl('agent.iife.js', env)}"></script>\n`, { html: true })
             element.append(`<script src="${getScriptUrl('instrumentor.iife.js', env)}"></script>\n`, { html: true })
           },
         })
