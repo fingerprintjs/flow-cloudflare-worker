@@ -1,3 +1,14 @@
+/**
+ * Function that processes agent data received from the worker for protected API requests.
+ *
+ * @example
+ * ```typescript
+ * const data = response.headers.get(AGENT_DATA_HEADER)
+ * if (data) {
+ *   ctx.processAgentData(data)
+ * }
+ * ```
+ * */
 type AgentDataProcessor = (data: string) => void
 
 /**
