@@ -3,6 +3,7 @@ import handler from '../../src/worker'
 import { TypedEnv } from '../../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 import { SIGNALS_HEADER } from '../../src/shared/const'
+import { Region } from '../../src/worker/fingerprint/region'
 
 const sampleHtml = `
 <!doctype html>
@@ -98,6 +99,38 @@ describe('Flow Cloudflare Worker', () => {
   })
 
   describe('Protected API', () => {
+    type PrepareMockFetchParams = {
+      ingressHandler: (request: Request) => Promise<Response>
+      originHandler: () => Promise<Response>
+    }
+
+    function prepareMockFetch({ ingressHandler, originHandler }: PrepareMockFetchParams) {
+      let ingressRequest: Request | undefined
+
+      vi.mocked(fetch).mockImplementation(async (...params) => {
+        // Mock ingress response
+        if (params[0] instanceof Request && params[0].url.includes('api.fpjs.io')) {
+          ingressRequest = params[0]
+
+          return ingressHandler(params[0])
+        }
+
+        return originHandler()
+      })
+
+      return {
+        getIngressRequest: () => ingressRequest,
+      }
+    }
+
+    function checkIngressRequest<CfHostMetadata>(
+      ingressRequest: Request<unknown, CfProperties<CfHostMetadata>> | undefined
+    ) {
+      expect(ingressRequest).toBeTruthy()
+      expect(ingressRequest!.url).toEqual('https://api.fpjs.io/send')
+      expect(ingressRequest!.method).toEqual('POST')
+    }
+
     it('should return 403 if signals are missing', async () => {
       const request = new CloudflareRequest('https://example.com/api', {
         method: 'POST',
@@ -114,12 +147,8 @@ describe('Flow Cloudflare Worker', () => {
     })
 
     it('should send request to ingress and return modified response', async () => {
-      let ingressRequest: Request | undefined
-      vi.mocked(fetch).mockImplementation(async (...params) => {
-        // Mock ingress response
-        if (params[0] instanceof Request && params[0].url.includes('api.fpjs.io')) {
-          ingressRequest = params[0]
-
+      const { getIngressRequest } = prepareMockFetch({
+        ingressHandler: async () => {
           const headers = new Headers()
           headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
           headers.append(
@@ -135,14 +164,14 @@ describe('Flow Cloudflare Worker', () => {
               headers,
             }
           )
-        }
-
-        return new Response('origin', {
-          headers: {
-            // Origin cookies, should be sent together with cookies from ingress
-            'Set-Cookie': 'origin-cookie=value',
-          },
-        })
+        },
+        originHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
       })
 
       const requestHeaders = new Headers({
@@ -173,28 +202,25 @@ describe('Flow Cloudflare Worker', () => {
       expect(response.status).toEqual(200)
       expect(await response.text()).toEqual('origin')
 
-      expect(ingressRequest).toBeTruthy()
-      expect(ingressRequest!.url).toEqual('https://api.fpjs.io/send')
-      expect(ingressRequest!.method).toEqual('POST')
+      const ingressRequest = getIngressRequest()
+      checkIngressRequest(ingressRequest)
 
       const ingressBody = await ingressRequest!.json()
-      expect(ingressBody).toEqual(
-        expect.objectContaining({
-          // Only _iidt cookie should be sent to ingress
-          clientCookie: '_iidt=123456',
-          clientHeaders: {
-            'cf-connecting-ip': '1.2.3.4',
-            'fp-signals': 'signals',
-            host: 'example.com',
-            'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-            'x-custom-header': 'custom-value',
-          },
-          clientHost: 'example.com',
-          clientIP: '1.2.3.4',
-          clientUserAgent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-          fingerprintData: 'signals',
-        })
-      )
+      expect(ingressBody).toEqual({
+        // Only _iidt cookie should be sent to ingress
+        clientCookie: '_iidt=123456',
+        clientHeaders: {
+          'cf-connecting-ip': '1.2.3.4',
+          'fp-signals': 'signals',
+          host: 'example.com',
+          'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+          'x-custom-header': 'custom-value',
+        },
+        clientHost: 'example.com',
+        clientIP: '1.2.3.4',
+        clientUserAgent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        fingerprintData: 'signals',
+      })
 
       const setCookie = response.headers.getAll('Set-Cookie')
       expect(setCookie).toHaveLength(3)
@@ -206,6 +232,131 @@ describe('Flow Cloudflare Worker', () => {
           '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
         ])
       )
+    })
+
+    it('should send request to ingress and return modified response when client request has no cookies', async () => {
+      const { getIngressRequest } = prepareMockFetch({
+        ingressHandler: async () => {
+          const headers = new Headers()
+          headers.append(
+            'Set-Cookie',
+            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
+          )
+
+          return new Response(
+            JSON.stringify({
+              agentData: 'agent-data',
+            }),
+            {
+              headers,
+            }
+          )
+        },
+        originHandler: async () => new Response('origin'),
+      })
+
+      const requestHeaders = new Headers({
+        [SIGNALS_HEADER]: 'signals',
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+      })
+
+      const request = new CloudflareRequest('https://example.com/api', {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(request, env as TypedEnv)
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      expect(response.status).toEqual(200)
+      expect(await response.text()).toEqual('origin')
+
+      const ingressRequest = getIngressRequest()
+      checkIngressRequest(ingressRequest)
+
+      const ingressBody = await ingressRequest!.json()
+      expect(ingressBody).toEqual({
+        clientHeaders: {
+          'cf-connecting-ip': '1.2.3.4',
+          'fp-signals': 'signals',
+          host: 'example.com',
+          'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+          'x-custom-header': 'custom-value',
+        },
+        clientHost: 'example.com',
+        clientIP: '1.2.3.4',
+        clientUserAgent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        fingerprintData: 'signals',
+      })
+
+      const setCookie = response.headers.getAll('Set-Cookie')
+      expect(setCookie).toHaveLength(1)
+      expect(setCookie).toEqual(
+        expect.arrayContaining([
+          '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+        ])
+      )
+    })
+
+    it.each<{
+      region: Region
+      expectedIngressHost: string
+    }>([
+      {
+        region: 'eu',
+        expectedIngressHost: 'https://eu.api.fpjs.io',
+      },
+      {
+        region: 'us',
+        expectedIngressHost: 'https://api.fpjs.io',
+      },
+    ])('should send request to ingress in a different region', async ({ region, expectedIngressHost }) => {
+      const { getIngressRequest } = prepareMockFetch({
+        ingressHandler: async () => {
+          const headers = new Headers()
+          headers.append(
+            'Set-Cookie',
+            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
+          )
+
+          return new Response(
+            JSON.stringify({
+              agentData: 'agent-data',
+            }),
+            {
+              headers,
+            }
+          )
+        },
+        originHandler: async () => new Response('origin'),
+      })
+
+      const request = new CloudflareRequest('https://example.com/api', {
+        method: 'POST',
+        headers: {
+          [SIGNALS_HEADER]: 'signals',
+          'cf-connecting-ip': '1.2.3.4',
+          host: 'example.com',
+          'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        },
+      })
+      const ctx = createExecutionContext()
+      await handler.fetch(request, {
+        ...env,
+        FP_REGION: region,
+      } as TypedEnv)
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      const ingressRequest = getIngressRequest()
+      expect(ingressRequest).toBeTruthy()
+      expect(ingressRequest!.url).toEqual(`${expectedIngressHost}/send`)
     })
   })
 })
