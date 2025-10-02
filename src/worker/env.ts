@@ -7,6 +7,7 @@ const defaults = {
   PROTECTED_APIS: [],
   IDENTIFICATION_PAGE_URLS: [],
   FP_RULESET_ID: '',
+  MISSING_SIGNALS_RESPONSE: '',
 } satisfies Partial<TypedEnv>
 
 function assertVariableIsSet(env: TypedEnv, key: keyof TypedEnv) {
@@ -50,4 +51,8 @@ export function getScriptBehaviorPath(env: TypedEnv) {
   assertVariableIsSet(env, 'SCRIPTS_BEHAVIOR_PATH')
 
   return env.SCRIPTS_BEHAVIOR_PATH
+}
+
+export function getMissingSignalsResponse(env: TypedEnv) {
+  return env.MISSING_SIGNALS_RESPONSE || defaults.MISSING_SIGNALS_RESPONSE
 }

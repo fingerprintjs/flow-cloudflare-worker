@@ -5,6 +5,7 @@ import { handleScript } from './handlers/handleScript'
 import {
   getCDNHost,
   getIngressBaseHost,
+  getMissingSignalsResponse,
   getProtectedApis,
   getPublicKey,
   getRulesetId,
@@ -40,7 +41,11 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
         })
 
       case 'protection':
-        return handleProtectedApiCall({ request, ingressClient })
+        return handleProtectedApiCall({
+          request,
+          ingressClient,
+          missingSignalsResponse: getMissingSignalsResponse(env),
+        })
 
       default:
         console.info('No matched url')

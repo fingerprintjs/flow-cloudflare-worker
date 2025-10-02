@@ -3,6 +3,7 @@
   "main": "./src/worker/index.ts",
   "compatibility_date": "2025-09-15",
   "vars": {
+    "MISSING_SIGNALS_RESPONSE": "",
     "FPJS_CDN_URL": "",
     "FPJS_INGRESS_BASE_HOST": "",
     "SCRIPTS_BEHAVIOR_PATH": "",

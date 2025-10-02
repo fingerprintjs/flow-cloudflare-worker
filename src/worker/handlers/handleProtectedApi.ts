@@ -5,18 +5,19 @@ import { fetchOrigin } from '../utils/origin'
 export type HandleProtectedApiCallParams = {
   request: Request
   ingressClient: IngressClient
+  missingSignalsResponse: string
 }
 
 export async function handleProtectedApiCall({
   request,
   ingressClient,
+  missingSignalsResponse,
 }: HandleProtectedApiCallParams): Promise<Response> {
   const signals = request.headers.get(SIGNALS_HEADER)
   if (!signals) {
     console.warn('No signals found in request headers for protected API call', request.url)
 
-    // TODO Use response text from env
-    return new Response('', { status: 403 })
+    return new Response(missingSignalsResponse, { status: 403 })
   }
   const [ingressResponse, originResponse] = await Promise.all([ingressClient.send(request), fetchOrigin(request)])
 
