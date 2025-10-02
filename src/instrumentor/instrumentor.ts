@@ -1,7 +1,7 @@
 import { WritablePatcherContext } from './patcher/context'
 import { getProtectedApis } from './protectedApis'
 import { patchFetch } from './patcher/fetch/fetch'
-import { setupSignalsCollection } from './signals'
+import { setupPatcherContext } from './signals'
 import { FingerprintJSLoader } from './types'
 
 export type InstrumentationParams = {
@@ -19,7 +19,7 @@ export type InstrumentationParams = {
 export async function setupInstrumentor({ fingerprintJs }: InstrumentationParams) {
   const patcherCtx = new WritablePatcherContext()
 
-  await setupSignalsCollection({
+  await setupPatcherContext({
     patcherCtx: patcherCtx,
     fingerprintJs,
   })

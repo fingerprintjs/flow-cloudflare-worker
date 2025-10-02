@@ -28,6 +28,8 @@ type HandleSignalsInjectionParams = {
  * @param params.protectedApis - Array of protected API configurations to check against
  * @param params.ctx - Patcher context providing access to signals and other functionality
  *
+ * @returns A boolean indicating whether signals were injected successfully
+ *
  * @example
  * ```typescript
  * await handleSignalsInjection({
@@ -37,10 +39,14 @@ type HandleSignalsInjectionParams = {
  * });
  * ```
  */
-export async function handleSignalsInjection({ request, protectedApis, ctx }: HandleSignalsInjectionParams) {
+export async function handleSignalsInjection({
+  request,
+  protectedApis,
+  ctx,
+}: HandleSignalsInjectionParams): Promise<boolean> {
   if (!isProtectedUrl({ url: request.url, method: request.method, protectedApis: protectedApis })) {
     console.debug('Skipping signals injection:', request?.url)
-    return
+    return false
   }
 
   console.debug('Injecting signals:', request.url)
@@ -50,8 +56,10 @@ export async function handleSignalsInjection({ request, protectedApis, ctx }: Ha
   if (signals) {
     console.debug('Adding signals header for:', request.url)
     request.setHeader(SIGNALS_HEADER, signals)
-    return
+    return true
   }
 
   console.warn('No signals data found.')
+
+  return false
 }

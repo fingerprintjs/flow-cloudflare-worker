@@ -1,3 +1,5 @@
+type AgentDataProcessor = (data: string) => void
+
 /**
  * Context interface for patchers that provides access to signals data.
  * Used in instrumentation to share signal information between different patching components.
@@ -8,12 +10,19 @@ export type PatcherContext = {
    * @returns Signals string if set, undefined otherwise
    */
   getSignals: () => Promise<string | undefined>
+
+  /**
+   * Processes agent data received from the worker for protected API requests.
+   * @param data - Agent data
+   * */
+  processAgentData: AgentDataProcessor
 }
 
 /**
- * Writable implementation of PatcherContext that allows both reading and writing signals data.
- * Provides a mutable context for patchers that need to store and retrieve signals information.
- * Signals provider can only be set once to prevent accidental overwrites.
+ * Writable implementation of PatcherContext that allows both reading and writing.
+ * Provides a mutable context for patchers that need to handle specific fingerprinting tasks.
+ *
+ * @note: Providers can only be set once to prevent accidental overwrites.
  */
 export class WritablePatcherContext implements PatcherContext {
   /**
@@ -25,6 +34,11 @@ export class WritablePatcherContext implements PatcherContext {
    * Function that resolves to the signal data.
    * */
   private signalsProvider?: () => Promise<string | undefined>
+
+  /**
+   * Function that processes agent data received from the worker for protected API requests.
+   * */
+  private agentDataProcessor?: AgentDataProcessor
 
   /**
    * Retrieves the current signals' data. If not set, it will attempt to fetch from the signals' provider.
@@ -49,5 +63,26 @@ export class WritablePatcherContext implements PatcherContext {
     }
 
     this.signalsProvider = signalsProvider
+  }
+
+  /**
+   * Sets agent data processor. Can only be called once - subsequent calls will log a warning and return early.
+   * @param agentDataProcessor - The agent data processor to store in the context
+   * */
+  setAgentDataProcessor(agentDataProcessor: AgentDataProcessor) {
+    if (this.agentDataProcessor) {
+      console.warn('Invalid attempt to set agent data processor that are already set.')
+      return
+    }
+
+    this.agentDataProcessor = agentDataProcessor
+  }
+
+  /**
+   * Processes agent data received from the worker for protected API requests.
+   * @param data - Agent data
+   * */
+  processAgentData(data: string): void {
+    this.agentDataProcessor?.(data)
   }
 }
