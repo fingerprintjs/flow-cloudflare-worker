@@ -2,7 +2,7 @@ import type { HandleAgentDataOptions, load, LoadOptions } from '@fingerprintjs/f
 
 export type Agent = Awaited<ReturnType<typeof load>>
 
-export type FingerprintJSLoader = {
+export type FingerprintLoader = {
   load: (options?: Omit<LoadOptions, 'apiKey'>) => Promise<Agent>
   handleAgentData: (data: string, options?: HandleAgentDataOptions) => void
 }
