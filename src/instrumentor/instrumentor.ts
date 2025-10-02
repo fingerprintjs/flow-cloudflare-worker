@@ -1,7 +1,7 @@
 import { WritablePatcherContext } from './patcher/context'
 import { getProtectedApis } from './protectedApis'
 import { patchFetch } from './patcher/fetch/fetch'
-import { setupPatcherContext } from './signals'
+import { setupPatcherContext } from './fingerprint/patcherContext'
 import { FingerprintJSLoader } from './types'
 
 export type InstrumentationParams = {

@@ -1,5 +1,5 @@
-import { WritablePatcherContext } from './patcher/context'
-import { FingerprintJSLoader } from './types'
+import { WritablePatcherContext } from '../patcher/context'
+import { FingerprintJSLoader } from '../types'
 
 export type SetupPatcherContextParams = {
   // Writable patcher context to configure with signals' provider

@@ -1,5 +1,5 @@
 import { setupInstrumentor } from './instrumentor'
-import { importFingerprintLoader } from './fingerprint'
+import { importFingerprintLoader } from './fingerprint/import'
 
 setupInstrumentor({
   fingerprintJs: importFingerprintLoader().then((loader) => {
