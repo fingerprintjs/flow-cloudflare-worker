@@ -2,10 +2,10 @@ import { WritablePatcherContext } from './patcher/context'
 import { getProtectedApis } from './protectedApis'
 import { patchFetch } from './patcher/fetch/fetch'
 import { setupSignalsCollection } from './signals'
-import { FingerprintJSLoader } from './types'
+import { FingerprintLoader } from './types'
 
 export type InstrumentationParams = {
-  fingerprintJs: Promise<FingerprintJSLoader>
+  fingerprintLoader: Promise<FingerprintLoader>
 }
 
 /**
@@ -16,12 +16,12 @@ export type InstrumentationParams = {
  * automatically add security signals to requests targeting protected endpoints.
  *
  */
-export async function setupInstrumentor({ fingerprintJs }: InstrumentationParams) {
+export async function setupInstrumentor({ fingerprintLoader }: InstrumentationParams) {
   const patcherCtx = new WritablePatcherContext()
 
   await setupSignalsCollection({
     patcherCtx: patcherCtx,
-    fingerprintJs: await fingerprintJs,
+    fingerprintLoader: await fingerprintLoader,
   })
 
   const protectedApis = getProtectedApis()

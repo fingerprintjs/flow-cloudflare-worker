@@ -27,7 +27,7 @@ describe('Instrumentor', () => {
 
   it('should load FingerprintJS when DOM is ready only once', async () => {
     await setupInstrumentor({
-      fingerprintJs: Promise.resolve(mockFingerprintLoader),
+      fingerprintLoader: Promise.resolve(mockFingerprintLoader),
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -47,7 +47,7 @@ describe('Instrumentor', () => {
     mockLoad.mockResolvedValue({ collect: mockCollect })
 
     await setupInstrumentor({
-      fingerprintJs: Promise.resolve(mockFingerprintLoader),
+      fingerprintLoader: Promise.resolve(mockFingerprintLoader),
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
