@@ -4,6 +4,7 @@ import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
 import {
   getCDNHost,
+  getFpRegion,
   getIngressBaseHost,
   getMissingSignalsResponse,
   getProtectedApis,
@@ -21,8 +22,12 @@ import { IngressClient } from './fingerprint/ingress'
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
 
-  // TODO Take region from env
-  const ingressClient = new IngressClient('us', getIngressBaseHost(env), getSecretKey(env), getRulesetId(env))
+  const ingressClient = new IngressClient(
+    getFpRegion(env),
+    getIngressBaseHost(env),
+    getSecretKey(env),
+    getRulesetId(env)
+  )
 
   try {
     const matchedUrl = matchUrl(new URL(request.url), request.method, env)

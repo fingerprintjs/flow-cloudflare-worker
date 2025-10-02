@@ -1,5 +1,6 @@
 import { TypedEnv } from './types'
 import { MissingVariableError } from './errors'
+import { isRegion, Region } from './fingerprint/region'
 
 const defaults = {
   FPJS_CDN_URL: 'fpcdn.io',
@@ -55,4 +56,17 @@ export function getScriptBehaviorPath(env: TypedEnv) {
 
 export function getMissingSignalsResponse(env: TypedEnv) {
   return env.MISSING_SIGNALS_RESPONSE || defaults.MISSING_SIGNALS_RESPONSE
+}
+
+export function getFpRegion(env: TypedEnv): Region {
+  const region = env.FP_REGION
+  if (region) {
+    if (isRegion(region)) {
+      return region
+    }
+
+    console.warn(`Invalid region provided: ${region}. Using default region: us`)
+  }
+
+  return 'us'
 }

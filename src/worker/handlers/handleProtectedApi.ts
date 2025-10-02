@@ -25,7 +25,7 @@ export async function handleProtectedApiCall({
 
   setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
 
-  // Re-create the response, because by default its headers are immutable
+  // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
   return new Response(originResponse.body, {
     status: originResponse.status,
     headers: originResponseHeaders,
