@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../../src/worker'
 import { TypedEnv } from '../../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
+import { SIGNALS_HEADER } from '../../src/shared/const'
 
 const sampleHtml = `
 <!doctype html>
@@ -23,7 +24,7 @@ const mockEnv: TypedEnv = {
   PROTECTED_APIS: [
     {
       method: 'POST',
-      url: '/api/*',
+      url: '/api',
     },
   ],
   IDENTIFICATION_PAGE_URLS: [],
@@ -31,12 +32,16 @@ const mockEnv: TypedEnv = {
   SECRET_KEY: 'secret_key',
   SCRIPTS_BEHAVIOR_PATH: 'scripts',
   FP_RULESET_ID: '',
+  FP_REGION: 'us',
+  MISSING_SIGNALS_RESPONSE: 'Missing signals',
 }
 
 // Fix for Cloudflare types: https://developers.cloudflare.com/workers/testing/vitest-integration/write-your-first-test/#unit-tests
 const CloudflareRequest = Request<unknown, IncomingRequestCfProperties>
 
 describe('Flow Cloudflare Worker', () => {
+  vi.spyOn(globalThis, 'fetch')
+
   beforeEach(() => {
     vi.clearAllMocks()
 
@@ -45,7 +50,7 @@ describe('Flow Cloudflare Worker', () => {
 
   describe('Scripts injection', () => {
     it('should inject scripts on request to identification page', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      vi.mocked(fetch).mockResolvedValueOnce(
         new Response(sampleHtml, {
           headers: {
             'Content-Type': 'text/html',
@@ -72,7 +77,7 @@ describe('Flow Cloudflare Worker', () => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     `
-      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      vi.mocked(fetch).mockResolvedValueOnce(
         new Response(brokenHtml, {
           headers: {
             'Content-Type': 'text/html+maybe; charset=utf-16',
@@ -89,6 +94,118 @@ describe('Flow Cloudflare Worker', () => {
       const html = await response.text()
 
       expect(html).toEqual(brokenHtml)
+    })
+  })
+
+  describe('Protected API', () => {
+    it('should return 403 if signals are missing', async () => {
+      const request = new CloudflareRequest('https://example.com/api', {
+        method: 'POST',
+      })
+
+      const ctx = createExecutionContext()
+
+      const response = await handler.fetch(request, env as TypedEnv)
+      await waitOnExecutionContext(ctx)
+
+      expect(response.status).toEqual(403)
+
+      expect(await response.text()).toEqual('Missing signals')
+    })
+
+    it('should send request to ingress and return modified response', async () => {
+      let ingressRequest: Request | undefined
+      vi.mocked(fetch).mockImplementation(async (...params) => {
+        // Mock ingress response
+        if (params[0] instanceof Request && params[0].url.includes('api.fpjs.io')) {
+          ingressRequest = params[0]
+
+          const headers = new Headers()
+          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
+          headers.append(
+            'Set-Cookie',
+            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
+          )
+
+          return new Response(
+            JSON.stringify({
+              agentData: 'agent-data',
+            }),
+            {
+              headers,
+            }
+          )
+        }
+
+        return new Response('origin', {
+          headers: {
+            // Origin cookies, should be sent together with cookies from ingress
+            'Set-Cookie': 'origin-cookie=value',
+          },
+        })
+      })
+
+      const requestHeaders = new Headers({
+        [SIGNALS_HEADER]: 'signals',
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+      })
+
+      // Add client cookie that should not be sent to ingress
+      requestHeaders.append('cookie', 'client-cookie=value;')
+      // Add _iidt cookie to the request headers, it should not be included in the ingress request
+      requestHeaders.append('cookie', '_iidt=123456;')
+      // Add another client cookie that should not be sent to ingress
+      requestHeaders.append('cookie', 'another-client-cookie=value')
+
+      const request = new CloudflareRequest('https://example.com/api', {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(request, env as TypedEnv)
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      expect(response.status).toEqual(200)
+      expect(await response.text()).toEqual('origin')
+
+      expect(ingressRequest).toBeTruthy()
+      expect(ingressRequest!.url).toEqual('https://api.fpjs.io/send')
+      expect(ingressRequest!.method).toEqual('POST')
+
+      const ingressBody = await ingressRequest!.json()
+      expect(ingressBody).toEqual(
+        expect.objectContaining({
+          // Only _iidt cookie should be sent to ingress
+          clientCookie: '_iidt=123456',
+          clientHeaders: {
+            'cf-connecting-ip': '1.2.3.4',
+            'fp-signals': 'signals',
+            host: 'example.com',
+            'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+            'x-custom-header': 'custom-value',
+          },
+          clientHost: 'example.com',
+          clientIP: '1.2.3.4',
+          clientUserAgent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+          fingerprintData: 'signals',
+        })
+      )
+
+      const setCookie = response.headers.getAll('Set-Cookie')
+      expect(setCookie).toHaveLength(3)
+      // Cookies received from ingress and origin
+      expect(setCookie).toEqual(
+        expect.arrayContaining([
+          'origin-cookie=value',
+          'fp-ingress-cookie=12345',
+          '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+        ])
+      )
     })
   })
 })

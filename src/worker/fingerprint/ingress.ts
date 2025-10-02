@@ -54,15 +54,15 @@ export class IngressClient {
     headers.set('Auth-API-Key', this.apiKey)
 
     const clientHeaders = incomingRequest.clone().headers
+    clientHeaders.delete('cookie')
 
     let cookieToSend: string | undefined
     if (clientCookie) {
-      // Try to find _iidt cookie specifically
+      // Try to find _iidt cookie
       const iidtMatch = /(_iidt=[^;]+)/.exec(clientCookie)
       if (iidtMatch && iidtMatch[1]) {
-        cookieToSend = iidtMatch[1].split('=')[1]
-      } else {
-        cookieToSend = clientCookie
+        console.debug('Found _iidt cookie in client cookie:', iidtMatch[1])
+        cookieToSend = iidtMatch[1]
       }
     }
 
