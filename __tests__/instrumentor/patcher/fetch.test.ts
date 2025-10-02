@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, Mock, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { patchFetch } from '../../../src/instrumentor/patcher/fetch/fetch'
 import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
@@ -7,10 +7,11 @@ import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
 import * as urlUtils from '../../../src/shared/protectedApi'
 
 describe('Fetch Patcher', () => {
-  let mockFetch: Mock
   let originalFetch: typeof window.fetch
   let mockContext: PatcherContext
-  let mockAgentDataProcessor: Mock
+
+  const mockAgentDataProcessor = vi.fn()
+  const mockFetch = vi.fn()
 
   const mockProtectedApis: ProtectedApi[] = [
     {
@@ -24,12 +25,8 @@ describe('Fetch Patcher', () => {
 
     vi.spyOn(urlUtils, 'isProtectedUrl')
 
-    // Mock window.fetch
-    mockFetch = vi.fn()
     originalFetch = globalThis.fetch
     globalThis.fetch = mockFetch
-
-    mockAgentDataProcessor = vi.fn()
 
     // Mock window object
     Object.defineProperty(globalThis, 'window', {
