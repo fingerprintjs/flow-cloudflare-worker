@@ -54,10 +54,6 @@ export function getScriptBehaviorPath(env: TypedEnv) {
   return env.SCRIPTS_BEHAVIOR_PATH
 }
 
-export function getMissingSignalsResponse(env: TypedEnv) {
-  return env.MISSING_SIGNALS_RESPONSE || defaults.MISSING_SIGNALS_RESPONSE
-}
-
 export function getFpRegion(env: TypedEnv): Region {
   const region = env.FP_REGION
   if (region) {

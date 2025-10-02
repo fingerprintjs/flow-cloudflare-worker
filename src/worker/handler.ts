@@ -6,7 +6,6 @@ import {
   getCDNHost,
   getFpRegion,
   getIngressBaseHost,
-  getMissingSignalsResponse,
   getProtectedApis,
   getPublicKey,
   getScriptBehaviorPath,
@@ -28,10 +27,10 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
 
     switch (matchedUrl?.type) {
       case 'identification':
-        return handleScriptsInjection({ request: request, env: env })
+        return await handleScriptsInjection({ request: request, env: env })
 
       case 'script':
-        return handleScript({
+        return await handleScript({
           script: matchedUrl.script,
           publicApiKey: getPublicKey(env),
           cdnHost: getCDNHost(env),
@@ -40,10 +39,9 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
         })
 
       case 'protection':
-        return handleProtectedApiCall({
+        return await handleProtectedApiCall({
           request,
           ingressClient,
-          missingSignalsResponse: getMissingSignalsResponse(env),
         })
 
       default:

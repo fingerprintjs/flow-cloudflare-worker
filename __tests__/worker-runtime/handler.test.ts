@@ -34,7 +34,6 @@ const mockEnv: TypedEnv = {
   SCRIPTS_BEHAVIOR_PATH: 'scripts',
   FP_RULESET_ID: '',
   FP_REGION: 'us',
-  MISSING_SIGNALS_RESPONSE: 'Missing signals',
 }
 
 // Fix for Cloudflare types: https://developers.cloudflare.com/workers/testing/vitest-integration/write-your-first-test/#unit-tests
@@ -131,20 +130,127 @@ describe('Flow Cloudflare Worker', () => {
       expect(ingressRequest!.method).toEqual('POST')
     }
 
-    it('should return 403 if signals are missing', async () => {
-      const request = new CloudflareRequest('https://example.com/api', {
-        method: 'POST',
+    it('should return empty 403 response if ingress request fails', async () => {
+      prepareMockFetch({
+        ingressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              v: '2',
+              requestId: '1234',
+              error: {
+                code: 'RequestCannotBeParsed',
+                message: 'bad request',
+              },
+              products: {},
+            }),
+            {
+              status: 400,
+            }
+          )
+        },
+        originHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
       })
 
-      const ctx = createExecutionContext()
+      const requestHeaders = new Headers({
+        [SIGNALS_HEADER]: 'signals',
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+      })
 
+      const request = new CloudflareRequest('https://example.com/api', {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(request, env as TypedEnv)
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      expect(response.status).toEqual(403)
+      expect(await response.text()).toEqual('')
+    })
+
+    it('should return empty 403 response if signals are missing', async () => {
+      const requestHeaders = new Headers({
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+      })
+
+      const request = new CloudflareRequest('https://example.com/api', {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
       const response = await handler.fetch(request, env as TypedEnv)
       await waitOnExecutionContext(ctx)
 
       expect(response.status).toEqual(403)
-
-      expect(await response.text()).toEqual('Missing signals')
+      expect(await response.text()).toEqual('')
     })
+
+    it.each(['cf-connecting-ip', 'host', 'user-agent'])(
+      'should return empty 403 response if one of ingress required header %s is missing',
+      async (header) => {
+        prepareMockFetch({
+          ingressHandler: async () => {
+            return new Response(
+              JSON.stringify({
+                v: '2',
+                requestId: '1234',
+                error: {
+                  code: 'RequestCannotBeParsed',
+                  message: 'bad request',
+                },
+                products: {},
+              }),
+              {
+                status: 400,
+              }
+            )
+          },
+          originHandler: async () =>
+            new Response('origin', {
+              headers: {
+                // Origin cookies, should be sent together with cookies from ingress
+                'Set-Cookie': 'origin-cookie=value',
+              },
+            }),
+        })
+
+        const requestHeaders = new Headers({
+          [SIGNALS_HEADER]: 'signals',
+          'cf-connecting-ip': '1.2.3.4',
+          host: 'example.com',
+          'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+          'x-custom-header': 'custom-value',
+        })
+        requestHeaders.delete(header)
+
+        const request = new CloudflareRequest('https://example.com/api', {
+          method: 'POST',
+          headers: requestHeaders,
+        })
+        const ctx = createExecutionContext()
+        const response = await handler.fetch(request, env as TypedEnv)
+        await waitOnExecutionContext(ctx)
+
+        expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+
+        expect(response.status).toEqual(403)
+        expect(await response.text()).toEqual('')
+      }
+    )
 
     it('should send request to ingress and return modified response', async () => {
       const { getIngressRequest } = prepareMockFetch({
