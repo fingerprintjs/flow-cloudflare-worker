@@ -9,7 +9,6 @@ import {
   getMissingSignalsResponse,
   getProtectedApis,
   getPublicKey,
-  getRulesetId,
   getScriptBehaviorPath,
   getSecretKey,
 } from './env'
@@ -22,12 +21,7 @@ import { IngressClient } from './fingerprint/ingress'
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
 
-  const ingressClient = new IngressClient(
-    getFpRegion(env),
-    getIngressBaseHost(env),
-    getSecretKey(env),
-    getRulesetId(env)
-  )
+  const ingressClient = new IngressClient(getFpRegion(env), getIngressBaseHost(env), getSecretKey(env))
 
   try {
     const matchedUrl = matchUrl(new URL(request.url), request.method, env)

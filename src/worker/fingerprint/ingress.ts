@@ -10,10 +10,6 @@ type SendBody = {
   clientUserAgent: string
   clientCookie?: string
   clientHeaders?: Record<string, string>
-
-  ruleset_context?: {
-    ruleset_id: string
-  }
 }
 
 export type SendResponse = {
@@ -30,30 +26,29 @@ export class IngressClient {
   constructor(
     region: Region,
     baseUrl: string,
-    private readonly apiKey: string,
-    private readonly ruleSetId: string
+    private readonly apiKey: string
   ) {
     const resolvedUrl = IngressClient.resolveUrl(region, baseUrl)
     console.debug('Resolved ingress URL:', resolvedUrl)
     this.url = new URL(resolvedUrl)
   }
 
-  async send(incomingRequest: Request): Promise<SendResult> {
-    const signals = incomingRequest.headers.get(SIGNALS_HEADER)
+  async send(clientRequest: Request): Promise<SendResult> {
+    const signals = clientRequest.headers.get(SIGNALS_HEADER)
     if (!signals) {
       throw new SignalsNotAvailableError()
     }
 
-    const clientIP = getHeaderOrThrow(incomingRequest.headers, 'cf-connecting-ip')
-    const clientHost = getHeaderOrThrow(incomingRequest.headers, 'host')
-    const clientUserAgent = getHeaderOrThrow(incomingRequest.headers, 'user-agent')
-    const clientCookie = incomingRequest.headers.get('cookie')
+    const clientIP = getHeaderOrThrow(clientRequest.headers, 'cf-connecting-ip')
+    const clientHost = getHeaderOrThrow(clientRequest.headers, 'host')
+    const clientUserAgent = getHeaderOrThrow(clientRequest.headers, 'user-agent')
+    const clientCookie = clientRequest.headers.get('cookie')
 
     const headers = new Headers()
     headers.set('Content-Type', 'application/json')
     headers.set('Auth-API-Key', this.apiKey)
 
-    const clientHeaders = incomingRequest.clone().headers
+    const clientHeaders = new Headers(clientRequest.headers)
     clientHeaders.delete('cookie')
 
     let cookieToSend: string | undefined
@@ -71,10 +66,6 @@ export class IngressClient {
       clientHost,
       clientUserAgent,
       fingerprintData: signals,
-
-      ruleset_context: {
-        ruleset_id: this.ruleSetId,
-      },
     }
 
     if (cookieToSend) {
