@@ -8,7 +8,6 @@ const defaults = {
   PROTECTED_APIS: [],
   IDENTIFICATION_PAGE_URLS: [],
   FP_RULESET_ID: '',
-  MISSING_SIGNALS_RESPONSE: '',
 } satisfies Partial<TypedEnv>
 
 function assertVariableIsSet(env: TypedEnv, key: keyof TypedEnv) {
