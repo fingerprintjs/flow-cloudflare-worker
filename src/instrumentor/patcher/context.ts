@@ -82,7 +82,7 @@ export class WritablePatcherContext implements PatcherContext {
    * */
   setAgentDataProcessor(agentDataProcessor: AgentDataProcessor) {
     if (this.agentDataProcessor) {
-      console.warn('Invalid attempt to set agent data processor that are already set.')
+      console.warn('Invalid attempt to set agent data processor that is already set.')
       return
     }
 
