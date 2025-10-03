@@ -406,7 +406,7 @@ describe('Fetch Patcher', () => {
       )
     })
 
-    it('should handle no-cors Request', async () => {
+    it('should ignore no-cors request init', async () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
@@ -414,11 +414,35 @@ describe('Fetch Patcher', () => {
 
       const url = 'https://api.example.com/protected'
 
-      await window.fetch(new Request(url, { method: 'POST', mode: 'no-cors' }))
+      await window.fetch(url, {
+        mode: 'no-cors',
+      })
+
+      expect(mockFetch).toHaveBeenCalledWith(url, {
+        mode: 'no-cors',
+      })
+
+      const callArgs = mockFetch.mock.calls[0]
+      const resultHeaders = callArgs[1]?.headers
+      expect(resultHeaders).toBeUndefined()
+    })
+
+    it('should ignore no-cors Request', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      mockFetch.mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected'
+
+      const request = new Request(url, { method: 'POST', mode: 'no-cors' })
+      await window.fetch(request)
+
+      expect(mockFetch).toHaveBeenCalledWith(request)
 
       const callArgs = mockFetch.mock.calls[0]
       const resultHeaders = callArgs[0]?.headers as Headers
-      expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(resultHeaders).toEqual(new Headers())
     })
 
     it('should handle cors Request', async () => {
