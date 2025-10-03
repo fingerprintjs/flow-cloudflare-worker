@@ -2,6 +2,7 @@ import { Region } from './region'
 import { SIGNALS_HEADER } from '../../shared/const'
 import { IngressRequestFailedError, SignalsNotAvailableError } from '../errors'
 import { getHeaderOrThrow } from '../utils/headers'
+import { findCookie } from '../cookies'
 
 type SendBody = {
   fingerprintData: string
@@ -54,10 +55,9 @@ export class IngressClient {
     let cookieToSend: string | undefined
     if (clientCookie) {
       // Try to find _iidt cookie
-      const iidtMatch = /(_iidt=[^;]+)/.exec(clientCookie)
-      if (iidtMatch && iidtMatch[1]) {
-        console.debug('Found _iidt cookie in client cookie:', iidtMatch[1])
-        cookieToSend = iidtMatch[1]
+      const iidtMatch = findCookie(clientCookie, '_iidt')
+      if (iidtMatch) {
+        cookieToSend = iidtMatch
       }
     }
 
