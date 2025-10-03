@@ -115,6 +115,52 @@ describe('Protected API', () => {
     expect(await response.text()).toEqual('')
   })
 
+  it('should return empty 403 response if agent data is missing in response', async () => {
+    prepareMockFetch({
+      ingressHandler: async () => {
+        return new Response(
+          JSON.stringify({
+            v: '2',
+            requestId: '1234',
+            error: {
+              code: 'RequestCannotBeParsed',
+              message: 'bad request',
+            },
+            products: {},
+          }),
+          {
+            status: 200,
+          }
+        )
+      },
+      originHandler: async () =>
+        new Response('origin', {
+          headers: {
+            // Origin cookies, should be sent together with cookies from ingress
+            'Set-Cookie': 'origin-cookie=value',
+          },
+        }),
+    })
+
+    const requestHeaders = new Headers({
+      'cf-connecting-ip': '1.2.3.4',
+      host: 'example.com',
+      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+      'x-custom-header': 'custom-value',
+    })
+
+    const request = new CloudflareRequest('https://example.com/api', {
+      method: 'POST',
+      headers: requestHeaders,
+    })
+    const ctx = createExecutionContext()
+    const response = await handler.fetch(request, env as TypedEnv)
+    await waitOnExecutionContext(ctx)
+
+    expect(response.status).toEqual(403)
+    expect(await response.text()).toEqual('')
+  })
+
   it.each(['cf-connecting-ip', 'host', 'user-agent'])(
     'should return empty 403 response if one of ingress required header %s is missing',
     async (header) => {

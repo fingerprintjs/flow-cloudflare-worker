@@ -96,6 +96,9 @@ export class IngressClient {
 
     const ingressData = await ingressResponse.json<SendResponse>()
     console.debug(`Ingress response data:`, ingressData)
+    if (!ingressData.agentData) {
+      throw new IngressRequestFailedError('Ingress response does not contain agent data', ingressResponse.status)
+    }
 
     const cookiesToSent = ingressResponse.headers.getAll('Set-Cookie')
 
