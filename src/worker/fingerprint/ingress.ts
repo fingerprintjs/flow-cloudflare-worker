@@ -141,11 +141,11 @@ export class IngressClient {
       throw new IngressRequestFailedError('Ingress response does not contain agent data', ingressResponse.status)
     }
 
-    const cookiesToSent = ingressResponse.headers.getAll('Set-Cookie')
+    const cookiesToSend = ingressResponse.headers.getAll('Set-Cookie')
 
     return {
       ...ingressData,
-      setCookieHeaders: cookiesToSent,
+      setCookieHeaders: cookiesToSend,
     }
   }
 
