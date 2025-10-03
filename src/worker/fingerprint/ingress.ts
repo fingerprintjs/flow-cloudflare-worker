@@ -145,7 +145,6 @@ export class IngressClient {
 
     return {
       ...ingressData,
-      agentData: ingressData.agentData,
       setCookieHeaders: cookiesToSent,
     }
   }
