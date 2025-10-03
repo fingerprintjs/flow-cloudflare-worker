@@ -173,6 +173,7 @@ describe('Fetch Patcher', () => {
 
       await window.fetch('https://api.example.com/protected/endpoint')
 
+      // By checking that fetch was called with EXACTLY one param, we know that no signals were injected
       expect(fetch).toHaveBeenCalledWith('https://api.example.com/protected/endpoint')
     })
 
@@ -196,6 +197,7 @@ describe('Fetch Patcher', () => {
 
       await window.fetch('https://example.org')
 
+      // By checking that fetch was called with EXACTLY one param, we know that no signals were injected
       expect(fetch).toHaveBeenCalledWith('https://example.org')
     })
 
@@ -213,6 +215,7 @@ describe('Fetch Patcher', () => {
 
       await window.fetch('https://example.org')
 
+      // By checking that fetch was called with EXACTLY one param, we know that no signals were injected
       expect(fetch).toHaveBeenCalledWith('https://example.org')
     })
 
