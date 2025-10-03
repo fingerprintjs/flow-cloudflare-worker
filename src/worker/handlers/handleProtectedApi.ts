@@ -36,7 +36,8 @@ export async function handleProtectedApiCall({
   request,
   ingressClient,
 }: HandleProtectedApiCallParams): Promise<Response> {
-  const [ingressResponse, originResponse] = await Promise.all([ingressClient.send(request), fetchOrigin(request)])
+  const ingressResponse = await ingressClient.send(request)
+  const originResponse = await fetchOrigin(request)
 
   const originResponseHeaders = new Headers(originResponse.headers)
 
