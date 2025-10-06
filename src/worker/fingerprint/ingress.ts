@@ -39,6 +39,7 @@ export type SendResponse = {
 export type SendResult = SendResponse & {
   /** Array of Set-Cookie header values to be sent to the client */
   setCookieHeaders: string[]
+  /** Optional ruleset processor function to be used for processing the origin request */
   rulesetProcessor?: RulesetProcessor | undefined
 }
 
