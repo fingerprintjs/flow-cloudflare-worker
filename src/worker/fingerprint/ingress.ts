@@ -33,7 +33,7 @@ type SendBody = {
 export type SendResponse = {
   /** Agent data returned by the ingress service */
   agentData: string
-  // TODO This should be snake_case in v4
+  /** Rule action resolved by ingress. */
   ruleAction?: RuleAction
 }
 
