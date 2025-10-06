@@ -7,7 +7,6 @@ import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
 import * as urlUtils from '../../../src/shared/protectedApi'
 
 describe('Fetch Patcher', () => {
-  let originalFetch: typeof window.fetch
   let mockContext: PatcherContext
 
   const mockAgentDataProcessor = vi.fn()
@@ -24,13 +23,11 @@ describe('Fetch Patcher', () => {
     vi.clearAllMocks()
 
     vi.spyOn(urlUtils, 'isProtectedUrl')
-
-    originalFetch = globalThis.fetch
-    globalThis.fetch = mockFetch
+    vi.spyOn(globalThis, 'fetch')
 
     // Mock window object
     Object.defineProperty(globalThis, 'window', {
-      value: { fetch: mockFetch },
+      value: { fetch: vi.mocked(fetch) },
       writable: true,
     })
 
@@ -41,16 +38,16 @@ describe('Fetch Patcher', () => {
   })
 
   afterEach(() => {
-    // Restore original fetch
-    globalThis.fetch = originalFetch
     vi.restoreAllMocks()
   })
 
   describe('patchFetch', () => {
     it('should patch window.fetch successfully', () => {
+      const originalFetch = window.fetch
+
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
-      expect(fetch).not.toBe(originalFetch)
+      expect(window.fetch).not.toBe(originalFetch)
     })
   })
 
@@ -59,14 +56,14 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected/endpoint'
       const init = { method: 'POST', headers: { 'Content-Type': 'application/json' } }
 
       await window.fetch(url, init)
 
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         url,
         expect.objectContaining({
           method: 'POST',
@@ -75,8 +72,8 @@ describe('Fetch Patcher', () => {
       )
 
       // Check that signals header was added
-      const callArgs = mockFetch.mock.calls[0]
-      const headers = callArgs[1].headers as Headers
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const headers = (callArgs[1] as RequestInit).headers as Headers
       expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
     })
 
@@ -84,18 +81,18 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected/endpoint'
 
       await window.fetch(url)
 
-      expect(mockFetch).toHaveBeenCalledWith(url, {
+      expect(fetch).toHaveBeenCalledWith(url, {
         headers: expect.any(Headers),
       })
 
       // Check that signals header was added
-      const callArgs = mockFetch.mock.calls[0]
+      const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
       expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
     })
@@ -104,7 +101,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = new URL('https://api.example.com/protected/endpoint')
       const init = { method: 'GET' }
@@ -118,7 +115,7 @@ describe('Fetch Patcher', () => {
           protectedApis: mockProtectedApis,
         })
       )
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         url,
         expect.objectContaining({
           method: 'GET',
@@ -126,7 +123,7 @@ describe('Fetch Patcher', () => {
         })
       )
 
-      const callArgs = mockFetch.mock.calls[0]
+      const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
       expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
     })
@@ -135,7 +132,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const request = new Request('https://api.example.com/protected/endpoint', {
         method: 'PUT',
@@ -154,25 +151,25 @@ describe('Fetch Patcher', () => {
 
       // Request headers should be modified directly
       expect(request.headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
-      expect(mockFetch).toHaveBeenCalledWith(request)
+      expect(fetch).toHaveBeenCalledWith(request)
     })
 
     it('should skip patching for non-protected URLs', async () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(false)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://other.example.com/endpoint'
 
       await window.fetch(url)
 
-      expect(mockFetch).toHaveBeenCalledWith(url)
+      expect(fetch).toHaveBeenCalledWith(url)
     })
 
     it('should do nothing when no signals data available', async () => {
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       // Create context without signals
       const emptyContext = new WritablePatcherContext()
@@ -180,17 +177,18 @@ describe('Fetch Patcher', () => {
 
       await window.fetch('https://api.example.com/protected/endpoint')
 
-      expect(mockFetch).toHaveBeenCalledWith('https://api.example.com/protected/endpoint')
+      // By checking that fetch was called with EXACTLY one param, we know that no signals were injected
+      expect(fetch).toHaveBeenCalledWith('https://api.example.com/protected/endpoint')
     })
 
     it('should handle unsupported fetch parameters gracefully', async () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       // @ts-ignore - intentionally passing invalid parameters
       await window.fetch(123, { method: 'GET' })
 
-      expect(mockFetch).toHaveBeenCalledWith(123, { method: 'GET' })
+      expect(fetch).toHaveBeenCalledWith(123, { method: 'GET' })
     })
 
     it('should call original fetch on error', async () => {
@@ -199,11 +197,12 @@ describe('Fetch Patcher', () => {
       })
 
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       await window.fetch('https://example.org')
 
-      expect(mockFetch).toHaveBeenCalledWith('https://example.org')
+      // By checking that fetch was called with EXACTLY one param, we know that no signals were injected
+      expect(fetch).toHaveBeenCalledWith('https://example.org')
     })
 
     it('should call original fetch if signal collection fails', async () => {
@@ -216,18 +215,19 @@ describe('Fetch Patcher', () => {
       })
 
       patchFetch({ protectedApis: mockProtectedApis, ctx: context })
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       await window.fetch('https://example.org')
 
-      expect(mockFetch).toHaveBeenCalledWith('https://example.org')
+      // By checking that fetch was called with EXACTLY one param, we know that no signals were injected
+      expect(fetch).toHaveBeenCalledWith('https://example.org')
     })
 
     it('should handle original fetch throwing error', async () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       const fetchError = new Error('Network error')
-      mockFetch.mockRejectedValue(fetchError)
+      vi.mocked(fetch).mockRejectedValue(fetchError)
 
       await expect(window.fetch('https://example.com')).rejects.toThrow('Network error')
     })
@@ -236,7 +236,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const existingHeaders = new Headers({ 'Content-Type': 'application/json' })
       const url = 'https://api.example.com/protected'
@@ -246,7 +246,7 @@ describe('Fetch Patcher', () => {
         headers: existingHeaders,
       })
 
-      const callArgs = mockFetch.mock.calls[0]
+      const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
       expect(headers.get('Content-Type')).toBe('application/json')
       expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
@@ -256,7 +256,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected'
 
@@ -267,7 +267,7 @@ describe('Fetch Patcher', () => {
         },
       })
 
-      const callArgs = mockFetch.mock.calls[0]
+      const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
       expect(headers.get('Content-Type')).toBe('application/json')
       expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
@@ -277,7 +277,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected'
 
@@ -286,7 +286,7 @@ describe('Fetch Patcher', () => {
         headers: [['Content-Type', 'application/json']],
       })
 
-      const callArgs = mockFetch.mock.calls[0]
+      const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
       expect(headers.get('Content-Type')).toBe('application/json')
       expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
@@ -296,14 +296,14 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected'
       const headers = { [SIGNALS_HEADER]: 'old-signals-data' }
 
       await window.fetch(url, { method: 'POST', headers })
 
-      const callArgs = mockFetch.mock.calls[0]
+      const callArgs = vi.mocked(fetch).mock.calls[0]
       const resultHeaders = callArgs[1]?.headers as Headers
       expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
     })
@@ -312,7 +312,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const request = new Request('https://api.example.com/protected', {
         method: 'POST',
@@ -333,7 +333,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const request = new Request('https://api.example.com/protected', {
         method: 'POST',
@@ -354,7 +354,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected?param1=value1&param2=value2'
 
@@ -373,7 +373,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected#section'
 
@@ -392,7 +392,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = new URL('https://api.example.com/protected?test=1#fragment')
 
@@ -407,33 +407,57 @@ describe('Fetch Patcher', () => {
       )
     })
 
-    it('should handle no-cors Request', async () => {
+    it('should ignore no-cors request init', async () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected'
 
-      await window.fetch(new Request(url, { method: 'POST', mode: 'no-cors' }))
+      await window.fetch(url, {
+        mode: 'no-cors',
+      })
 
-      const callArgs = mockFetch.mock.calls[0]
-      const resultHeaders = callArgs[0]?.headers as Headers
-      expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(fetch).toHaveBeenCalledWith(url, {
+        mode: 'no-cors',
+      })
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const resultHeaders = callArgs[1]?.headers
+      expect(resultHeaders).toBeUndefined()
+    })
+
+    it('should ignore no-cors Request', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
+
+      const url = 'https://api.example.com/protected'
+
+      const request = new Request(url, { method: 'POST', mode: 'no-cors' })
+      await window.fetch(request)
+
+      expect(fetch).toHaveBeenCalledWith(request)
+
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const resultHeaders = (callArgs[0] as RequestInit)?.headers
+      expect(resultHeaders).toEqual(new Headers())
     })
 
     it('should handle cors Request', async () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(new Response('test'))
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = 'https://api.example.com/protected'
 
       await window.fetch(new Request(url, { method: 'POST', mode: 'cors' }))
 
-      const callArgs = mockFetch.mock.calls[0]
-      const resultHeaders = callArgs[0]?.headers as Headers
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const resultHeaders = (callArgs[0] as RequestInit)?.headers as Headers
       expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
     })
 

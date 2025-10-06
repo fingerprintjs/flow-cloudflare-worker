@@ -17,6 +17,11 @@ export function resolvePatcherRequest(params: Parameters<typeof fetch>): Patcher
   if (typeof params[0] === 'string') {
     const requestInit = params[1]
 
+    // no-cors mode requests disallow custom headers: https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#mode
+    if (requestInit?.mode === 'no-cors') {
+      return undefined
+    }
+
     return {
       url: params[0],
       method: resolveRequestInitMethod(requestInit),
@@ -31,6 +36,11 @@ export function resolvePatcherRequest(params: Parameters<typeof fetch>): Patcher
   if (params[0] instanceof URL) {
     const requestInit = params[1]
 
+    // no-cors mode requests disallow custom headers: https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#mode
+    if (requestInit?.mode === 'no-cors') {
+      return undefined
+    }
+
     return {
       url: params[0].toString(),
       method: resolveRequestInitMethod(requestInit),
@@ -44,6 +54,11 @@ export function resolvePatcherRequest(params: Parameters<typeof fetch>): Patcher
   // fetch({url: "https://example.com", method: "POST"})
   if (params[0] instanceof Request) {
     const request = params[0]
+
+    // no-cors mode requests disallow custom headers: https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#mode
+    if (request.mode === 'no-cors') {
+      return undefined
+    }
 
     return {
       url: request.url.toString(),
