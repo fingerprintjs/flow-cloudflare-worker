@@ -3,6 +3,7 @@ import { SIGNALS_HEADER } from '../../shared/const'
 import { IngressRequestFailedError, SignalsNotAvailableError } from '../errors'
 import { getHeaderOrThrow } from '../utils/headers'
 import { findCookie } from '../cookies'
+import { makeRulesetProcessor, RuleAction, RulesetProcessor } from './ruleset'
 
 /**
  * Request body structure for sending fingerprint data to the ingress service.
@@ -28,6 +29,8 @@ type SendBody = {
 export type SendResponse = {
   /** Agent data returned by the ingress service */
   agentData: string
+  // TODO This should be snake_case in v4
+  ruleAction?: RuleAction
 }
 
 /**
@@ -36,6 +39,7 @@ export type SendResponse = {
 export type SendResult = SendResponse & {
   /** Array of Set-Cookie header values to be sent to the client */
   setCookieHeaders: string[]
+  rulesetProcessor?: RulesetProcessor | undefined
 }
 
 /**
@@ -146,6 +150,8 @@ export class IngressClient {
     return {
       ...ingressData,
       setCookieHeaders: cookiesToSend,
+
+      rulesetProcessor: ingressData.ruleAction ? makeRulesetProcessor(ingressData.ruleAction) : undefined,
     }
   }
 

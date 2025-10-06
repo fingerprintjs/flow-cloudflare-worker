@@ -37,10 +37,17 @@ export async function handleProtectedApiCall({
   ingressClient,
 }: HandleProtectedApiCallParams): Promise<Response> {
   const ingressResponse = await ingressClient.send(request)
-  const originResponse = await fetchOrigin(request)
+
+  let originResponse: Response
+  if (ingressResponse.rulesetProcessor) {
+    originResponse = await ingressResponse.rulesetProcessor(request)
+  } else {
+    // TODO Once ruleset is implemented in Warden, this should be removed
+    console.warn('No ruleset processor found for ingress response, falling back to fetchOrigin.')
+    originResponse = await fetchOrigin(request)
+  }
 
   const originResponseHeaders = new Headers(originResponse.headers)
-
   setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
