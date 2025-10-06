@@ -1,16 +1,50 @@
-import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config'
+import { defineWorkersProject } from '@cloudflare/vitest-pool-workers/config'
+import { defineConfig } from 'vitest/config'
 
-export default defineWorkersConfig({
+export default defineConfig({
   test: {
-    inspector: {
-      port: 3456,
-    },
-    poolOptions: {
-      workers: {
-        wrangler: {
-          configPath: './wrangler.jsonc',
+    projects: [
+      {
+        test: {
+          environment: 'happy-dom',
+          name: {
+            label: 'Instrumentor',
+            color: 'green',
+          },
+          include: ['__tests__/instrumentor/**/*.test.ts'],
         },
       },
-    },
+      // Tests in worker-runtime will use a separate worker project for a more accurate runtime
+      defineWorkersProject({
+        test: {
+          name: {
+            label: 'Worker runtime',
+            color: 'blue',
+          },
+          include: ['__tests__/worker-runtime/**/*.test.ts'],
+          inspector: {
+            port: 3456,
+          },
+          poolOptions: {
+            workers: {
+              wrangler: {
+                configPath: './wrangler.jsonc',
+              },
+            },
+          },
+        },
+      }),
+      // Other unit tests for worker can run using node, for easier debugging
+      {
+        test: {
+          environment: 'node',
+          name: {
+            label: 'Worker',
+            color: 'green',
+          },
+          include: ['__tests__/worker/**/*.test.ts'],
+        },
+      },
+    ],
   },
 })

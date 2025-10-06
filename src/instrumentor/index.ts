@@ -1,3 +1,12 @@
-document.addEventListener('DOMContentLoaded', (event: Event) => {
-  console.info('DOMContentLoaded triggered.', event)
+import { setupInstrumentor } from './instrumentor'
+import { importFingerprintLoader } from './fingerprint'
+
+setupInstrumentor({
+  fingerprintLoader: importFingerprintLoader().then((loader) => {
+    console.debug('Fetched FingerprintJS loader:', loader)
+
+    return loader
+  }),
+}).catch((error) => {
+  console.error('Error during instrumentation:', error)
 })
