@@ -21,6 +21,14 @@ describe('Ruleset evaluation', () => {
             name: 'x-blocked',
             value: 'true',
           },
+          {
+            name: 'set-cookie',
+            value: 'is_blocked=true',
+          },
+          {
+            name: 'set-cookie',
+            value: 'id=123',
+          },
         ],
         rule_id: '1',
         body: 'Access denied',
@@ -37,6 +45,8 @@ describe('Ruleset evaluation', () => {
       expect(await response.text()).toEqual('Access denied')
       expect(response.status).toEqual(400)
       expect(response.headers.get('x-blocked')).toEqual('true')
+      expect(response.headers.getSetCookie()).toHaveLength(2)
+      expect(response.headers.getSetCookie()).toEqual(expect.arrayContaining(['is_blocked=true', 'id=123']))
       // Request to origin should not be made
       expect(fetch).toHaveBeenCalledTimes(0)
     })

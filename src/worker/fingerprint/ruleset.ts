@@ -94,7 +94,7 @@ function createHeaders(headers: RuleHeader[]) {
   const result = new Headers()
 
   headers.forEach(({ name, value }) => {
-    result.set(name, value)
+    result.append(name, value)
   })
 
   return result
