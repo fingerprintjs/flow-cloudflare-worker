@@ -7,6 +7,8 @@ import { makeRulesetProcessor, RuleAction, RulesetProcessor } from './ruleset'
 
 /**
  * Request body structure for sending fingerprint data to the ingress service.
+ *
+ * Is in camelCase format until https://fingerprintjs.atlassian.net/browse/PLAT-1437 is resolved
  */
 type SendBody = {
   /** Fingerprint data with signals */
@@ -25,6 +27,8 @@ type SendBody = {
 
 /**
  * Response structure from the ingress service.
+ *
+ * Is in camelCase format until https://fingerprintjs.atlassian.net/browse/PLAT-1437 is resolved. Afterwards we can start using the /v4/send version of the endpoint.
  */
 export type SendResponse = {
   /** Agent data returned by the ingress service */
