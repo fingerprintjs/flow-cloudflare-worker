@@ -40,10 +40,10 @@ function checkIngressRequest<CfHostMetadata>(
 }
 
 describe('Protected API', () => {
-  vi.spyOn(globalThis, 'fetch')
-
   beforeEach(() => {
     vi.clearAllMocks()
+
+    vi.spyOn(globalThis, 'fetch')
   })
 
   it('should return empty 403 response if ingress request fails', async () => {
@@ -89,7 +89,7 @@ describe('Protected API', () => {
     const response = await handler.fetch(request, env as TypedEnv)
     await waitOnExecutionContext(ctx)
 
-    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
 
     expect(response.status).toEqual(403)
     expect(await response.text()).toEqual('')
@@ -207,7 +207,7 @@ describe('Protected API', () => {
       const response = await handler.fetch(request, env as TypedEnv)
       await waitOnExecutionContext(ctx)
 
-      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
 
       expect(response.status).toEqual(403)
       expect(await response.text()).toEqual('')
@@ -279,7 +279,7 @@ describe('Protected API', () => {
       clientCookie: '_iidt=123456',
       clientHeaders: {
         'cf-connecting-ip': '1.2.3.4',
-        'fp-signals': 'signals',
+        'fp-data': 'signals',
         host: 'example.com',
         'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
         'x-custom-header': 'custom-value',
@@ -351,7 +351,7 @@ describe('Protected API', () => {
     expect(ingressBody).toEqual({
       clientHeaders: {
         'cf-connecting-ip': '1.2.3.4',
-        'fp-signals': 'signals',
+        'fp-data': 'signals',
         host: 'example.com',
         'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
         'x-custom-header': 'custom-value',

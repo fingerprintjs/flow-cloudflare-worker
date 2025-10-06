@@ -10,7 +10,6 @@ describe('Fetch Patcher', () => {
   let mockContext: PatcherContext
 
   const mockAgentDataProcessor = vi.fn()
-  const mockFetch = vi.fn()
 
   const mockProtectedApis: ProtectedApi[] = [
     {
@@ -465,7 +464,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(
+      vi.mocked(fetch).mockResolvedValue(
         new Response('test', {
           headers: {
             [AGENT_DATA_HEADER]: 'agent-data',
@@ -485,7 +484,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(false)
-      mockFetch.mockResolvedValue(
+      vi.mocked(fetch).mockResolvedValue(
         new Response('test', {
           headers: {
             [AGENT_DATA_HEADER]: 'agent-data',
@@ -507,7 +506,7 @@ describe('Fetch Patcher', () => {
       patchFetch({ protectedApis: mockProtectedApis, ctx: writableContext })
 
       vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
-      mockFetch.mockResolvedValue(
+      vi.mocked(fetch).mockResolvedValue(
         new Response('test', {
           headers: {
             [AGENT_DATA_HEADER]: 'agent-data',
@@ -535,7 +534,7 @@ describe('Fetch Patcher', () => {
           [AGENT_DATA_HEADER]: 'agent-data',
         },
       })
-      mockFetch.mockResolvedValue(mockResponse)
+      vi.mocked(fetch).mockResolvedValue(mockResponse)
 
       const url = 'https://api.example.com/protected'
 
