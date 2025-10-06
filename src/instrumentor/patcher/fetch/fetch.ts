@@ -68,14 +68,18 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
 
     const response = await originalFetch(...params)
 
-    if (didInjectSignals) {
-      const agentData = response.headers.get(AGENT_DATA_HEADER)
+    try {
+      if (didInjectSignals) {
+        const agentData = response.headers.get(AGENT_DATA_HEADER)
 
-      if (agentData) {
-        ctx.processAgentData(agentData)
-      } else {
-        console.warn('Agent data not found in response')
+        if (agentData) {
+          ctx.processAgentData(agentData)
+        } else {
+          console.warn('Agent data not found in response')
+        }
       }
+    } catch (e) {
+      console.error('Error processing agent data:', e)
     }
 
     return response

@@ -497,5 +497,27 @@ describe('Fetch Patcher', () => {
 
       expect(mockAgentDataProcessor).toHaveBeenCalledTimes(0)
     })
+
+    it('should return response if agent data processor throws', async () => {
+      const writableContext = new WritablePatcherContext()
+      writableContext.setAgentDataProcessor(mockAgentDataProcessor.mockRejectedValueOnce(new Error('Error')))
+      writableContext.setSignalsProvider(async () => 'test-signals-data')
+
+      patchFetch({ protectedApis: mockProtectedApis, ctx: writableContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      const mockResponse = new Response('test', {
+        headers: {
+          [AGENT_DATA_HEADER]: 'agent-data',
+        },
+      })
+      mockFetch.mockResolvedValue(mockResponse)
+
+      const url = 'https://api.example.com/protected'
+
+      const response = await window.fetch(new Request(url, { method: 'POST' }))
+      expect(mockAgentDataProcessor).toHaveBeenCalledTimes(1)
+      expect(response).toBe(mockResponse)
+    })
   })
 })
