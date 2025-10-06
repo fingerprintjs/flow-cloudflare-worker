@@ -13,7 +13,7 @@ importers:
         version: 1.13.3(vite@7.1.7(@types/node@24.5.2)(jiti@2.4.2)(yaml@2.8.1))(workerd@1.20250924.0)(wrangler@4.40.2)
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.9.5
-        version: 0.9.5(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4(@types/node@24.5.2)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1))
+        version: 0.9.5(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4(@types/node@24.5.2)(happy-dom@19.0.1)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1))
       '@commitlint/cli':
         specifier: ^19.8.0
         version: 19.8.0(@types/node@24.5.2)(typescript@5.9.2)
@@ -26,6 +26,9 @@ importers:
       '@fingerprintjs/eslint-config-dx-team':
         specifier: ^0.1.0
         version: 0.1.0(prettier@3.6.2)(typescript@5.9.2)
+      '@fingerprintjs/fingerprintjs-pro':
+        specifier: ^3.12.2
+        version: 3.12.2
       '@fingerprintjs/prettier-config-dx-team':
         specifier: ^0.2.0
         version: 0.2.0
@@ -40,7 +43,7 @@ importers:
         version: 6.19.1(@typescript-eslint/parser@8.44.1(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
       '@vitest/coverage-v8':
         specifier: ^3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/node@24.5.2)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1))
+        version: 3.2.4(vitest@3.2.4(@types/node@24.5.2)(happy-dom@19.0.1)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1))
       commitizen:
         specifier: ^4.3.1
         version: 4.3.1(@types/node@24.5.2)(typescript@5.9.2)
@@ -50,6 +53,9 @@ importers:
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
+      happy-dom:
+        specifier: ^19.0.1
+        version: 19.0.1
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -73,7 +79,7 @@ importers:
         version: 0.10.3(eslint@8.57.1)(typescript@5.9.2)(vite@7.1.7(@types/node@24.5.2)(jiti@2.4.2)(yaml@2.8.1))
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@24.5.2)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1)
+        version: 3.2.4(@types/node@24.5.2)(happy-dom@19.0.1)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1)
       wrangler:
         specifier: ^4.40.2
         version: 4.40.2
@@ -767,6 +773,9 @@ packages:
     peerDependencies:
       prettier: '>=3'
 
+  '@fingerprintjs/fingerprintjs-pro@3.12.2':
+    resolution: {integrity: sha512-YkdyQzq2I4mz1F/VNGB8PwfDUVKxQG9oP24nHzkfMcxpQ/wgcMwmZA+P60AxYq1cgocHypKWzxyTSVcWpcUTaQ==}
+
   '@fingerprintjs/prettier-config-dx-team@0.2.0':
     resolution: {integrity: sha512-fbtRuqF8YI4SKjvv9SQ2FoQxoTp4drKN15vXkhi2/SimC5ALpz7SFh1S0jbfmjM/rvDJ/z2x+sGFpp9ZsQZ6vg==}
 
@@ -1110,6 +1119,9 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/node@20.19.17':
+    resolution: {integrity: sha512-gfehUI8N1z92kygssiuWvLiwcbOB3IRktR6hTDgJlXMYh5OvkPSRmgfoBUmfZt+vhwJtX7v1Yw4KvvAf7c5QKQ==}
+
   '@types/node@24.5.2':
     resolution: {integrity: sha512-FYxk1I7wPv3K2XBaoyH2cTnocQEu8AOZ60hPbsyukMPLv5/5qr7V1i8PLHdl6Zf87I+xZXFvPCXYjiTFq+YSDQ==}
 
@@ -1123,6 +1135,9 @@ packages:
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
+
+  '@types/whatwg-mimetype@3.0.2':
+    resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
 
   '@typescript-eslint/eslint-plugin@6.19.1':
     resolution: {integrity: sha512-roQScUGFruWod9CEyoV5KlCYrubC/fvG8/1zXuT0WTcxX87GnMMmnksMwSg99lo1xiKrBzw2icsJPMAw1OtKxg==}
@@ -1977,6 +1992,10 @@ packages:
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
+
+  happy-dom@19.0.1:
+    resolution: {integrity: sha512-Rr1H/mvgdCGoIq+jjaGxE/y+ZB+O2DhUBXk9vqoRVc5zsZ/Ne6Fssb8fXaAjPFh3Ajmbx+kfDDf946PHiUbC6Q==}
+    engines: {node: '>=20.0.0'}
 
   has-flag@3.0.0:
     resolution: {integrity: sha512-sKJf1+ceQBr4SMkvQnBDNDtf4TXpVhVGateu0t918bl30FnbE2m4vNLX+VWe/dpjlb+HugGYzW7uQXH98HPEYw==}
@@ -2860,6 +2879,9 @@ packages:
   ufo@1.6.1:
     resolution: {integrity: sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA==}
 
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+
   undici-types@7.12.0:
     resolution: {integrity: sha512-goOacqME2GYyOZZfb5Lgtu+1IDmAlAEu5xnD3+xTzS10hT0vzpf0SPjkXwAw9Jm+4n/mQGDP3LO8CPbYROeBfQ==}
 
@@ -3018,6 +3040,10 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+
+  whatwg-mimetype@3.0.0:
+    resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
+    engines: {node: '>=12'}
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
@@ -3317,7 +3343,7 @@ snapshots:
       - utf-8-validate
       - workerd
 
-  '@cloudflare/vitest-pool-workers@0.9.5(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4(@types/node@24.5.2)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1))':
+  '@cloudflare/vitest-pool-workers@0.9.5(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4(@types/node@24.5.2)(happy-dom@19.0.1)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1))':
     dependencies:
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -3326,7 +3352,7 @@ snapshots:
       devalue: 5.3.2
       miniflare: 4.20250924.0
       semver: 7.7.2
-      vitest: 3.2.4(@types/node@24.5.2)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1)
+      vitest: 3.2.4(@types/node@24.5.2)(happy-dom@19.0.1)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1)
       wrangler: 4.40.0
       zod: 3.22.3
     transitivePeerDependencies:
@@ -3751,12 +3777,14 @@ snapshots:
       '@typescript-eslint/parser': 6.19.1(eslint@8.56.0)(typescript@5.9.2)
       eslint: 8.56.0
       eslint-config-prettier: 9.1.0(eslint@8.56.0)
-      eslint-plugin-prettier: 5.1.3(eslint-config-prettier@9.1.0(eslint@8.57.1))(eslint@8.56.0)(prettier@3.6.2)
+      eslint-plugin-prettier: 5.1.3(eslint-config-prettier@9.1.0(eslint@8.56.0))(eslint@8.56.0)(prettier@3.6.2)
       prettier: 3.6.2
     transitivePeerDependencies:
       - '@types/eslint'
       - supports-color
       - typescript
+
+  '@fingerprintjs/fingerprintjs-pro@3.12.2': {}
 
   '@fingerprintjs/prettier-config-dx-team@0.2.0':
     dependencies:
@@ -4036,6 +4064,10 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/node@20.19.17':
+    dependencies:
+      undici-types: 6.21.0
+
   '@types/node@24.5.2':
     dependencies:
       undici-types: 7.12.0
@@ -4049,6 +4081,8 @@ snapshots:
       csstype: 3.1.3
 
   '@types/semver@7.5.8': {}
+
+  '@types/whatwg-mimetype@3.0.2': {}
 
   '@typescript-eslint/eslint-plugin@6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.56.0)(typescript@5.9.2))(eslint@8.56.0)(typescript@5.9.2)':
     dependencies:
@@ -4249,7 +4283,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/node@24.5.2)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1))':
+  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/node@24.5.2)(happy-dom@19.0.1)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -4264,7 +4298,7 @@ snapshots:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@24.5.2)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1)
+      vitest: 3.2.4(@types/node@24.5.2)(happy-dom@19.0.1)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -4785,7 +4819,7 @@ snapshots:
       eslint: 8.57.1
     optional: true
 
-  eslint-plugin-prettier@5.1.3(eslint-config-prettier@9.1.0(eslint@8.57.1))(eslint@8.56.0)(prettier@3.6.2):
+  eslint-plugin-prettier@5.1.3(eslint-config-prettier@9.1.0(eslint@8.56.0))(eslint@8.56.0)(prettier@3.6.2):
     dependencies:
       eslint: 8.56.0
       prettier: 3.6.2
@@ -5118,6 +5152,12 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   graphemer@1.4.0: {}
+
+  happy-dom@19.0.1:
+    dependencies:
+      '@types/node': 20.19.17
+      '@types/whatwg-mimetype': 3.0.2
+      whatwg-mimetype: 3.0.0
 
   has-flag@3.0.0: {}
 
@@ -5979,6 +6019,8 @@ snapshots:
 
   ufo@1.6.1: {}
 
+  undici-types@6.21.0: {}
+
   undici-types@7.12.0: {}
 
   undici@7.14.0: {}
@@ -6060,7 +6102,7 @@ snapshots:
       jiti: 2.4.2
       yaml: 2.8.1
 
-  vitest@3.2.4(@types/node@24.5.2)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1):
+  vitest@3.2.4(@types/node@24.5.2)(happy-dom@19.0.1)(jiti@2.4.2)(jsdom@26.1.0)(yaml@2.8.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
@@ -6087,6 +6129,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.5.2
+      happy-dom: 19.0.1
       jsdom: 26.1.0
     transitivePeerDependencies:
       - jiti
@@ -6120,6 +6163,8 @@ snapshots:
     dependencies:
       iconv-lite: 0.6.3
     optional: true
+
+  whatwg-mimetype@3.0.0: {}
 
   whatwg-mimetype@4.0.0:
     optional: true

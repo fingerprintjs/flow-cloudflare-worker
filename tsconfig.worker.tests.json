@@ -5,18 +5,22 @@
     "target": "es2021",
     "module": "es2022",
     "moduleResolution": "bundler",
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tests.tsbuildinfo",
     "lib": [
       "ES2021"
     ],
     "types": [
-      "vite/client"
+      "vite/client",
+      "@cloudflare/vitest-pool-workers"
     ],
-    "isolatedModules": true
+    "isolatedModules": true,
+    "sourceMap": true
   },
   "include": [
     "./vite-env.d.ts",
     "./worker-configuration.d.ts",
+    "./__tests__/worker-runtime/**/*",
+    "vitest.config.ts",
     "./src/worker/**/*",
     "./src/shared/**/*"
   ]

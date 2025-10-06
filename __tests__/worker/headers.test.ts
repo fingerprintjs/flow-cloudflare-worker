@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { hasContentType } from '../src/worker/utils/headers'
+import { hasContentType } from '../../src/worker/utils/headers'
 
 describe('Headers', () => {
   describe('Has content type', () => {
