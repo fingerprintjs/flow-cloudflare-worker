@@ -32,10 +32,10 @@ export async function setupPatcherContext({ patcherCtx, fingerprintLoader }: Set
  * with a necessary signals' provider and agent data processor.'
  *
  * @param patcherCtx - Writable patcher context to configure with the signals' provider and agent data processor.
- * @param fingerprintJS - Promise that resolves to the FingerprintJS loader.
+ * @param fingerprintLoader - Promise that resolves to the FingerprintJS Pro loader.
  */
-async function setProviders(patcherCtx: WritablePatcherContext, fingerprintJS: Promise<FingerprintLoader>) {
-  const loader = await fingerprintJS
+async function setProviders(patcherCtx: WritablePatcherContext, fingerprintLoader: Promise<FingerprintLoader>) {
+  const loader = await fingerprintLoader
   const agent = await loader.load()
 
   console.debug('FingerprintJS agent loaded', agent)
