@@ -502,6 +502,8 @@ describe('Fetch Patcher', () => {
     it('should not process agent data if no signals were injected', async () => {
       const writableContext = new WritablePatcherContext()
       writableContext.setAgentDataProcessor(mockProcessAgentData)
+      // Mock signals provider to return empty string
+      writableContext.setSignalsProvider(async () => '')
 
       patchFetch({ protectedApis: mockProtectedApis, ctx: writableContext })
 
