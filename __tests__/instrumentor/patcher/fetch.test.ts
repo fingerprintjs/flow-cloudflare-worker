@@ -9,7 +9,7 @@ import * as urlUtils from '../../../src/shared/protectedApi'
 describe('Fetch Patcher', () => {
   let mockContext: PatcherContext
 
-  const mockAgentDataProcessor = vi.fn()
+  const mockProcessAgentData = vi.fn()
 
   const mockProtectedApis: ProtectedApi[] = [
     {
@@ -32,7 +32,7 @@ describe('Fetch Patcher', () => {
 
     const writableContext = new WritablePatcherContext()
     writableContext.setSignalsProvider(async () => 'test-signals-data')
-    writableContext.setAgentDataProcessor(mockAgentDataProcessor)
+    writableContext.setAgentDataProcessor(mockProcessAgentData)
     mockContext = writableContext
   })
 
@@ -476,8 +476,8 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(new Request(url, { method: 'POST' }))
 
-      expect(mockAgentDataProcessor).toHaveBeenCalledTimes(1)
-      expect(mockAgentDataProcessor).toHaveBeenCalledWith('agent-data')
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(1)
+      expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
     })
 
     it('should not process agent data for non-protected routes', async () => {
@@ -496,12 +496,12 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(new Request(url, { method: 'POST' }))
 
-      expect(mockAgentDataProcessor).toHaveBeenCalledTimes(0)
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(0)
     })
 
     it('should not process agent data if no signals were injected', async () => {
       const writableContext = new WritablePatcherContext()
-      writableContext.setAgentDataProcessor(mockAgentDataProcessor)
+      writableContext.setAgentDataProcessor(mockProcessAgentData)
 
       patchFetch({ protectedApis: mockProtectedApis, ctx: writableContext })
 
@@ -518,12 +518,12 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(new Request(url, { method: 'POST' }))
 
-      expect(mockAgentDataProcessor).toHaveBeenCalledTimes(0)
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(0)
     })
 
     it('should return response if agent data processor throws', async () => {
       const writableContext = new WritablePatcherContext()
-      writableContext.setAgentDataProcessor(mockAgentDataProcessor.mockRejectedValueOnce(new Error('Error')))
+      writableContext.setAgentDataProcessor(mockProcessAgentData.mockRejectedValueOnce(new Error('Error')))
       writableContext.setSignalsProvider(async () => 'test-signals-data')
 
       patchFetch({ protectedApis: mockProtectedApis, ctx: writableContext })
@@ -539,7 +539,7 @@ describe('Fetch Patcher', () => {
       const url = 'https://api.example.com/protected'
 
       const response = await window.fetch(new Request(url, { method: 'POST' }))
-      expect(mockAgentDataProcessor).toHaveBeenCalledTimes(1)
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(1)
       expect(response).toBe(mockResponse)
     })
   })
