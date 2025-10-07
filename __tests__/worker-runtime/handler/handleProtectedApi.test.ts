@@ -8,11 +8,11 @@ import { TypedEnv } from '../../../src/worker/types'
 import { Region } from '../../../src/worker/fingerprint/region'
 
 type PrepareMockFetchParams = {
-  ingressHandler: (request: Request) => Promise<Response>
-  originHandler: () => Promise<Response>
+  mockIngressHandler: (request: Request) => Promise<Response>
+  mockOriginHandler: () => Promise<Response>
 }
 
-function prepareMockFetch({ ingressHandler, originHandler }: PrepareMockFetchParams) {
+function prepareMockFetch({ mockIngressHandler, mockOriginHandler }: PrepareMockFetchParams) {
   let ingressRequest: Request | undefined
 
   vi.mocked(fetch).mockImplementation(async (...params) => {
@@ -20,10 +20,10 @@ function prepareMockFetch({ ingressHandler, originHandler }: PrepareMockFetchPar
     if (params[0] instanceof Request && params[0].url.includes('api.fpjs.io')) {
       ingressRequest = params[0]
 
-      return ingressHandler(params[0])
+      return mockIngressHandler(params[0])
     }
 
-    return originHandler()
+    return mockOriginHandler()
   })
 
   return {
@@ -48,7 +48,7 @@ describe('Protected API', () => {
 
   it('should return empty 403 response if ingress request fails', async () => {
     prepareMockFetch({
-      ingressHandler: async () => {
+      mockIngressHandler: async () => {
         return new Response(
           JSON.stringify({
             v: '2',
@@ -64,7 +64,7 @@ describe('Protected API', () => {
           }
         )
       },
-      originHandler: async () =>
+      mockOriginHandler: async () =>
         new Response('origin', {
           headers: {
             // Origin cookies, should be sent together with cookies from ingress
@@ -117,7 +117,7 @@ describe('Protected API', () => {
 
   it('should return empty 403 response if agent data is missing in response', async () => {
     prepareMockFetch({
-      ingressHandler: async () => {
+      mockIngressHandler: async () => {
         return new Response(
           JSON.stringify({
             v: '2',
@@ -133,7 +133,7 @@ describe('Protected API', () => {
           }
         )
       },
-      originHandler: async () =>
+      mockOriginHandler: async () =>
         new Response('origin', {
           headers: {
             // Origin cookies, should be sent together with cookies from ingress
@@ -165,7 +165,7 @@ describe('Protected API', () => {
     'should return empty 403 response if one of ingress required header %s is missing',
     async (header) => {
       prepareMockFetch({
-        ingressHandler: async () => {
+        mockIngressHandler: async () => {
           return new Response(
             JSON.stringify({
               v: '2',
@@ -181,7 +181,7 @@ describe('Protected API', () => {
             }
           )
         },
-        originHandler: async () =>
+        mockOriginHandler: async () =>
           new Response('origin', {
             headers: {
               // Origin cookies, should be sent together with cookies from ingress
@@ -216,7 +216,7 @@ describe('Protected API', () => {
 
   it('should send request to ingress and return modified response', async () => {
     const { getIngressRequest } = prepareMockFetch({
-      ingressHandler: async () => {
+      mockIngressHandler: async () => {
         const headers = new Headers()
         headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
         headers.append(
@@ -233,7 +233,7 @@ describe('Protected API', () => {
           }
         )
       },
-      originHandler: async () =>
+      mockOriginHandler: async () =>
         new Response('origin', {
           headers: {
             // Origin cookies, should be sent together with cookies from ingress
@@ -304,7 +304,7 @@ describe('Protected API', () => {
 
   it('should send request to ingress and return modified response when client request has no cookies', async () => {
     const { getIngressRequest } = prepareMockFetch({
-      ingressHandler: async () => {
+      mockIngressHandler: async () => {
         const headers = new Headers()
         headers.append(
           'Set-Cookie',
@@ -320,7 +320,7 @@ describe('Protected API', () => {
           }
         )
       },
-      originHandler: async () => new Response('origin'),
+      mockOriginHandler: async () => new Response('origin'),
     })
 
     const requestHeaders = new Headers({
@@ -385,7 +385,7 @@ describe('Protected API', () => {
     },
   ])('should send request to ingress in a different region', async ({ region, expectedIngressHost }) => {
     const { getIngressRequest } = prepareMockFetch({
-      ingressHandler: async () => {
+      mockIngressHandler: async () => {
         const headers = new Headers()
         headers.append(
           'Set-Cookie',
@@ -401,7 +401,7 @@ describe('Protected API', () => {
           }
         )
       },
-      originHandler: async () => new Response('origin'),
+      mockOriginHandler: async () => new Response('origin'),
     })
 
     const request = new CloudflareRequest('https://example.com/api', {
