@@ -28,7 +28,7 @@ describe('Instrumentor', () => {
     })
   })
 
-  it('should load FingerprintJS when DOM is ready only once', async () => {
+  it('should load fingerprint when DOM is ready only once', async () => {
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
     })
@@ -45,7 +45,7 @@ describe('Instrumentor', () => {
     expect(mockLoad).toHaveBeenCalledTimes(1)
   })
 
-  it('should load FingerprintJS and prepare signals collection', async () => {
+  it('should load fingerprint and prepare signals collection', async () => {
     const mockCollect = vi.fn().mockResolvedValue('signals')
     mockLoad.mockResolvedValue({ collect: mockCollect })
 
@@ -69,7 +69,7 @@ describe('Instrumentor', () => {
     expect(mockCollect).toHaveBeenCalledTimes(1)
   })
 
-  it('should load FingerprintJS and prepare agent data processing', async () => {
+  it('should load fingerprint and prepare agent data processing', async () => {
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
     })
