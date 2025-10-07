@@ -1,5 +1,5 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
-import { IngressClient, SendResult } from '../fingerprint/ingress'
+import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
 import { fetchOrigin } from '../utils/origin'
 
 /**
@@ -9,7 +9,7 @@ export type HandleProtectedApiCallParams = {
   /** The incoming HTTP request to be processed */
   request: Request
   /** Client for sending fingerprinting data to the ingress service */
-  ingressClient: IngressClient
+  ingressClient: IdentificationClient
 }
 
 /**

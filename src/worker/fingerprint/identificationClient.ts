@@ -46,7 +46,7 @@ export type SendResult = SendResponse & {
  * Client for communicating with the ingress service.
  * Handles region-based URL resolution, request formatting, and response processing.
  */
-export class IngressClient {
+export class IdentificationClient {
   private readonly url: URL
 
   /**
@@ -60,7 +60,7 @@ export class IngressClient {
     baseUrl: string,
     private readonly apiKey: string
   ) {
-    const resolvedUrl = IngressClient.resolveUrl(region, baseUrl)
+    const resolvedUrl = IdentificationClient.resolveUrl(region, baseUrl)
     console.debug('Resolved ingress URL:', resolvedUrl)
     this.url = new URL(resolvedUrl)
   }
