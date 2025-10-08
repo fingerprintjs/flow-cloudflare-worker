@@ -122,6 +122,7 @@ describe('Protected API', () => {
       mockIngressHandler: async () => {
         return new Response(
           JSON.stringify({
+            // agentData field is missing
             v: '2',
             requestId: '1234',
             error: {
