@@ -26,7 +26,8 @@ export async function getIp(headers: Headers): Promise<string> {
     return ip
   }
 
-  if (import.meta.env.DEV) {
+  if (import.meta.env.MODE == 'dev') {
+    console.debug('Fetching local IP for dev mode')
     if (localIp === undefined) {
       const ipResponse = await fetch('https://checkip.amazonaws.com/')
       const ip = await ipResponse.text()
