@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../../../src/worker'
-import { TypedEnv } from '../../../src/worker/types'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 import { CloudflareRequest } from '../request'
 import { mockEnv } from '../mockEnv'
@@ -41,7 +40,7 @@ describe('Scripts injection', () => {
     const request = new CloudflareRequest('https://example.com/')
     const ctx = createExecutionContext()
 
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
     const html = await response.text()
 
@@ -68,7 +67,7 @@ describe('Scripts injection', () => {
     const request = new CloudflareRequest('https://example.com/')
     const ctx = createExecutionContext()
 
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
     const html = await response.text()
 

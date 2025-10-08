@@ -59,7 +59,7 @@ export class HeaderMissingError extends FlowError {
   }
 }
 
-export class IngressRequestFailedError extends FlowError {
+export class IdentificationRequestFailedError extends FlowError {
   constructor(message: string, status: number) {
     super({
       message: `Ingress request failed with ${status} status: ${message}`,

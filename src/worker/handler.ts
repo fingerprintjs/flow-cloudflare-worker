@@ -15,12 +15,12 @@ import {
 import { handleError } from './handlers/handleError'
 import { fetchOrigin } from './utils/origin'
 import { handleProtectedApiCall } from './handlers/handleProtectedApi'
-import { IngressClient } from './fingerprint/ingress'
+import { IdentificationClient } from './fingerprint/identificationClient'
 
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
 
-  const ingressClient = new IngressClient(getFpRegion(env), getIngressBaseHost(env), getSecretKey(env))
+  const ingressClient = new IdentificationClient(getFpRegion(env), getIngressBaseHost(env), getSecretKey(env))
 
   try {
     const matchedUrl = matchUrl(new URL(request.url), request.method, env)

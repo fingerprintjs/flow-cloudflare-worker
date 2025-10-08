@@ -1,12 +1,12 @@
 import { Region } from './region'
 import { SIGNALS_HEADER } from '../../shared/const'
-import { IngressRequestFailedError, SignalsNotAvailableError } from '../errors'
-import { getHeaderOrThrow } from '../utils/headers'
+import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../errors'
+import { getHeaderOrThrow, getIp } from '../utils/headers'
 import { findCookie } from '../cookies'
 import { makeRulesetProcessor, RuleAction, RulesetProcessor } from './ruleset'
 
 /**
- * Request body structure for sending fingerprint data to the ingress service.
+ * Request body structure for sending fingerprint data to the identification service.
  *
  * Is in camelCase format until https://fingerprintjs.atlassian.net/browse/PLAT-1437 is resolved
  */
@@ -26,12 +26,12 @@ type SendBody = {
 }
 
 /**
- * Response structure from the ingress service.
+ * Response structure from the identification service.
  *
  * Is in camelCase format until https://fingerprintjs.atlassian.net/browse/PLAT-1437 is resolved. Afterwards we can start using the /v4/send version of the endpoint.
  */
 export type SendResponse = {
-  /** Agent data returned by the ingress service */
+  /** Agent data returned by the identification service */
   agentData: string
   /** Rule action resolved by ingress. */
   ruleAction?: RuleAction
@@ -48,41 +48,41 @@ export type SendResult = SendResponse & {
 }
 
 /**
- * Client for communicating with the ingress service.
+ * Client for communicating with the identification service.
  * Handles region-based URL resolution, request formatting, and response processing.
  */
-export class IngressClient {
+export class IdentificationClient {
   private readonly url: URL
 
   /**
-   * Creates a new IngressClient instance.
+   * Creates a new IdentificationClient instance.
    * @param region - The region for URL resolution (e.g., 'us', 'eu')
-   * @param baseUrl - Base URL for the ingress service
-   * @param apiKey - API key for authentication with the ingress service
+   * @param baseUrl - Base URL hostname for the identification service, e.g. "api.fpjs.io"
+   * @param apiKey - API key for authentication with the identification service
    */
   constructor(
     region: Region,
     baseUrl: string,
     private readonly apiKey: string
   ) {
-    const resolvedUrl = IngressClient.resolveUrl(region, baseUrl)
-    console.debug('Resolved ingress URL:', resolvedUrl)
+    const resolvedUrl = IdentificationClient.resolveUrl(region, baseUrl)
+    console.debug('Resolved identification URL:', resolvedUrl)
     this.url = new URL(resolvedUrl)
   }
 
   /**
-   * Sends fingerprint data to the ingress service and returns the response with agent data.
+   * Sends fingerprint data to the identification service and returns the response with agent data.
    *
    * This method:
    * 1. Extracts fingerprint signals and client information from the request
    * 2. Processes cookies to extract only the _iidt cookie if present
    * 3. Sends the data to the POST /send
-   * 4. Returns the agent data along with any Set-Cookie headers received from the ingress
+   * 4. Returns the agent data along with any Set-Cookie headers received from the identification
    *
    * @param clientRequest - The incoming client request containing fingerprint data and headers
    * @returns Promise resolving to SendResult containing agent data and cookie headers
    * @throws {SignalsNotAvailableError} When fingerprint signals are missing from the request
-   * @throws {IngressRequestFailedError} When the ingress service request fails or returns invalid data
+   * @throws {IdentificationRequestFailedError} When the identification service request fails or returns invalid data
    */
   async send(clientRequest: Request): Promise<SendResult> {
     const signals = clientRequest.headers.get(SIGNALS_HEADER)
@@ -90,7 +90,7 @@ export class IngressClient {
       throw new SignalsNotAvailableError()
     }
 
-    const clientIP = getHeaderOrThrow(clientRequest.headers, 'cf-connecting-ip')
+    const clientIP = await getIp(clientRequest.headers)
     const clientHost = getHeaderOrThrow(clientRequest.headers, 'host')
     const clientUserAgent = getHeaderOrThrow(clientRequest.headers, 'user-agent')
     const clientCookie = clientRequest.headers.get('cookie')
@@ -107,6 +107,7 @@ export class IngressClient {
       // Try to find _iidt cookie
       const iidtMatch = findCookie(clientCookie, '_iidt')
       if (iidtMatch) {
+        console.debug('Found _iidt cookie', iidtMatch)
         cookieToSend = iidtMatch
       }
     }
@@ -130,30 +131,36 @@ export class IngressClient {
     const requestUrl = new URL(this.url)
     requestUrl.pathname = '/send'
 
-    const ingressRequest = new Request(requestUrl, {
+    const identificationRequest = new Request(requestUrl, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(sendBody),
     })
 
-    const ingressResponse = await fetch(ingressRequest)
-    console.debug(`Received ingress response for ${requestUrl} request with status:`, ingressResponse.status)
-    if (!ingressResponse.ok) {
-      const errorText = await ingressResponse.text()
-      console.error(`Ingress request failed with status: ${ingressResponse.status}`, errorText)
-      throw new IngressRequestFailedError(errorText, ingressResponse.status)
+    const identificationResponse = await fetch(identificationRequest)
+    console.debug(
+      `Received identification response for ${requestUrl} request with status:`,
+      identificationResponse.status
+    )
+    if (!identificationResponse.ok) {
+      const errorText = await identificationResponse.text()
+      console.error(`Identification request failed with status: ${identificationResponse.status}`, errorText)
+      throw new IdentificationRequestFailedError(errorText, identificationResponse.status)
     }
 
-    const ingressData = await ingressResponse.json<SendResponse>()
-    console.debug(`Ingress response data:`, ingressData)
-    if (!ingressData.agentData) {
-      throw new IngressRequestFailedError('Ingress response does not contain agent data', ingressResponse.status)
+    const identificationData = await identificationResponse.json<SendResponse>()
+    console.debug(`Identification response data:`, identificationData)
+    if (!identificationData.agentData) {
+      throw new IdentificationRequestFailedError(
+        'Identification response does not contain agent data',
+        identificationResponse.status
+      )
     }
 
-    const cookiesToSend = ingressResponse.headers.getAll('Set-Cookie')
+    const cookiesToSend = identificationResponse.headers.getAll('Set-Cookie')
 
     return {
-      ...ingressData,
+      ...identificationData,
       setCookieHeaders: cookiesToSend,
 
       rulesetProcessor: ingressData.ruleAction ? makeRulesetProcessor(ingressData.ruleAction) : undefined,
@@ -161,14 +168,14 @@ export class IngressClient {
   }
 
   /**
-   * Resolves the full ingress service URL based on the region and host.
+   * Resolves the full identification service URL based on the region and host.
    *
    * For the 'us' region, uses the host directly without a regional prefix.
    * For all other regions, prefixes the host with the region name.
    *
    * @param region - The target region (e.g., 'us', 'eu', 'ap')
-   * @param host - The base host name for the ingress service
-   * @returns The complete HTTPS URL for the ingress service
+   * @param host - The base host name for the identification service
+   * @returns The complete HTTPS URL for the identification service
    *
    * @example
    * resolveUrl('us', 'api.example.com') // returns 'https://api.example.com'

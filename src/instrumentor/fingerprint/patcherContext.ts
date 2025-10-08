@@ -11,8 +11,7 @@ export type SetupPatcherContextParams = {
  * Sets up patcher context for fingerprinting.
  *
  * This function initialises the fingerprinting signals and agent data processing providers by waiting for the document
- * to be ready and then loading the FingerprintJS agent. It handles both cases where the
- * document is already loaded and when it's still loading.
+ * to be ready and then loading the FingerprintJS agent.
  */
 export async function setupPatcherContext({ patcherCtx, fingerprintLoader }: SetupPatcherContextParams) {
   console.debug('Setting up signals collection...', document.readyState)
@@ -32,10 +31,10 @@ export async function setupPatcherContext({ patcherCtx, fingerprintLoader }: Set
  * with a necessary signals' provider and agent data processor.'
  *
  * @param patcherCtx - Writable patcher context to configure with the signals' provider and agent data processor.
- * @param fingerprintJS - Promise that resolves to the FingerprintJS loader.
+ * @param fingerprintLoader - Promise that resolves to the FingerprintJS Pro loader.
  */
-async function setProviders(patcherCtx: WritablePatcherContext, fingerprintJS: Promise<FingerprintLoader>) {
-  const loader = await fingerprintJS
+async function setProviders(patcherCtx: WritablePatcherContext, fingerprintLoader: Promise<FingerprintLoader>) {
+  const loader = await fingerprintLoader
   const agent = await loader.load()
 
   console.debug('FingerprintJS agent loaded', agent)
