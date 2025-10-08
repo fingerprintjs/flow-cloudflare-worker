@@ -1,8 +1,9 @@
 import { validateScript } from './scripts'
 import { TypedEnv } from './types'
-import { getProtectedApis, getScriptBehaviorPath } from './env'
+import { getIdentificationPageUrls, getProtectedApis, getScriptBehaviorPath } from './env'
 import { Script } from '../shared/scripts'
-import { isProtectedUrl } from '../shared/protectedApi'
+import { findMatchingRoute, parseRoutes } from '@fingerprintjs/url-matcher'
+import { ProtectedApiHttpMethod } from '../shared/types'
 
 export type UrlType =
   | {
@@ -10,6 +11,7 @@ export type UrlType =
     }
   | {
       type: 'protection'
+      method: ProtectedApiHttpMethod
     }
   | {
       type: 'script'
@@ -17,8 +19,7 @@ export type UrlType =
     }
 
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
-  // TODO After url matching library is published, use it here.
-
+  // First, try to match script path
   const scriptBehaviorPath = getScriptBehaviorPath(env)
   if (url.pathname.includes(scriptBehaviorPath)) {
     console.info('Matched script Behavior path', url.pathname)
@@ -33,20 +34,39 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
     }
   }
 
-  // For now, assume that the root path is the "identification" page
-  if (url.pathname === '/') {
-    console.info('Matched identification page', url.toString())
+  const routes = parseRoutes<UrlType>(
+    [
+      ...getProtectedApis(env)
+        .filter((protectedApi) => protectedApi.method === method)
+        .map((protectedApi) => {
+          const apiUrl = new URL(protectedApi.url, url.origin)
 
-    return {
-      type: 'identification',
-    }
-  }
+          return {
+            url: apiUrl.toString(),
+            metadata: {
+              type: 'protection' as const,
+              method: protectedApi.method,
+            },
+          }
+        }),
 
-  if (isProtectedUrl({ url: url.toString(), method, protectedApis: getProtectedApis(env) })) {
-    console.info('Matched protected url', url.toString())
-    return {
-      type: 'protection',
-    }
+      ...getIdentificationPageUrls(env).map((identificationPath) => {
+        const identificationUrl = new URL(identificationPath, url.origin)
+
+        return {
+          url: identificationUrl.toString(),
+          metadata: {
+            type: 'identification' as const,
+          },
+        }
+      }),
+    ],
+    { sortBySpecificity: true }
+  )
+  const matchedRoute = findMatchingRoute(url, routes)
+
+  if (matchedRoute) {
+    return matchedRoute.metadata
   }
 
   return undefined

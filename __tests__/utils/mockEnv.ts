@@ -6,10 +6,10 @@ export const mockEnv: TypedEnv = {
   PROTECTED_APIS: [
     {
       method: 'POST',
-      url: '/api',
+      url: '/api/*',
     },
   ],
-  IDENTIFICATION_PAGE_URLS: [],
+  IDENTIFICATION_PAGE_URLS: ['/'],
   PUBLIC_KEY: 'public_key',
   SECRET_KEY: 'secret_key',
   SCRIPTS_BEHAVIOR_PATH: 'scripts',

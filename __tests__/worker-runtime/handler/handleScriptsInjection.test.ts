@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../../../src/worker'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 import { CloudflareRequest } from '../request'
-import { mockEnv } from '../mockEnv'
+import { mockEnv } from '../../utils/mockEnv'
 
 const sampleHtml = `
 <!doctype html>

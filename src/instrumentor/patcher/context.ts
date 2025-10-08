@@ -1,3 +1,6 @@
+import { ProtectedApi, ProtectedApiHttpMethod } from '../../shared/types'
+import { findMatchingRoute, parseRoutes, Route } from '@fingerprintjs/url-matcher'
+
 /**
  * Function that processes agent data received from the worker for protected API requests.
  *
@@ -27,6 +30,15 @@ export type PatcherContext = {
    * @param data - Agent data
    * */
   processAgentData: AgentDataProcessor
+
+  /**
+   * Determines whether a given URL with a specified HTTP method is classified as protected.
+   *
+   * @param {string} url - The URL to be evaluated.
+   * @param {string} method - The HTTP method (e.g., GET, POST, PUT, DELETE) used in the request.
+   * @returns {boolean} Returns true if the URL is protected, otherwise false.
+   */
+  isProtectedUrl: (url: string, method: string) => boolean
 }
 
 /**
@@ -50,6 +62,33 @@ export class WritablePatcherContext implements PatcherContext {
    * Function that processes agent data received from the worker for protected API requests.
    * */
   private agentDataProcessor?: AgentDataProcessor
+
+  /**
+   * Represents an array of route configurations specifically intended for protected
+   * endpoints within an API. Each route object in the array defines the route's
+   * properties and specifies the HTTP method allowed for the protected resource.
+   */
+  private readonly protectedRoutes: Route<{ method: ProtectedApiHttpMethod }>[]
+
+  /**
+   * A set containing the names of HTTP methods that are designated as protected.
+   */
+  private readonly protectedMethods = new Set<string>()
+
+  constructor(protectedApis: ProtectedApi[]) {
+    this.protectedRoutes = parseRoutes(
+      protectedApis.map((api) => {
+        this.protectedMethods.add(api.method)
+
+        return {
+          url: new URL(api.url, location.origin).toString(),
+          metadata: {
+            method: api.method,
+          },
+        }
+      })
+    )
+  }
 
   /**
    * Retrieves the current signals' data. If not set, it will attempt to fetch from the signals' provider.
@@ -95,5 +134,27 @@ export class WritablePatcherContext implements PatcherContext {
    * */
   processAgentData(data: string): void {
     this.agentDataProcessor?.(data)
+  }
+
+  /**
+   * Determines whether the specified URL and method correspond to a protected route.
+   *
+   * @param {string} url - The URL to check against the protected routes.
+   * @param {string} method - The HTTP method to verify for the specified URL.
+   * @return {boolean} Returns true if the URL and method match a protected route, otherwise false.
+   */
+  isProtectedUrl(url: string, method: string): boolean {
+    // Check method first to avoid unnecessary route matching
+    if (!this.protectedMethods.has(method)) {
+      return false
+    }
+
+    const matchedRoute = findMatchingRoute(new URL(url), this.protectedRoutes)
+
+    if (matchedRoute) {
+      return matchedRoute.metadata?.method === method
+    }
+
+    return false
   }
 }

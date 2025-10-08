@@ -31,6 +31,12 @@ describe('Instrumentor', () => {
   it('should load fingerprint when DOM is ready only once', async () => {
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      protectedApis: [
+        {
+          url: '/protected/*',
+          method: 'POST',
+        },
+      ],
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -51,6 +57,12 @@ describe('Instrumentor', () => {
 
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      protectedApis: [
+        {
+          url: '/protected/*',
+          method: 'POST',
+        },
+      ],
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -59,7 +71,7 @@ describe('Instrumentor', () => {
 
     expect(mockLoad).toHaveBeenCalledTimes(1)
 
-    const patcherContext = mockPatchFetch.mock.calls[0][0].ctx
+    const patcherContext = mockPatchFetch.mock.calls[0][0]
     expect(patcherContext).toBeTruthy()
 
     expect(await patcherContext.getSignals()).toEqual('signals')
@@ -72,6 +84,12 @@ describe('Instrumentor', () => {
   it('should load fingerprint and prepare agent data processing', async () => {
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      protectedApis: [
+        {
+          url: '/protected/*',
+          method: 'POST',
+        },
+      ],
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -80,7 +98,7 @@ describe('Instrumentor', () => {
 
     expect(mockLoad).toHaveBeenCalledTimes(1)
 
-    const patcherContext = mockPatchFetch.mock.calls[0][0].ctx
+    const patcherContext = mockPatchFetch.mock.calls[0][0]
     expect(patcherContext).toBeTruthy()
 
     patcherContext.processAgentData('agentData')

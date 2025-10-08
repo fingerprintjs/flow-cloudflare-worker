@@ -5,6 +5,11 @@ const PROTECTED_APIS_STR: any = '<PROTECTED_APIS>'
 
 export function getProtectedApis(): ProtectedApi[] {
   try {
+    if (typeof PROTECTED_APIS_STR === 'string') {
+      console.warn('Protected APIs are not set, instrumentation will not run.')
+      return []
+    }
+
     const data = PROTECTED_APIS_STR as ProtectedApi[]
 
     if (!data?.length) {

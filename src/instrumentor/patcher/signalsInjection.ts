@@ -1,7 +1,5 @@
 import { PatcherRequest } from './types'
-import { ProtectedApi } from '../../shared/types'
 import { PatcherContext } from './context'
-import { isProtectedUrl } from '../../shared/protectedApi'
 import { SIGNALS_HEADER } from '../../shared/const'
 
 /**
@@ -10,8 +8,6 @@ import { SIGNALS_HEADER } from '../../shared/const'
 type HandleSignalsInjectionParams = {
   /** The request object that may receive signals injection */
   request: PatcherRequest
-  /** Array of protected API configurations to check against */
-  protectedApis: ProtectedApi[]
   /** Patcher context providing access to signals and other functionality */
   ctx: PatcherContext
 }
@@ -23,28 +19,15 @@ type HandleSignalsInjectionParams = {
  * from the patcher context and adds them as a header to the request. If the URL is not
  * protected or no signals are available, the function logs appropriate debug/warning messages.
  *
- * @param params - Configuration object containing the request, protected APIs, and context
+ * @param params - Configuration object containing the request and context
  * @param params.request - The request object that may receive signals injection
- * @param params.protectedApis - Array of protected API configurations to check against
  * @param params.ctx - Patcher context providing access to signals and other functionality
  *
  * @returns A boolean indicating whether signals were injected successfully
  *
- * @example
- * ```typescript
- * await handleSignalsInjection({
- *   request: patcherRequest,
- *   protectedApis: [{ url: 'https://api.example.com', method: 'POST' }],
- *   ctx: patcherContext
- * });
- * ```
  */
-export async function handleSignalsInjection({
-  request,
-  protectedApis,
-  ctx,
-}: HandleSignalsInjectionParams): Promise<boolean> {
-  if (!isProtectedUrl({ url: request.url, method: request.method, protectedApis: protectedApis })) {
+export async function handleSignalsInjection({ request, ctx }: HandleSignalsInjectionParams): Promise<boolean> {
+  if (!ctx.isProtectedUrl(request.url, request.method)) {
     console.debug('Skipping signals injection:', request?.url)
     return false
   }

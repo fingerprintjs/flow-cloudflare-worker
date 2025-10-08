@@ -20,28 +20,13 @@ export type PatchFetchParams = {
  * This function intercepts all fetch requests and checks if they target protected URLs. For protected
  * requests, it adds a signals' header before forwarding the request.
  *
- * @param params - Configuration object containing protected APIs and patcher context
- * @param params.protectedApis - Array of protected API configurations to monitor
- * @param params.ctx - Patcher context providing access to signals and other functionality
+ * @param ctx - Patcher context providing access to signals and other functionality
  *
- * @example
- * ```typescript
- * patchFetch({
- *   protectedApis: [{ url: 'https://api.example.com', method: 'POST' }],
- *   ctx: patcherContext,
- *   agentDataProcessor: (data) => {...}
- * });
- * ```
  */
-export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
+export function patchFetch(ctx: PatcherContext) {
   if (typeof window.fetch !== 'function') {
     console.warn('window.fetch is not available.')
 
-    return
-  }
-
-  if (!protectedApis.length) {
-    console.warn('No protected APIs found, skipping patching fetch.')
     return
   }
 
@@ -57,7 +42,7 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
 
       if (request) {
         console.debug('Resolved fetch request:', request)
-        didInjectSignals = await handleSignalsInjection({ request, protectedApis, ctx })
+        didInjectSignals = await handleSignalsInjection({ request, ctx })
       }
     } catch (error) {
       console.error('Patched fetch error:', error)

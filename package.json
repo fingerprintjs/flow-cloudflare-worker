@@ -43,6 +43,7 @@
     "@fingerprintjs/fingerprintjs-pro": "^3.12.2",
     "@fingerprintjs/prettier-config-dx-team": "^0.2.0",
     "@fingerprintjs/tsconfig-dx-team": "^0.0.2",
+    "@fingerprintjs/url-matcher": "^0.1.1",
     "@types/node": "^24.5.2",
     "@typescript-eslint/eslint-plugin": "6.19.1",
     "@vitest/coverage-v8": "^3.2.4",
