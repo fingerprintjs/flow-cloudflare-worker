@@ -17,3 +17,23 @@ export function getHeaderOrThrow(headers: Headers, name: string) {
   }
   return value
 }
+
+let localIp: string | undefined
+export async function getIp(headers: Headers): Promise<string> {
+  const ip = headers.get('cf-connecting-ip')
+
+  if (ip) {
+    return ip
+  }
+
+  if (import.meta.env.DEV) {
+    if (localIp === undefined) {
+      const ipResponse = await fetch('https://checkip.amazonaws.com/')
+      const ip = await ipResponse.text()
+      localIp = ip.trim()
+    }
+    return localIp
+  }
+
+  throw new HeaderMissingError('cf-connecting-ip')
+}

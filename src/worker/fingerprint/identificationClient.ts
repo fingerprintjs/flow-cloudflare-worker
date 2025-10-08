@@ -1,7 +1,7 @@
 import { Region } from './region'
 import { SIGNALS_HEADER } from '../../shared/const'
 import { IngressRequestFailedError, SignalsNotAvailableError } from '../errors'
-import { getHeaderOrThrow } from '../utils/headers'
+import { getHeaderOrThrow, getIp } from '../utils/headers'
 import { findCookie } from '../cookies'
 
 /**
@@ -85,7 +85,7 @@ export class IdentificationClient {
       throw new SignalsNotAvailableError()
     }
 
-    const clientIP = getHeaderOrThrow(clientRequest.headers, 'cf-connecting-ip')
+    const clientIP = await getIp(clientRequest.headers)
     const clientHost = getHeaderOrThrow(clientRequest.headers, 'host')
     const clientUserAgent = getHeaderOrThrow(clientRequest.headers, 'user-agent')
     const clientCookie = clientRequest.headers.get('cookie')
