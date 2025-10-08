@@ -11,8 +11,7 @@ export type SetupPatcherContextParams = {
  * Sets up patcher context for fingerprinting.
  *
  * This function initialises the fingerprinting signals and agent data processing providers by waiting for the document
- * to be ready and then loading the FingerprintJS agent. It handles both cases where the
- * document is already loaded and when it's still loading.
+ * to be ready and then loading the FingerprintJS agent.
  */
 export async function setupPatcherContext({ patcherCtx, fingerprintLoader }: SetupPatcherContextParams) {
   console.debug('Setting up signals collection...', document.readyState)
