@@ -52,7 +52,7 @@ export class IdentificationClient {
   /**
    * Creates a new IngressClient instance.
    * @param region - The region for URL resolution (e.g., 'us', 'eu')
-   * @param baseUrl - Base URL for the ingress service
+   * @param baseUrl - Base URL hostname for the ingress service, e.g. "api.fpjs.io"
    * @param apiKey - API key for authentication with the ingress service
    */
   constructor(
