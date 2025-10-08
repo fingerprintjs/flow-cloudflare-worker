@@ -163,7 +163,7 @@ export class IdentificationClient {
       ...identificationData,
       setCookieHeaders: cookiesToSend,
 
-      rulesetProcessor: ingressData.ruleAction ? makeRulesetProcessor(ingressData.ruleAction) : undefined,
+      rulesetProcessor: identificationData.ruleAction ? makeRulesetProcessor(identificationData.ruleAction) : undefined,
     }
   }
 

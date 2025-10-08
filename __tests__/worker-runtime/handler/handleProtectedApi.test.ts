@@ -6,7 +6,7 @@ import { CloudflareRequest } from '../request'
 import { env } from 'cloudflare:workers'
 import { TypedEnv } from '../../../src/worker/types'
 import { Region } from '../../../src/worker/fingerprint/region'
-import { SendResponse } from '../../../src/worker/fingerprint/ingress'
+import { SendResponse } from '../../../src/worker/fingerprint/identificationClient'
 
 type PrepareMockFetchParams = {
   mockIngressHandler: (request: Request) => Promise<Response>
@@ -133,7 +133,7 @@ describe('Protected API', () => {
 
   it('should send request to ingress and block request if ruleset says so', async () => {
     prepareMockFetch({
-      ingressHandler: async () => {
+      mockIngressHandler: async () => {
         const headers = new Headers()
         headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
         headers.append(
@@ -164,7 +164,7 @@ describe('Protected API', () => {
           }
         )
       },
-      originHandler: async () => new Response('origin'),
+      mockOriginHandler: async () => new Response('origin'),
     })
 
     const requestHeaders = new Headers({
@@ -194,7 +194,7 @@ describe('Protected API', () => {
   it('should send request to ingress and modify the request if ruleset says so', async () => {
     const originResponse = new Response('origin')
     prepareMockFetch({
-      ingressHandler: async () => {
+      mockIngressHandler: async () => {
         const headers = new Headers()
         headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
         headers.append(
@@ -225,7 +225,7 @@ describe('Protected API', () => {
           }
         )
       },
-      originHandler: async () => originResponse,
+      mockOriginHandler: async () => originResponse,
     })
 
     const requestHeaders = new Headers({
