@@ -82,12 +82,8 @@ describe('Protected API', () => {
       'x-custom-header': 'custom-value',
     })
 
-    // Add client cookie that should not be sent to ingress
-    requestHeaders.append('cookie', 'client-cookie=value;')
-    // Add _iidt cookie to the request headers, it should not be included in the ingress request
-    requestHeaders.append('cookie', '_iidt=123456;')
-    // Add another client cookie that should not be sent to ingress
-    requestHeaders.append('cookie', 'another-client-cookie=value')
+    const cookies = 'client-cookie=value; another-client-cookie=value; _iidt=123456;'
+    requestHeaders.append('cookie', cookies)
 
     const request = new CloudflareRequest('https://example.com/api', {
       method: 'POST',

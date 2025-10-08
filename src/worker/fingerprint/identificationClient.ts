@@ -102,7 +102,8 @@ export class IdentificationClient {
       // Try to find _iidt cookie
       const iidtMatch = findCookie(clientCookie, '_iidt')
       if (iidtMatch) {
-        cookieToSend = iidtMatch.toCookieString()
+        console.debug('Found _iidt cookie', iidtMatch)
+        cookieToSend = iidtMatch
       }
     }
 
