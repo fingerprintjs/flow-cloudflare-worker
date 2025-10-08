@@ -97,11 +97,13 @@ describe('Protected API', () => {
 
   it('should return empty 403 response if signals are missing', async () => {
     const requestHeaders = new Headers({
+      [SIGNALS_HEADER]: 'signals',
       'cf-connecting-ip': '1.2.3.4',
       host: 'example.com',
       'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
       'x-custom-header': 'custom-value',
     })
+    requestHeaders.delete(SIGNALS_HEADER)
 
     const request = new CloudflareRequest('https://example.com/api', {
       method: 'POST',
