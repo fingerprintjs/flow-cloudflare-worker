@@ -170,7 +170,7 @@ export class IdentificationClient {
   }
 
   /**
-   * Handles the browser cache behavior by modifying the client request and forwarding it to the configured ingress URL.
+   * Handles the browser cache request by modifying the client request and forwarding it to the configured ingress URL.
    *
    * @param {Request} clientRequest - The original request from the client.
    * @return {Promise<Response>} - A promise that resolves to the response from the forwarded request.
@@ -178,8 +178,10 @@ export class IdentificationClient {
   async browserCache(clientRequest: Request): Promise<Response> {
     const clientRequestUrl = new URL(clientRequest.url)
 
+    // Remove the route prefix from the path
     const path = clientRequestUrl.pathname.replace(`/${this.routePrefix}`, '')
     const ingressUrl = new URL(path, this.url)
+    ingressUrl.search = clientRequestUrl.search
 
     const headers = new Headers(clientRequest.headers)
     headers.delete('cookie')

@@ -44,7 +44,13 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
         })
 
       case 'browserCache':
-        return identificationClient.browserCache(request)
+        if (request.method === 'GET') {
+          return identificationClient.browserCache(request)
+        }
+
+        console.warn(`Invalid method for browser cache request: ${request.method}. Falling back to origin.`)
+
+        return fetchOrigin(request)
 
       case 'protection':
         return await handleProtectedApiCall({
