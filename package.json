@@ -13,6 +13,7 @@
   "scripts": {
     "preview:react-spa": "cd test-apps/react-spa && pnpm preview",
     "dev": "vite serve --config vite.worker.ts --mode dev",
+    "watch:instrumentor": "vite build --config vite.instrumentor.ts --watch",
     "prepare": "husky && ./scripts/setup-wrangler.sh && pnpm build:instrumentor",
     "build": "pnpm build:instrumentor && pnpm build:worker",
     "build:worker": "vite build --config vite.worker.ts",
