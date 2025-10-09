@@ -40,7 +40,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           publicApiKey: getPublicKey(env),
           cdnHost: getCDNHost(env),
           protectedApis: getProtectedApis(env),
-          scriptBehaviorPath: getRoutePrefix(env),
+          routePrefix: getRoutePrefix(env),
         })
 
       case 'browserCache':

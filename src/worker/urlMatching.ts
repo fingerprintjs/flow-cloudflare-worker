@@ -24,13 +24,13 @@ export type UrlType =
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
   console.debug('Matching url', url.toString())
 
-  const scriptBehaviorPath = getRoutePrefix(env)
+  const routePrefix = getRoutePrefix(env)
 
   const routes = parseRoutes<UrlType>(
     [
       ...scripts.map((script) => {
         return {
-          url: new URL(`/${scriptBehaviorPath}/${script}`, url.origin).toString(),
+          url: new URL(`/${routePrefix}/${script}`, url.origin).toString(),
           metadata: {
             type: 'script' as const,
             script,
@@ -38,7 +38,7 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
         }
       }),
       {
-        url: new URL(`/${scriptBehaviorPath}/*`, url.origin).toString(),
+        url: new URL(`/${routePrefix}/*`, url.origin).toString(),
         metadata: {
           type: 'browserCache' as const,
         },

@@ -18,7 +18,7 @@ export function getScriptUrl(script: Script, env: TypedEnv) {
 export type ResolveTemplatesParams = {
   code: string
   protectedApis: ProtectedApi[]
-  scriptBehaviorPath: string
+  routePrefix: string
 }
 
 /**
@@ -32,7 +32,7 @@ export type ResolveTemplatesParams = {
  *
  * @param {Object} params - The parameters for template resolution
  * @param {string} params.code - The source code containing template placeholders to be resolved
- * @param {string} params.scriptBehaviorPath - The path prefix for scripts that will replace `<ROUTE_PREFIX>`
+ * @param {string} params.routePrefix - The path prefix for worker requests that will replace `<ROUTE_PREFIX>`
  * @param {ProtectedApi[]} params.protectedApis - Array of protected API configurations that will replace `"<PROTECTED_APIS>"`
  * @returns {string} The processed code with all template placeholders replaced by their actual values
  *
@@ -41,7 +41,7 @@ export type ResolveTemplatesParams = {
  * const code = 'const apis = "<PROTECTED_APIS>"; const path = "<ROUTE_PREFIX>";';
  * const result = resolveTemplates({
  *   code,
- *   scriptBehaviorPath: '/fingerprint/v1',
+ *   routePrefix: '/fingerprint/v1',
  *   protectedApis: [{ name: 'getUserAgent', enabled: true }]
  * });
  * // Result: 'const apis = [{"name":"getUserAgent","enabled":true}]; const path = "/fingerprint/v1";'
@@ -50,11 +50,11 @@ export type ResolveTemplatesParams = {
  * @note The quotes around `<PROTECTED_APIS>` in the template are intentional to ensure
  * the replacement results in valid JavaScript syntax when the array is JSON stringified.
  */
-export function resolveTemplates({ code, scriptBehaviorPath, protectedApis }: ResolveTemplatesParams): string {
+export function resolveTemplates({ code, routePrefix, protectedApis }: ResolveTemplatesParams): string {
   return (
     code
       // The " quotes are intentional here to prevent the template from being parsed as a string literal
       .replace('"<PROTECTED_APIS>"', JSON.stringify(protectedApis))
-      .replace('<ROUTE_PREFIX>', scriptBehaviorPath)
+      .replace('<ROUTE_PREFIX>', routePrefix)
   )
 }
