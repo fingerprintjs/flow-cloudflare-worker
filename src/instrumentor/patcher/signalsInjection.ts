@@ -28,7 +28,7 @@ type HandleSignalsInjectionParams = {
  */
 export async function handleSignalsInjection({ request, ctx }: HandleSignalsInjectionParams): Promise<boolean> {
   if (!ctx.isProtectedUrl(request.url, request.method)) {
-    console.debug('Skipping signals injection:', request?.url)
+    console.debug('Skipping signals injection:', request.url)
     return false
   }
 
