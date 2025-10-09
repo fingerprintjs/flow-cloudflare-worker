@@ -1,4 +1,4 @@
-import { validateScript } from './scripts'
+import { scripts } from './scripts'
 import { TypedEnv } from './types'
 import { getIdentificationPageUrls, getProtectedApis, getScriptBehaviorPath } from './env'
 import { Script } from '../shared/scripts'
@@ -21,23 +21,19 @@ export type UrlType =
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
   console.debug('Matching url', url.toString())
 
-  // First, try to match script path
   const scriptBehaviorPath = getScriptBehaviorPath(env)
-  if (url.pathname.includes(scriptBehaviorPath)) {
-    console.info('Matched script Behavior path', url.pathname)
-
-    const script = url.pathname.replace(`/${scriptBehaviorPath}/`, '')
-    validateScript(script)
-    console.info('Matched script', script)
-
-    return {
-      type: 'script',
-      script,
-    }
-  }
 
   const routes = parseRoutes<UrlType>(
     [
+      ...scripts.map((script) => {
+        return {
+          url: new URL(`/${scriptBehaviorPath}/${script}`, url.origin).toString(),
+          metadata: {
+            type: 'script' as const,
+            script,
+          },
+        }
+      }),
       ...getProtectedApis(env)
         .filter((protectedApi) => protectedApi.method === method)
         .map((protectedApi) => {

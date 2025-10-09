@@ -3,7 +3,7 @@ import { getScriptBehaviorPath } from './env'
 import { ProtectedApi } from '../shared/types'
 import { Script } from '../shared/scripts'
 
-const scripts: Script[] = ['instrumentor.iife.js', 'loader.js']
+export const scripts: Script[] = ['instrumentor.iife.js', 'loader.js']
 
 export function validateScript(script: string): asserts script is Script {
   if (!scripts.includes(script as Script)) {
