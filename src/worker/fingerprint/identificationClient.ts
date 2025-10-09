@@ -167,6 +167,19 @@ export class IdentificationClient {
     }
   }
 
+  async browserCache(clientRequest: Request): Promise<Response> {
+    const clientRequestUrl = new URL(clientRequest.url)
+
+    const ingressUrl = new URL(clientRequestUrl.pathname, this.url)
+
+    const headers = new Headers(clientRequest.headers)
+    headers.delete('cookie')
+
+    const request = new Request(ingressUrl, new Request(clientRequest, { headers }))
+
+    return fetch(request as unknown as Request<unknown, IncomingRequestCfProperties>)
+  }
+
   /**
    * Resolves the full identification service URL based on the region and host.
    *

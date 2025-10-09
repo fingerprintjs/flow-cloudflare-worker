@@ -4,5 +4,6 @@ export type Agent = Awaited<ReturnType<typeof load>>
 
 export type FingerprintLoader = {
   load: (options?: Omit<LoadOptions, 'apiKey'>) => Promise<Agent>
+  defaultEndpoint: string
   handleAgentData: (data: string, options?: HandleAgentDataOptions) => void
 }

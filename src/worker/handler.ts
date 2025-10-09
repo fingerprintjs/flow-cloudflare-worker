@@ -20,7 +20,7 @@ import { IdentificationClient } from './fingerprint/identificationClient'
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
 
-  const ingressClient = new IdentificationClient(getFpRegion(env), getIngressBaseHost(env), getSecretKey(env))
+  const identificationClient = new IdentificationClient(getFpRegion(env), getIngressBaseHost(env), getSecretKey(env))
 
   try {
     const matchedUrl = matchUrl(new URL(request.url), request.method, env)
@@ -38,10 +38,13 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           scriptBehaviorPath: getScriptBehaviorPath(env),
         })
 
+      case 'browserCache':
+        return identificationClient.browserCache(request)
+
       case 'protection':
         return await handleProtectedApiCall({
           request,
-          ingressClient,
+          ingressClient: identificationClient,
         })
 
       default:

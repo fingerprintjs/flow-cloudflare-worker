@@ -17,6 +17,9 @@ export type UrlType =
       type: 'script'
       script: Script
     }
+  | {
+      type: 'browserCache'
+    }
 
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
   console.debug('Matching url', url.toString())
@@ -34,6 +37,13 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
           },
         }
       }),
+      {
+        url: new URL(`/${scriptBehaviorPath}/*`, url.origin).toString(),
+        metadata: {
+          type: 'browserCache' as const,
+        },
+      },
+
       ...getProtectedApis(env)
         .filter((protectedApi) => protectedApi.method === method)
         .map((protectedApi) => {
