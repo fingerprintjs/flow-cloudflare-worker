@@ -47,10 +47,10 @@ export function getRulesetId(env: TypedEnv) {
   return env.FP_RULESET_ID || ''
 }
 
-export function getScriptBehaviorPath(env: TypedEnv) {
-  assertVariableIsSet(env, 'SCRIPTS_BEHAVIOR_PATH')
+export function getRoutePrefix(env: TypedEnv) {
+  assertVariableIsSet(env, 'ROUTE_PREFIX')
 
-  return env.SCRIPTS_BEHAVIOR_PATH
+  return env.ROUTE_PREFIX
 }
 
 export function getFpRegion(env: TypedEnv): Region {

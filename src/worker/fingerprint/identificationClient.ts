@@ -59,13 +59,13 @@ export class IdentificationClient {
    * @param region - The region for URL resolution (e.g., 'us', 'eu')
    * @param baseUrl - Base URL hostname for the identification service, e.g. "api.fpjs.io"
    * @param apiKey - API key for authentication with the identification service
-   * @param scriptBehaviorPath - Path prefix for scripts.
+   * @param routePrefix - Path prefix for worker requests.
    */
   constructor(
     region: Region,
     baseUrl: string,
     private readonly apiKey: string,
-    private readonly scriptBehaviorPath: string
+    private readonly routePrefix: string
   ) {
     const resolvedUrl = IdentificationClient.resolveUrl(region, baseUrl)
     console.debug('Resolved identification URL:', resolvedUrl)
@@ -169,10 +169,16 @@ export class IdentificationClient {
     }
   }
 
+  /**
+   * Handles the browser cache behavior by modifying the client request and forwarding it to the configured ingress URL.
+   *
+   * @param {Request} clientRequest - The original request from the client.
+   * @return {Promise<Response>} - A promise that resolves to the response from the forwarded request.
+   */
   async browserCache(clientRequest: Request): Promise<Response> {
     const clientRequestUrl = new URL(clientRequest.url)
 
-    const path = clientRequestUrl.pathname.replace(`/${this.scriptBehaviorPath}`, '')
+    const path = clientRequestUrl.pathname.replace(`/${this.routePrefix}`, '')
     const ingressUrl = new URL(path, this.url)
 
     const headers = new Headers(clientRequest.headers)

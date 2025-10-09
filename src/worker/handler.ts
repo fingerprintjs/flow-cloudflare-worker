@@ -8,7 +8,7 @@ import {
   getIngressBaseHost,
   getProtectedApis,
   getPublicKey,
-  getScriptBehaviorPath,
+  getRoutePrefix,
   getSecretKey,
 } from './env'
 
@@ -24,7 +24,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
     getFpRegion(env),
     getIngressBaseHost(env),
     getSecretKey(env),
-    getScriptBehaviorPath(env)
+    getRoutePrefix(env)
   )
 
   try {
@@ -40,7 +40,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           publicApiKey: getPublicKey(env),
           cdnHost: getCDNHost(env),
           protectedApis: getProtectedApis(env),
-          scriptBehaviorPath: getScriptBehaviorPath(env),
+          scriptBehaviorPath: getRoutePrefix(env),
         })
 
       case 'browserCache':

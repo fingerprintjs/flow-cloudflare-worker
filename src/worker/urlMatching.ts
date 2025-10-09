@@ -1,6 +1,6 @@
 import { scripts } from './scripts'
 import { TypedEnv } from './types'
-import { getIdentificationPageUrls, getProtectedApis, getScriptBehaviorPath } from './env'
+import { getIdentificationPageUrls, getProtectedApis, getRoutePrefix } from './env'
 import { Script } from '../shared/scripts'
 import { findMatchingRoute, parseRoutes } from '@fingerprintjs/url-matcher'
 import { ProtectedApiHttpMethod } from '../shared/types'
@@ -24,7 +24,7 @@ export type UrlType =
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
   console.debug('Matching url', url.toString())
 
-  const scriptBehaviorPath = getScriptBehaviorPath(env)
+  const scriptBehaviorPath = getRoutePrefix(env)
 
   const routes = parseRoutes<UrlType>(
     [

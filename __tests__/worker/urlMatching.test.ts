@@ -202,7 +202,7 @@ describe('URL matching', () => {
     it('should match script behavior path', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        SCRIPTS_BEHAVIOR_PATH: 'scripts',
+        ROUTE_PREFIX: 'scripts',
       }
 
       const result = matchUrl(new URL('https://example.com/scripts/instrumentor.iife.js'), 'GET', env)
@@ -216,7 +216,7 @@ describe('URL matching', () => {
     it('should match script behavior path with different script', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        SCRIPTS_BEHAVIOR_PATH: 'js',
+        ROUTE_PREFIX: 'js',
       }
 
       const result = matchUrl(new URL('https://example.com/js/loader.js'), 'GET', env)
@@ -230,7 +230,7 @@ describe('URL matching', () => {
     it('should match script behavior path with different base path', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        SCRIPTS_BEHAVIOR_PATH: 'assets/scripts',
+        ROUTE_PREFIX: 'assets/scripts',
       }
 
       const result = matchUrl(new URL('https://example.com/assets/scripts/instrumentor.iife.js'), 'GET', env)
@@ -244,7 +244,7 @@ describe('URL matching', () => {
     it('should not match url that does not contain script behavior path', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        SCRIPTS_BEHAVIOR_PATH: 'scripts',
+        ROUTE_PREFIX: 'scripts',
       }
 
       const result = matchUrl(new URL('https://example.com/assets/main.js'), 'GET', env)
@@ -257,7 +257,7 @@ describe('URL matching', () => {
     it('should prioritize script behavior path over other matches', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        SCRIPTS_BEHAVIOR_PATH: 'scripts',
+        ROUTE_PREFIX: 'scripts',
         PROTECTED_APIS: [
           {
             method: 'POST',
@@ -285,7 +285,7 @@ describe('URL matching', () => {
           },
         ],
         IDENTIFICATION_PAGE_URLS: ['https://example.com/identify'],
-        SCRIPTS_BEHAVIOR_PATH: 'scripts',
+        ROUTE_PREFIX: 'scripts',
       }
 
       const result = matchUrl(new URL('https://example.com/some/random/path'), 'GET', env)
@@ -298,7 +298,7 @@ describe('URL matching', () => {
         ...mockEnv,
         PROTECTED_APIS: [],
         IDENTIFICATION_PAGE_URLS: [],
-        SCRIPTS_BEHAVIOR_PATH: 'scripts',
+        ROUTE_PREFIX: 'scripts',
       }
 
       const result = matchUrl(new URL('https://example.com/api/users'), 'POST', env)

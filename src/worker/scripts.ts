@@ -1,5 +1,5 @@
 import { TypedEnv } from './types'
-import { getScriptBehaviorPath } from './env'
+import { getRoutePrefix } from './env'
 import { ProtectedApi } from '../shared/types'
 import { Script } from '../shared/scripts'
 
@@ -12,7 +12,7 @@ export function validateScript(script: string): asserts script is Script {
 }
 
 export function getScriptUrl(script: Script, env: TypedEnv) {
-  return `/${getScriptBehaviorPath(env)}/${script}`
+  return `/${getRoutePrefix(env)}/${script}`
 }
 
 export type ResolveTemplatesParams = {
@@ -28,17 +28,17 @@ export type ResolveTemplatesParams = {
  * by replacing predefined template strings with their corresponding values. It performs
  * two key replacements:
  * - `"<PROTECTED_APIS>"` (with quotes) is replaced with a JSON stringified array of protected APIs
- * - `<SCRIPT_BEHAVIOR_PATH>` is replaced with the script behavior path string
+ * - `<ROUTE_PREFIX>` is replaced with the worker path prefix string
  *
  * @param {Object} params - The parameters for template resolution
  * @param {string} params.code - The source code containing template placeholders to be resolved
- * @param {string} params.scriptBehaviorPath - The path prefix for scripts that will replace `<SCRIPT_BEHAVIOR_PATH>`
+ * @param {string} params.scriptBehaviorPath - The path prefix for scripts that will replace `<ROUTE_PREFIX>`
  * @param {ProtectedApi[]} params.protectedApis - Array of protected API configurations that will replace `"<PROTECTED_APIS>"`
  * @returns {string} The processed code with all template placeholders replaced by their actual values
  *
  * @example
  * ```typescript
- * const code = 'const apis = "<PROTECTED_APIS>"; const path = "<SCRIPT_BEHAVIOR_PATH>";';
+ * const code = 'const apis = "<PROTECTED_APIS>"; const path = "<ROUTE_PREFIX>";';
  * const result = resolveTemplates({
  *   code,
  *   scriptBehaviorPath: '/fingerprint/v1',
@@ -55,6 +55,6 @@ export function resolveTemplates({ code, scriptBehaviorPath, protectedApis }: Re
     code
       // The " quotes are intentional here to prevent the template from being parsed as a string literal
       .replace('"<PROTECTED_APIS>"', JSON.stringify(protectedApis))
-      .replace('<SCRIPT_BEHAVIOR_PATH>', scriptBehaviorPath)
+      .replace('<ROUTE_PREFIX>', scriptBehaviorPath)
   )
 }
