@@ -6,12 +6,19 @@
     "FP_REGION": "us",
     "FPJS_CDN_URL": "",
     "FPJS_INGRESS_BASE_HOST": "",
-    "ROUTE_PREFIX": "",
-    "PUBLIC_KEY": "",
-    "SECRET_KEY": "",
-    "FP_RULESET_ID": "",
-    "PROTECTED_APIS": [],
-    "IDENTIFICATION_PAGE_URLS": []
+    "ROUTE_PREFIX": "W0cuVtnPs",
+    "PUBLIC_KEY": "<YOUR_FINGERPRINT_PUBLIC_KEY>",
+    "SECRET_KEY": "<YOUR_FINGERPRINT_SECRET_KEY>",
+    "FP_RULESET_ID": "<YOUR_FINGERPRINT_RULESET_ID>",
+    "PROTECTED_APIS": [
+      {
+        "method": "POST",
+        "url": "http://localhost/api/*"
+      }
+    ],
+    "IDENTIFICATION_PAGE_URLS": [
+      "http://localhost/"
+    ]
   },
   "observability": {
     "enabled": true,
