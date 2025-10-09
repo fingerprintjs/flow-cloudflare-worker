@@ -71,6 +71,7 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
   const matchedRoute = findMatchingRoute(url, routes)
 
   if (matchedRoute) {
+    console.debug('Matched route', matchedRoute)
     return matchedRoute.metadata
   }
 
