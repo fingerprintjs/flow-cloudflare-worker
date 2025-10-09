@@ -19,6 +19,8 @@ export type UrlType =
     }
 
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
+  console.debug('Matching url', url.toString())
+
   // First, try to match script path
   const scriptBehaviorPath = getScriptBehaviorPath(env)
   if (url.pathname.includes(scriptBehaviorPath)) {
@@ -39,10 +41,8 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
       ...getProtectedApis(env)
         .filter((protectedApi) => protectedApi.method === method)
         .map((protectedApi) => {
-          const apiUrl = new URL(protectedApi.url, url.origin)
-
           return {
-            url: apiUrl.toString(),
+            url: protectedApi.url,
             metadata: {
               type: 'protection' as const,
               method: protectedApi.method,
@@ -50,11 +50,9 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
           }
         }),
 
-      ...getIdentificationPageUrls(env).map((identificationPath) => {
-        const identificationUrl = new URL(identificationPath, url.origin)
-
+      ...getIdentificationPageUrls(env).map((identificationPageUrl) => {
         return {
-          url: identificationUrl.toString(),
+          url: identificationPageUrl,
           metadata: {
             type: 'identification' as const,
           },
@@ -63,6 +61,7 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
     ],
     { sortBySpecificity: true }
   )
+  console.debug('Created routes', routes)
   const matchedRoute = findMatchingRoute(url, routes)
 
   if (matchedRoute) {

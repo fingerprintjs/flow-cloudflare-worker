@@ -3,6 +3,7 @@ import { patchFetch } from '../../../src/instrumentor/patcher/fetch/fetch'
 import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
 import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
+import { mockUrl, mockWorkerBaseUrl } from '../../utils/mockEnv'
 
 describe('Fetch Patcher', () => {
   let mockContext: PatcherContext
@@ -12,12 +13,12 @@ describe('Fetch Patcher', () => {
   const mockProtectedApis: ProtectedApi[] = [
     {
       method: 'POST',
-      url: '/protected/*',
+      url: mockUrl('/protected/*'),
     },
   ]
 
   beforeEach(() => {
-    location.href = 'https://api.example.com'
+    location.href = mockWorkerBaseUrl
     vi.clearAllMocks()
 
     vi.spyOn(globalThis, 'fetch')
@@ -55,7 +56,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
       const init = { method: 'POST', headers: { 'Content-Type': 'application/json' } }
 
       await window.fetch(url, init)
@@ -80,7 +81,7 @@ describe('Fetch Patcher', () => {
       vi.mocked(mockContext.isProtectedUrl).mockReturnValue(true)
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(url)
 
@@ -99,7 +100,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = new URL('https://api.example.com/protected/endpoint')
+      const url = new URL(mockUrl('/protected/endpoint'))
       const init = { method: 'POST' }
 
       await window.fetch(url, init)
@@ -123,7 +124,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const request = new Request('https://api.example.com/protected/endpoint', {
+      const request = new Request(mockUrl('/protected/endpoint'), {
         method: 'POST',
         headers: { Authorization: 'Bearer token' },
       })
@@ -157,10 +158,10 @@ describe('Fetch Patcher', () => {
       const emptyContext = new WritablePatcherContext(mockProtectedApis)
       patchFetch(emptyContext)
 
-      await window.fetch('https://api.example.com/protected/endpoint')
+      await window.fetch(mockUrl('/protected/endpoint'))
 
       // By checking that fetch was called with EXACTLY one param, we know that no signals were injected
-      expect(fetch).toHaveBeenCalledWith('https://api.example.com/protected/endpoint')
+      expect(fetch).toHaveBeenCalledWith(mockUrl('/protected/endpoint'))
     })
 
     it('should handle unsupported fetch parameters gracefully', async () => {
@@ -218,7 +219,7 @@ describe('Fetch Patcher', () => {
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const existingHeaders = new Headers({ 'Content-Type': 'application/json' })
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(url, {
         method: 'POST',
@@ -236,7 +237,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(url, {
         method: 'POST',
@@ -256,7 +257,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(url, {
         method: 'POST',
@@ -274,7 +275,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
       const headers = { [SIGNALS_HEADER]: 'old-signals-data' }
 
       await window.fetch(url, { method: 'POST', headers })
@@ -289,7 +290,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const request = new Request('https://api.example.com/protected/endpoint', {
+      const request = new Request(mockUrl('/protected/endpoint'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -309,7 +310,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const request = new Request('https://api.example.com/protected/endpoint', {
+      const request = new Request(mockUrl('/protected/endpoint'), {
         method: 'POST',
         headers: new Headers({
           'Content-Type': 'application/json',
@@ -365,7 +366,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(url, {
         mode: 'no-cors',
@@ -385,7 +386,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       const request = new Request(url, { method: 'POST', mode: 'no-cors' })
       await window.fetch(request)
@@ -402,7 +403,7 @@ describe('Fetch Patcher', () => {
 
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(new Request(url, { method: 'POST', mode: 'cors' }))
 
@@ -422,7 +423,7 @@ describe('Fetch Patcher', () => {
         })
       )
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(new Request(url, { method: 'POST' }))
 
@@ -465,7 +466,7 @@ describe('Fetch Patcher', () => {
         })
       )
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(new Request(url, { method: 'POST' }))
 
@@ -486,7 +487,7 @@ describe('Fetch Patcher', () => {
       })
       vi.mocked(fetch).mockResolvedValue(mockResponse)
 
-      const url = 'https://api.example.com/protected/endpoint'
+      const url = mockUrl('/protected/endpoint')
 
       const response = await window.fetch(new Request(url, { method: 'POST' }))
       expect(mockProcessAgentData).toHaveBeenCalledTimes(1)

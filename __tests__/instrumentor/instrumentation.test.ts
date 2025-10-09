@@ -3,6 +3,7 @@ import { patchFetch } from '../../src/instrumentor/patcher/fetch/fetch'
 import { setupInstrumentor } from '../../src/instrumentor/instrumentor'
 import { wait } from '../utils/wait'
 import { FingerprintLoader } from '../../src/instrumentor/types'
+import { mockUrl } from '../utils/mockEnv'
 
 vi.mock('../../src/instrumentor/patcher/fetch/fetch')
 
@@ -33,7 +34,7 @@ describe('Instrumentor', () => {
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
       protectedApis: [
         {
-          url: '/protected/*',
+          url: mockUrl('/protected/*'),
           method: 'POST',
         },
       ],
@@ -59,7 +60,7 @@ describe('Instrumentor', () => {
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
       protectedApis: [
         {
-          url: '/protected/*',
+          url: mockUrl('/protected/*'),
           method: 'POST',
         },
       ],
@@ -86,7 +87,7 @@ describe('Instrumentor', () => {
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
       protectedApis: [
         {
-          url: '/protected/*',
+          url: mockUrl('/protected/*'),
           method: 'POST',
         },
       ],

@@ -11,7 +11,7 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/*',
+            url: 'https://api.example.com/api/*',
           },
         ],
       }
@@ -30,7 +30,7 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/users',
+            url: 'https://api.example.com/api/users',
           },
         ],
       }
@@ -49,7 +49,7 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/v1/users/*',
+            url: 'https://api.example.com/api/v1/users/*',
           },
         ],
       }
@@ -68,7 +68,7 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/*',
+            url: 'https://api.example.com/api/*',
           },
         ],
       }
@@ -84,7 +84,7 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/users',
+            url: 'https://api.example.com/api/users',
           },
         ],
       }
@@ -100,11 +100,11 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/v1/*',
+            url: 'https://api.example.com/api/v1/*',
           },
           {
             method: 'POST',
-            url: '/api/v2/*',
+            url: 'https://api.example.com/api/v2/*',
           },
         ],
       }
@@ -125,7 +125,7 @@ describe('URL matching', () => {
     it('should match identification page url', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        IDENTIFICATION_PAGE_URLS: ['/identify'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/identify'],
       }
 
       const result = matchUrl(new URL('https://example.com/identify'), 'GET', env)
@@ -151,7 +151,7 @@ describe('URL matching', () => {
     it('should match identification page url with nested path', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        IDENTIFICATION_PAGE_URLS: ['/auth/identify'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/auth/identify'],
       }
 
       const result = matchUrl(new URL('https://example.com/auth/identify'), 'GET', env)
@@ -164,7 +164,11 @@ describe('URL matching', () => {
     it('should match multiple identification page urls', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        IDENTIFICATION_PAGE_URLS: ['/identify', '/auth/identify', '/login'],
+        IDENTIFICATION_PAGE_URLS: [
+          'https://example.com/identify',
+          'https://example.com/auth/identify',
+          'https://example.com/login',
+        ],
       }
 
       const result1 = matchUrl(new URL('https://example.com/identify'), 'GET', env)
@@ -185,7 +189,7 @@ describe('URL matching', () => {
     it('should not match identification page that does not exist', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        IDENTIFICATION_PAGE_URLS: ['/identify'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/identify'],
       }
 
       const result = matchUrl(new URL('https://example.com/login'), 'GET', env)
@@ -257,10 +261,10 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/scripts/*',
+            url: 'https://example.com/scripts/*',
           },
         ],
-        IDENTIFICATION_PAGE_URLS: ['/scripts/identify'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/scripts/identify'],
       }
 
       const result = matchUrl(new URL('https://example.com/scripts/loader.js'), 'GET', env)
@@ -277,10 +281,10 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/*',
+            url: 'https://example.com/api/*',
           },
         ],
-        IDENTIFICATION_PAGE_URLS: ['/identify'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/identify'],
         SCRIPTS_BEHAVIOR_PATH: 'scripts',
       }
 
@@ -308,12 +312,12 @@ describe('URL matching', () => {
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/*',
+            url: 'https://api.example.com/api/*',
           },
         ],
       }
 
-      const result = matchUrl(new URL('https://example.com/api/users?id=123&name=test'), 'POST', env)
+      const result = matchUrl(new URL('https://api.example.com/api/users?id=123&name=test'), 'POST', env)
 
       expect(result).toEqual({
         type: 'protection',
@@ -324,7 +328,7 @@ describe('URL matching', () => {
     it('should handle URLs with hash fragments', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        IDENTIFICATION_PAGE_URLS: ['/identify'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/identify'],
       }
 
       const result = matchUrl(new URL('https://example.com/identify#section1'), 'GET', env)
@@ -334,34 +338,31 @@ describe('URL matching', () => {
       })
     })
 
-    it('should match protected API with different domains', () => {
+    it('should not match protected API with different domains', () => {
       const env: TypedEnv = {
         ...mockEnv,
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: '/api/*',
+            url: 'https://example.com/api/*',
           },
         ],
       }
 
-      const result1 = matchUrl(new URL('https://api.example.com/api/users'), 'POST', env)
+      const result1 = matchUrl(new URL('https://example.com/api/users'), 'POST', env)
       const result2 = matchUrl(new URL('https://different-domain.com/api/users'), 'POST', env)
 
       expect(result1).toEqual({
         type: 'protection',
         method: 'POST',
       })
-      expect(result2).toEqual({
-        type: 'protection',
-        method: 'POST',
-      })
+      expect(result2).toBeUndefined()
     })
 
     it('should handle root path matching', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        IDENTIFICATION_PAGE_URLS: ['/'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/'],
       }
 
       const result = matchUrl(new URL('https://example.com/'), 'GET', env)
@@ -376,11 +377,11 @@ describe('URL matching', () => {
     it('should handle specificity', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        IDENTIFICATION_PAGE_URLS: ['blog/post/*', 'blog/about'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/blog/post/*', 'https://example.com/blog/about'],
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: 'blog/like/*',
+            url: 'https://example.com/blog/like/*',
           },
         ],
       }
@@ -401,11 +402,11 @@ describe('URL matching', () => {
     it('should handle same route with different methods', () => {
       const env: TypedEnv = {
         ...mockEnv,
-        IDENTIFICATION_PAGE_URLS: ['blog/*'],
+        IDENTIFICATION_PAGE_URLS: ['https://example.com/blog/*'],
         PROTECTED_APIS: [
           {
             method: 'POST',
-            url: 'blog/*',
+            url: 'https://example.com/blog/*',
           },
         ],
       }

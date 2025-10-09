@@ -3,10 +3,9 @@ import { SIGNALS_HEADER } from '../../../src/shared/const'
 import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import handler from '../../../src/worker'
 import { CloudflareRequest } from '../request'
-import { env } from 'cloudflare:workers'
-import { TypedEnv } from '../../../src/worker/types'
 import { Region } from '../../../src/worker/fingerprint/region'
 import { SendResponse } from '../../../src/worker/fingerprint/identificationClient'
+import { mockEnv, mockUrl } from '../../utils/mockEnv'
 
 type PrepareMockFetchParams = {
   mockIngressHandler: (request: Request) => Promise<Response>
@@ -86,12 +85,12 @@ describe('Protected API', () => {
     const cookies = 'client-cookie=value; another-client-cookie=value; _iidt=123456;'
     requestHeaders.append('cookie', cookies)
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -175,12 +174,12 @@ describe('Protected API', () => {
       'x-custom-header': 'custom-value',
     })
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     // Only one request to ingress should be made
@@ -236,12 +235,12 @@ describe('Protected API', () => {
       'x-custom-header': 'custom-value',
     })
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -296,12 +295,12 @@ describe('Protected API', () => {
       'x-custom-header': 'custom-value',
     })
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -369,7 +368,7 @@ describe('Protected API', () => {
       mockOriginHandler: async () => new Response('origin'),
     })
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: {
         [SIGNALS_HEADER]: 'signals',
@@ -380,9 +379,9 @@ describe('Protected API', () => {
     })
     const ctx = createExecutionContext()
     await handler.fetch(request, {
-      ...env,
+      ...mockEnv,
       FP_REGION: region,
-    } as TypedEnv)
+    })
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -427,12 +426,12 @@ describe('Protected API', () => {
       'x-custom-header': 'custom-value',
     })
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
@@ -451,12 +450,12 @@ describe('Protected API', () => {
     })
     requestHeaders.delete(SIGNALS_HEADER)
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     expect(response.status).toEqual(403)
@@ -498,12 +497,12 @@ describe('Protected API', () => {
       'x-custom-header': 'custom-value',
     })
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     expect(response.status).toEqual(403)
@@ -548,12 +547,12 @@ describe('Protected API', () => {
       })
       requestHeaders.delete(header)
 
-      const request = new CloudflareRequest('https://example.com/api', {
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
         method: 'POST',
         headers: requestHeaders,
       })
       const ctx = createExecutionContext()
-      const response = await handler.fetch(request, env as TypedEnv)
+      const response = await handler.fetch(request, mockEnv)
       await waitOnExecutionContext(ctx)
 
       expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)

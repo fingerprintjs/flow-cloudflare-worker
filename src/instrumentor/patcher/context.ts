@@ -81,7 +81,7 @@ export class WritablePatcherContext implements PatcherContext {
         this.protectedMethods.add(api.method)
 
         return {
-          url: new URL(api.url, location.origin).toString(),
+          url: api.url,
           metadata: {
             method: api.method,
           },

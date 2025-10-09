@@ -20,6 +20,7 @@
     "./vite-env.d.ts",
     "./worker-configuration.d.ts",
     "./__tests__/worker-runtime/**/*",
+    "./__tests__/utils/**/*",
     "vitest.config.ts",
     "./src/worker/**/*",
     "./src/shared/**/*"
