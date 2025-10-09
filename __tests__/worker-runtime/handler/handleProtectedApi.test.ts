@@ -39,6 +39,16 @@ function checkIngressRequest<CfHostMetadata>(
   expect(ingressRequest!.method).toEqual('POST')
 }
 
+function getCompleteHeaders() {
+  return new Headers({
+    [SIGNALS_HEADER]: 'signals',
+    'cf-connecting-ip': '1.2.3.4',
+    host: 'example.com',
+    'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+    'x-custom-header': 'custom-value',
+  })
+}
+
 describe('Protected API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -74,13 +84,7 @@ describe('Protected API', () => {
         }),
     })
 
-    const requestHeaders = new Headers({
-      [SIGNALS_HEADER]: 'signals',
-      'cf-connecting-ip': '1.2.3.4',
-      host: 'example.com',
-      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      'x-custom-header': 'custom-value',
-    })
+    const requestHeaders = getCompleteHeaders()
 
     const cookies = 'client-cookie=value; another-client-cookie=value; _iidt=123456;'
     requestHeaders.append('cookie', cookies)
@@ -151,13 +155,7 @@ describe('Protected API', () => {
       mockOriginHandler: async () => new Response('origin'),
     })
 
-    const requestHeaders = new Headers({
-      [SIGNALS_HEADER]: 'signals',
-      'cf-connecting-ip': '1.2.3.4',
-      host: 'example.com',
-      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      'x-custom-header': 'custom-value',
-    })
+    const requestHeaders = getCompleteHeaders()
 
     const request = new CloudflareRequest('https://example.com/api', {
       method: 'POST',
@@ -282,13 +280,7 @@ describe('Protected API', () => {
         }),
     })
 
-    const requestHeaders = new Headers({
-      [SIGNALS_HEADER]: 'signals',
-      'cf-connecting-ip': '1.2.3.4',
-      host: 'example.com',
-      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      'x-custom-header': 'custom-value',
-    })
+    const requestHeaders = getCompleteHeaders()
 
     const request = new CloudflareRequest('https://example.com/api', {
       method: 'POST',
@@ -305,13 +297,7 @@ describe('Protected API', () => {
   })
 
   it('should return empty 403 response if signals are missing', async () => {
-    const requestHeaders = new Headers({
-      [SIGNALS_HEADER]: 'signals',
-      'cf-connecting-ip': '1.2.3.4',
-      host: 'example.com',
-      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      'x-custom-header': 'custom-value',
-    })
+    const requestHeaders = getCompleteHeaders()
     requestHeaders.delete(SIGNALS_HEADER)
 
     const request = new CloudflareRequest('https://example.com/api', {
@@ -402,13 +388,7 @@ describe('Protected API', () => {
           }),
       })
 
-      const requestHeaders = new Headers({
-        [SIGNALS_HEADER]: 'signals',
-        'cf-connecting-ip': '1.2.3.4',
-        host: 'example.com',
-        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-        'x-custom-header': 'custom-value',
-      })
+      const requestHeaders = getCompleteHeaders()
       requestHeaders.delete(header)
 
       const request = new CloudflareRequest('https://example.com/api', {
