@@ -149,7 +149,7 @@ export class WritablePatcherContext implements PatcherContext {
       return false
     }
 
-    const matchedRoute = findMatchingRoute(new URL(url), this.protectedRoutes)
+    const matchedRoute = findMatchingRoute(new URL(url, location.origin), this.protectedRoutes)
 
     if (matchedRoute) {
       return matchedRoute.metadata?.method === method

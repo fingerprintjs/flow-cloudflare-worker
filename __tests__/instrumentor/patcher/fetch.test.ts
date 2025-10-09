@@ -75,6 +75,30 @@ describe('Fetch Patcher', () => {
       expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
     })
 
+    it('should add signals header for protected URLs with string input and relative path', async () => {
+      patchFetch(mockContext)
+
+      vi.mocked(fetch).mockResolvedValue(new Response('test'))
+
+      const url = '/protected/endpoint'
+      const init = { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+
+      await window.fetch(url, init)
+
+      expect(fetch).toHaveBeenCalledWith(
+        url,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.any(Headers),
+        })
+      )
+
+      // Check that signals header was added
+      const callArgs = vi.mocked(fetch).mock.calls[0]
+      const headers = (callArgs[1] as RequestInit).headers as Headers
+      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
     it('should add signals header for protected URLs with string input without requestInit', async () => {
       patchFetch(mockContext)
 
