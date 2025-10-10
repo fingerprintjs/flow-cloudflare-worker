@@ -5,7 +5,7 @@ export type SetupPatcherContextParams = {
   // Writable patcher context to configure with signals' provider
   patcherCtx: WritablePatcherContext
   fingerprintLoader: Promise<FingerprintLoader>
-  endpoint?: string | undefined
+  endpoint: string
 }
 
 /**
@@ -33,13 +33,9 @@ export async function setupPatcherContext(params: SetupPatcherContextParams) {
  *
  */
 async function setProviders({ fingerprintLoader, endpoint, patcherCtx }: SetupPatcherContextParams) {
-  if (!endpoint) {
-    console.warn('No endpoint provided, using default endpoint. This will result in lower accuracy.')
-  }
-
   const loader = await fingerprintLoader
   const agent = await loader.load({
-    endpoint: endpoint ?? loader.defaultEndpoint,
+    endpoint,
   })
 
   console.debug('FingerprintJS agent loaded', agent)
