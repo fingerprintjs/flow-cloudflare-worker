@@ -31,9 +31,9 @@ export type BlockAction = {
   /** Action type identifier */
   type: 'block'
   /** HTTP status code to return */
-  status_code: number
+  status_code?: number
   /** Response headers to include */
-  headers: RuleHeader[]
+  headers?: RuleHeader[]
   /** Response body content */
   body: string
 }
@@ -130,11 +130,16 @@ function createHeaders(headers: RuleHeader[]) {
  * @returns A Response object that blocks the request with the specified configuration
  */
 function handleBlock(action: BlockAction) {
+  const responseInit: ResponseInit = {}
+  if (action.headers?.length) {
+    responseInit.headers = createHeaders(action.headers)
+  }
+  if (action.status_code) {
+    responseInit.status = action.status_code
+  }
+
   console.debug('Blocking request with custom response:', action)
-  return new Response(action.body, {
-    headers: createHeaders(action.headers),
-    status: action.status_code,
-  })
+  return new Response(action.body, responseInit)
 }
 
 /**

@@ -50,6 +50,26 @@ describe('Ruleset evaluation', () => {
       // Request to origin should not be made
       expect(fetch).toHaveBeenCalledTimes(0)
     })
+
+    it('should return custom response with just body', async () => {
+      const rule: RuleAction = {
+        type: 'block',
+        rule_id: '1',
+        body: 'Access denied',
+        rule_expression: '',
+        ruleset_id: '',
+      }
+      const request = new Request('https://example.com/api', {
+        method: 'POST',
+      })
+
+      const response = await makeRulesetProcessor(rule)(request)
+
+      expect(await response.text()).toEqual('Access denied')
+      expect(response.status).toEqual(200)
+      // Request to origin should not be made
+      expect(fetch).toHaveBeenCalledTimes(0)
+    })
   })
 
   describe('Allow action', () => {
