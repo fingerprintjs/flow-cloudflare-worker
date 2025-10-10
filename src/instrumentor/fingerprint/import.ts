@@ -2,7 +2,7 @@ import { FingerprintLoader } from '../types'
 import { Script } from '../../shared/scripts'
 
 // This template will be replaced during injection by the worker.
-export const routePrefix = '<ROUTE_PREFIX>'
+export const routePrefix = '<WORKER_ROUTE_PREFIX>'
 
 export async function importFingerprintLoader(): Promise<FingerprintLoader> {
   const url = new URL(document.location.href)
