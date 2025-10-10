@@ -30,7 +30,7 @@ export const mockEnv: TypedEnv = {
   IDENTIFICATION_PAGE_URLS: [mockWorkerBaseUrl],
   PUBLIC_KEY: 'public_key',
   SECRET_KEY: 'secret_key',
-  ROUTE_PREFIX: 'scripts',
+  WORKER_ROUTE_PREFIX: 'scripts',
   FP_RULESET_ID: '',
   FP_REGION: 'us',
 }

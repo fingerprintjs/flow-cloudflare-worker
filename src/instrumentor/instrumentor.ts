@@ -7,7 +7,7 @@ import { ProtectedApi } from '../shared/types'
 export type InstrumentationParams = {
   fingerprintLoader: Promise<FingerprintLoader>
   protectedApis: ProtectedApi[]
-  endpoint?: string
+  endpoint: string
 }
 
 /**

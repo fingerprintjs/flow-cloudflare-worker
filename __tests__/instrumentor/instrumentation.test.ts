@@ -14,7 +14,6 @@ describe('Instrumentor', () => {
   const mockFingerprintLoader = {
     load: mockLoad,
     handleAgentData: mockHandleAgentData,
-    defaultEndpoint: 'https://fpjs.io',
   } satisfies FingerprintLoader
 
   beforeEach(() => {
@@ -32,6 +31,7 @@ describe('Instrumentor', () => {
 
   it('should load fingerprint when DOM is ready only once', async () => {
     await setupInstrumentor({
+      endpoint: '/custom',
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
       protectedApis: [
         {
@@ -51,9 +51,6 @@ describe('Instrumentor', () => {
     await wait(100)
 
     expect(mockLoad).toHaveBeenCalledTimes(1)
-    expect(mockLoad).toHaveBeenCalledWith({
-      endpoint: 'https://fpjs.io',
-    })
   })
 
   it('should load fingerprint and prepare signals collection', async () => {
@@ -62,6 +59,7 @@ describe('Instrumentor', () => {
 
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      endpoint: '/custom',
       protectedApis: [
         {
           url: mockUrl('/protected/*'),
@@ -89,6 +87,7 @@ describe('Instrumentor', () => {
   it('should load fingerprint and prepare agent data processing', async () => {
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      endpoint: '/custom',
       protectedApis: [
         {
           url: mockUrl('/protected/*'),

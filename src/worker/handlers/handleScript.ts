@@ -37,7 +37,7 @@ export async function handleScript({
         resolveTemplates({
           protectedApis,
           code: instrumentorCode,
-          routePrefix: routePrefix,
+          routePrefix,
         }),
         {
           headers: {

@@ -48,9 +48,9 @@ export function getRulesetId(env: TypedEnv) {
 }
 
 export function getRoutePrefix(env: TypedEnv) {
-  assertVariableIsSet(env, 'ROUTE_PREFIX')
+  assertVariableIsSet(env, 'WORKER_ROUTE_PREFIX')
 
-  return env.ROUTE_PREFIX
+  return env.WORKER_ROUTE_PREFIX
 }
 
 export function getFpRegion(env: TypedEnv): Region {

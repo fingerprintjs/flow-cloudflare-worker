@@ -11,7 +11,7 @@ declare namespace Cloudflare {
     FP_RULESET_ID: string
     SECRET_KEY: string
     FPJS_INGRESS_BASE_HOST: string
-    ROUTE_PREFIX: string
+    WORKER_ROUTE_PREFIX: string
     PUBLIC_KEY: string
     PROTECTED_APIS: object[]
     IDENTIFICATION_PAGE_URLS: string[]
