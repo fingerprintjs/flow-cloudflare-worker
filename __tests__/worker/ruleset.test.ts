@@ -128,6 +128,49 @@ describe('Ruleset evaluation', () => {
       `)
     })
 
+    it('should fetch origin with modified request with the same header to delete, set and append', async () => {
+      const mockResponse = new Response('')
+      vi.mocked(fetch).mockResolvedValue(mockResponse)
+
+      const rule: RuleAction = {
+        type: 'allow',
+        request_header_modifications: {
+          set: [
+            {
+              name: 'x-allow',
+              value: 'true',
+            },
+          ],
+          remove: ['x-allow'],
+          append: [
+            {
+              name: 'x-allow',
+              value: 'is_appended=true',
+            },
+          ],
+        },
+        rule_id: '1',
+        rule_expression: '',
+        ruleset_id: '',
+      }
+      const request = new Request('https://example.com/api', {
+        method: 'POST',
+      })
+      const response = await makeRulesetProcessor(rule)(request)
+      expect(response).toBe(mockResponse)
+
+      const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
+      expect(requestArg).toBeInstanceOf(Request)
+      expect(Array.from(requestArg.headers as unknown as ArrayLike<unknown>)).toMatchInlineSnapshot(`
+        [
+          [
+            "x-allow",
+            "true, is_appended=true",
+          ],
+        ]
+      `)
+    })
+
     it('should fetch origin with just "remove" option', async () => {
       const mockResponse = new Response('')
       vi.mocked(fetch).mockResolvedValue(mockResponse)
