@@ -59,10 +59,10 @@ export function isRuleActionUnion(action: object): action is RuleActionUnion {
 export type RuleAction = RuleActionUnion & {
   /** The ID of the evaluated ruleset */
   ruleset_id: string
-  /** The ID of the rule that generated the action */
-  rule_id: string
-  /** The expression of the rule that generated the action */
-  rule_expression: string
+  /** The ID of the rule that generated the action. Undefined if no rule was matched. */
+  rule_id?: string
+  /** The expression of the rule that generated the action. Undefined if no rule was matched. */
+  rule_expression?: string
 }
 
 /**
