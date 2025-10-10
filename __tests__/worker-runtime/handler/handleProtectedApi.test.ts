@@ -7,6 +7,7 @@ import { env } from 'cloudflare:workers'
 import { TypedEnv } from '../../../src/worker/types'
 import { Region } from '../../../src/worker/fingerprint/region'
 import { SendResponse } from '../../../src/worker/fingerprint/identificationClient'
+import { mockEnv } from '../mockEnv'
 
 type PrepareMockFetchParams = {
   mockIngressHandler: (request: Request) => Promise<Response>
@@ -95,7 +96,12 @@ describe('Protected API', () => {
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, {
+      ...mockEnv,
+      FP_FAILURE_FALLBACK_ACTION: {
+        type: 'allow',
+      },
+    } as TypedEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -299,7 +305,12 @@ describe('Protected API', () => {
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, {
+      ...mockEnv,
+      FP_FAILURE_FALLBACK_ACTION: {
+        type: 'allow',
+      },
+    } as TypedEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -379,6 +390,9 @@ describe('Protected API', () => {
     const ctx = createExecutionContext()
     await handler.fetch(request, {
       ...env,
+      FP_FAILURE_FALLBACK_ACTION: {
+        type: 'allow',
+      },
       FP_REGION: region,
     } as TypedEnv)
     await waitOnExecutionContext(ctx)
@@ -390,7 +404,7 @@ describe('Protected API', () => {
     expect(ingressRequest!.url).toEqual(`${expectedIngressHost}/send`)
   })
 
-  it('should return empty 403 response if ingress request fails', async () => {
+  it('should evaluate fallback rule if ingress request fails', async () => {
     prepareMockFetch({
       mockIngressHandler: async () => {
         return new Response(
@@ -424,16 +438,64 @@ describe('Protected API', () => {
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv as TypedEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
 
     expect(response.status).toEqual(403)
-    expect(await response.text()).toEqual('')
+    expect(await response.text()).toEqual('fallback block')
   })
 
-  it('should return empty 403 response if signals are missing', async () => {
+  it('should evaluate fallback rule if ingress request fails - allow case', async () => {
+    prepareMockFetch({
+      mockIngressHandler: async () => {
+        return new Response(
+          JSON.stringify({
+            v: '2',
+            requestId: '1234',
+            error: {
+              code: 'RequestCannotBeParsed',
+              message: 'bad request',
+            },
+            products: {},
+          }),
+          {
+            status: 400,
+          }
+        )
+      },
+      mockOriginHandler: async () =>
+        new Response('origin', {
+          headers: {
+            // Origin cookies, should be sent together with cookies from ingress
+            'Set-Cookie': 'origin-cookie=value',
+          },
+        }),
+    })
+
+    const requestHeaders = getCompleteHeaders()
+
+    const request = new CloudflareRequest('https://example.com/api', {
+      method: 'POST',
+      headers: requestHeaders,
+    })
+    const ctx = createExecutionContext()
+    const response = await handler.fetch(request, {
+      ...mockEnv,
+      FP_FAILURE_FALLBACK_ACTION: {
+        type: 'allow',
+      },
+    } as TypedEnv)
+    await waitOnExecutionContext(ctx)
+
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+    expect(response.status).toEqual(200)
+    expect(await response.text()).toEqual('origin')
+  })
+
+  it('should evaluate fallback rule if response if signals are missing', async () => {
     const requestHeaders = getCompleteHeaders()
     requestHeaders.delete(SIGNALS_HEADER)
 
@@ -442,14 +504,14 @@ describe('Protected API', () => {
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     expect(response.status).toEqual(403)
-    expect(await response.text()).toEqual('')
+    expect(await response.text()).toEqual('fallback block')
   })
 
-  it('should return empty 403 response if agent data is missing in response', async () => {
+  it('should evaluate fallback rule if agent data is missing in response', async () => {
     prepareMockFetch({
       mockIngressHandler: async () => {
         return new Response(
@@ -489,15 +551,15 @@ describe('Protected API', () => {
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, env as TypedEnv)
+    const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
     expect(response.status).toEqual(403)
-    expect(await response.text()).toEqual('')
+    expect(await response.text()).toEqual('fallback block')
   })
 
   it.each(['cf-connecting-ip', 'host', 'user-agent'])(
-    'should return empty 403 response if one of ingress required header %s is missing',
+    'should evaluate fallback rule response if one of ingress required header %s is missing',
     async (header) => {
       prepareMockFetch({
         mockIngressHandler: async () => {
@@ -533,13 +595,13 @@ describe('Protected API', () => {
         headers: requestHeaders,
       })
       const ctx = createExecutionContext()
-      const response = await handler.fetch(request, env as TypedEnv)
+      const response = await handler.fetch(request, mockEnv)
       await waitOnExecutionContext(ctx)
 
       expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
 
       expect(response.status).toEqual(403)
-      expect(await response.text()).toEqual('')
+      expect(await response.text()).toEqual('fallback block')
     }
   )
 })
