@@ -9,7 +9,7 @@ export type HandleProtectedApiCallParams = {
   /** The incoming HTTP request to be processed */
   request: Request
   /** Client for sending fingerprinting data to the ingress service */
-  ingressClient: IdentificationClient
+  identificationClient: IdentificationClient
 }
 
 /**
@@ -28,15 +28,15 @@ export type HandleProtectedApiCallParams = {
  * ```typescript
  * const response = await handleProtectedApiCall({
  *   request: incomingRequest,
- *   ingressClient: new IngressClient('<...>'),
+ *   identificationClient: new IdentificationClient('<...>'),
  * });
  * ```
  */
 export async function handleProtectedApiCall({
   request,
-  ingressClient,
+  identificationClient,
 }: HandleProtectedApiCallParams): Promise<Response> {
-  const ingressResponse = await ingressClient.send(request)
+  const ingressResponse = await identificationClient.send(request)
 
   let originResponse: Response
   if (ingressResponse.rulesetProcessor) {
