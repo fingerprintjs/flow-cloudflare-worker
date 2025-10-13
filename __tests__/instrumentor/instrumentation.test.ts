@@ -3,6 +3,7 @@ import { patchFetch } from '../../src/instrumentor/patcher/fetch/fetch'
 import { setupInstrumentor } from '../../src/instrumentor/instrumentor'
 import { wait } from '../utils/wait'
 import { FingerprintLoader } from '../../src/instrumentor/types'
+import { mockUrl } from '../utils/mockEnv'
 
 vi.mock('../../src/instrumentor/patcher/fetch/fetch')
 
@@ -31,6 +32,12 @@ describe('Instrumentor', () => {
   it('should load fingerprint when DOM is ready only once', async () => {
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      protectedApis: [
+        {
+          url: mockUrl('/protected/*'),
+          method: 'POST',
+        },
+      ],
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -51,6 +58,12 @@ describe('Instrumentor', () => {
 
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      protectedApis: [
+        {
+          url: mockUrl('/protected/*'),
+          method: 'POST',
+        },
+      ],
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -59,7 +72,7 @@ describe('Instrumentor', () => {
 
     expect(mockLoad).toHaveBeenCalledTimes(1)
 
-    const patcherContext = mockPatchFetch.mock.calls[0][0].ctx
+    const patcherContext = mockPatchFetch.mock.calls[0][0]
     expect(patcherContext).toBeTruthy()
 
     expect(await patcherContext.getSignals()).toEqual('signals')
@@ -72,6 +85,12 @@ describe('Instrumentor', () => {
   it('should load fingerprint and prepare agent data processing', async () => {
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      protectedApis: [
+        {
+          url: mockUrl('/protected/*'),
+          method: 'POST',
+        },
+      ],
     })
 
     document.dispatchEvent(new Event('DOMContentLoaded'))
@@ -80,7 +99,7 @@ describe('Instrumentor', () => {
 
     expect(mockLoad).toHaveBeenCalledTimes(1)
 
-    const patcherContext = mockPatchFetch.mock.calls[0][0].ctx
+    const patcherContext = mockPatchFetch.mock.calls[0][0]
     expect(patcherContext).toBeTruthy()
 
     patcherContext.processAgentData('agentData')

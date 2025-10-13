@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler from '../../../src/worker'
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 import { CloudflareRequest } from '../request'
-import { mockEnv } from '../mockEnv'
+import { mockEnv, mockWorkerBaseUrl } from '../../utils/mockEnv'
 
 const sampleHtml = `
 <!doctype html>
@@ -37,7 +37,7 @@ describe('Scripts injection', () => {
       })
     )
 
-    const request = new CloudflareRequest('https://example.com/')
+    const request = new CloudflareRequest(mockWorkerBaseUrl)
     const ctx = createExecutionContext()
 
     const response = await handler.fetch(request, mockEnv)
