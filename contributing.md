@@ -4,7 +4,7 @@
 
 We prefer using [pnpm](https://pnpm.io/) for installing dependencies and running scripts.
 
-The `main` is locked for the push action.
+The `main` branch is locked for the push action.
 
 `main` branch is always where we create releases.
 
