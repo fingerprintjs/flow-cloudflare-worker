@@ -1,6 +1,7 @@
 import { TypedEnv } from './types'
 import { MissingVariableError } from './errors'
 import { isRegion, Region } from './fingerprint/region'
+import { isRuleActionUnion, RuleActionUnion } from './fingerprint/ruleset'
 
 const defaults = {
   FPJS_CDN_URL: 'fpcdn.io',
@@ -8,6 +9,12 @@ const defaults = {
   PROTECTED_APIS: [],
   IDENTIFICATION_PAGE_URLS: [],
   FP_RULESET_ID: '',
+  FP_FAILURE_FALLBACK_ACTION: {
+    type: 'block',
+    status_code: 403,
+    body: '',
+    headers: [],
+  },
 } satisfies Partial<TypedEnv>
 
 function assertVariableIsSet(env: TypedEnv, key: keyof TypedEnv) {
@@ -51,6 +58,17 @@ export function getScriptBehaviorPath(env: TypedEnv) {
   assertVariableIsSet(env, 'SCRIPTS_BEHAVIOR_PATH')
 
   return env.SCRIPTS_BEHAVIOR_PATH
+}
+
+export function getFallbackRuleAction(env: TypedEnv): RuleActionUnion {
+  const rule = env.FP_FAILURE_FALLBACK_ACTION
+  if (rule && isRuleActionUnion(rule)) {
+    return rule
+  }
+
+  console.warn(`Invalid rule provided: ${rule}. Fallback to block action.`)
+
+  return defaults.FP_FAILURE_FALLBACK_ACTION
 }
 
 export function getFpRegion(env: TypedEnv): Region {

@@ -1,6 +1,6 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
-import { fetchOrigin } from '../utils/origin'
+import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
 
 /**
  * Parameters required for handling a protected API call.
@@ -10,6 +10,8 @@ export type HandleProtectedApiCallParams = {
   request: Request
   /** Client for sending fingerprinting data to the ingress service */
   identificationClient: IdentificationClient
+  /** Fallback rule if identification client rule evaluation fails */
+  fallbackRule: RuleActionUnion
 }
 
 /**
@@ -35,12 +37,26 @@ export type HandleProtectedApiCallParams = {
 export async function handleProtectedApiCall({
   request,
   identificationClient,
+  fallbackRule,
 }: HandleProtectedApiCallParams): Promise<Response> {
-  const ingressResponse = await identificationClient.send(request)
-  const originResponse = await fetchOrigin(request)
+  let ingressResponse: SendResult
+
+  try {
+    ingressResponse = await identificationClient.send(request)
+  } catch (error) {
+    console.error('Error sending request to ingress service:', error)
+    return processRuleset(fallbackRule, request)
+  }
+
+  let originResponse: Response
+  if (ingressResponse.ruleActionProcessor) {
+    originResponse = await ingressResponse.ruleActionProcessor(request)
+  } else {
+    console.warn('No ruleset processor found for ingress response, using fallback rule.')
+    originResponse = await processRuleset(fallbackRule, request)
+  }
 
   const originResponseHeaders = new Headers(originResponse.headers)
-
   setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
