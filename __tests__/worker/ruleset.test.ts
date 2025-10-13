@@ -51,13 +51,13 @@ describe('Ruleset evaluation', () => {
       expect(fetch).toHaveBeenCalledTimes(0)
     })
 
-    it('should return custom response with just body', async () => {
+    it('should return custom response with just status code', async () => {
       const rule: RuleAction = {
         type: 'block',
         rule_id: '1',
-        body: 'Access denied',
         rule_expression: '',
         ruleset_id: '',
+        status_code: 400,
       }
       const request = new Request('https://example.com/api', {
         method: 'POST',
@@ -65,8 +65,8 @@ describe('Ruleset evaluation', () => {
 
       const response = await makeRuleActionProcessor(rule)(request)
 
-      expect(await response.text()).toEqual('Access denied')
-      expect(response.status).toEqual(200)
+      expect(await response.text()).toEqual('')
+      expect(response.status).toEqual(400)
       // Request to origin should not be made
       expect(fetch).toHaveBeenCalledTimes(0)
     })

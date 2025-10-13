@@ -31,11 +31,11 @@ export type BlockAction = {
   /** Action type identifier */
   type: 'block'
   /** HTTP status code to return */
-  status_code?: number
+  status_code: number
   /** Response headers to include */
   headers?: RuleHeader[]
   /** Response body content */
-  body: string
+  body?: string
 }
 
 export type RuleActionUnion = AllowAction | BlockAction
