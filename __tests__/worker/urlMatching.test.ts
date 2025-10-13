@@ -135,7 +135,7 @@ describe('URL matching', () => {
       })
     })
 
-    it('should match identification page url with specific host', () => {
+    it('should match identification page url with specific path', () => {
       const env: TypedEnv = {
         ...mockEnv,
         IDENTIFICATION_PAGE_URLS: ['https://example.com/blog/*'],
