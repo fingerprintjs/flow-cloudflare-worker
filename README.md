@@ -33,8 +33,6 @@ The worker is configured using a `wrangler.jsonc` file. An example file `wrangle
 ### Variables
 
 -   `FP_REGION`: The Fingerprint region to use. Can be `us`, `eu`, or `ap`.
--   `FP_CDN_URL`: The URL of the FingerprintJS CDN.
--   `FP_INGRESS_BASE_HOST`: The base host for the FingerprintJS ingress API.
 -   `WORKER_ROUTE_PREFIX`: A prefix for specific routes handled by the worker. This is used to avoid conflicts with other routes on the same domain.
 -   `FP_PUBLIC_KEY`: Your Fingerprint public key.
 -   `FP_SECRET_KEY`: Your Fingerprint secret key.
