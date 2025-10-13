@@ -49,7 +49,7 @@ The project consists of two main parts: the **Worker** and the **Instrumentor**.
 The Worker is a Cloudflare Worker that acts as a reverse proxy. Its main responsibilities are:
 - Injecting the instrumentor and agent loader scripts on pages matching `IDENTIFICATION_PAGE_URLS`.
 - Proxying Fingerprint API requests made by the JavaScript agent.
-- When a request to `PROTECTED_APIS` are made, the worker reads signals injected by the instrumentor and sends a request to the Fingerprint server-side intelligence API. The API returns a specific action (e.g., allow/block) for the worker to take to protect the proxied API.
+- When a request to `PROTECTED_APIS` are made, the worker reads signals injected by the instrumentor and sends a request to the Fingerprint Identification API. The API returns a specific action (e.g., allow/block) for the worker to take to with the protected API request.
 
 The entry point for the worker is `src/worker/index.ts`.
 
