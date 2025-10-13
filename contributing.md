@@ -17,7 +17,7 @@ After cloning the repo, run `pnpm install` to install packages and prepare the p
 
 Run `pnpm build` for creating a build in `dist` folder. After building, `dist/flow_cloudflare_worker/index.js` file is created, and it is used to deploy to Cloudflare.
 
-> 💡 Don't forget to update the `wrangler.jsonc` with your `FP_SECRET_KEY`, `FP_PUBLIC_KEY` and `FP_RULESET_ID`.
+> 💡 Don't forget to update the `wrangler.jsonc` with your `FP_SECRET_KEY`, `FP_PUBLIC_KEY`, `FP_REGION`, and `FP_RULESET_ID`.
 
 ## Local Development
 
