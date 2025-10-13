@@ -9,7 +9,7 @@ import {
   getIngressBaseHost,
   getProtectedApis,
   getPublicKey,
-  getScriptBehaviorPath,
+  getRoutePrefix,
   getSecretKey,
 } from './env'
 
@@ -21,7 +21,12 @@ import { IdentificationClient } from './fingerprint/identificationClient'
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
 
-  const identificationClient = new IdentificationClient(getFpRegion(env), getIngressBaseHost(env), getSecretKey(env))
+  const identificationClient = new IdentificationClient(
+    getFpRegion(env),
+    getIngressBaseHost(env),
+    getSecretKey(env),
+    getRoutePrefix(env)
+  )
 
   try {
     const matchedUrl = matchUrl(new URL(request.url), request.method, env)
@@ -36,8 +41,17 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           publicApiKey: getPublicKey(env),
           cdnHost: getCDNHost(env),
           protectedApis: getProtectedApis(env),
-          scriptBehaviorPath: getScriptBehaviorPath(env),
+          routePrefix: getRoutePrefix(env),
         })
+
+      case 'browserCache':
+        if (request.method === 'GET') {
+          return identificationClient.browserCache(request)
+        }
+
+        console.warn(`Invalid method for browser cache request: ${request.method}. Falling back to origin.`)
+
+        return fetchOrigin(request)
 
       case 'protection':
         return await handleProtectedApiCall({

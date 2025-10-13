@@ -2,12 +2,12 @@ import { FingerprintLoader } from '../types'
 import { Script } from '../../shared/scripts'
 
 // This template will be replaced during injection by the worker.
-const scriptBehaviorPath = '<SCRIPT_BEHAVIOR_PATH>'
+export const routePrefix = '<WORKER_ROUTE_PREFIX>'
 
 export async function importFingerprintLoader(): Promise<FingerprintLoader> {
   const url = new URL(document.location.href)
   const scriptName: Script = 'loader.js'
-  url.pathname = `${scriptBehaviorPath}/${scriptName}`
+  url.pathname = `${routePrefix}/${scriptName}`
   url.search = ''
   url.hash = ''
 

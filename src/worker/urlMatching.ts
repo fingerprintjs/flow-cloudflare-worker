@@ -1,6 +1,6 @@
 import { scripts } from './scripts'
 import { TypedEnv } from './types'
-import { getIdentificationPageUrls, getProtectedApis, getScriptBehaviorPath } from './env'
+import { getIdentificationPageUrls, getProtectedApis, getRoutePrefix } from './env'
 import { Script } from '../shared/scripts'
 import { findMatchingRoute, parseRoutes } from '@fingerprintjs/url-matcher'
 import { ProtectedApiHttpMethod } from '../shared/types'
@@ -17,23 +17,33 @@ export type UrlType =
       type: 'script'
       script: Script
     }
+  | {
+      type: 'browserCache'
+    }
 
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
   console.debug('Matching url', url.toString())
 
-  const scriptBehaviorPath = getScriptBehaviorPath(env)
+  const routePrefix = getRoutePrefix(env)
 
   const routes = parseRoutes<UrlType>(
     [
       ...scripts.map((script) => {
         return {
-          url: new URL(`/${scriptBehaviorPath}/${script}`, url.origin).toString(),
+          url: new URL(`/${routePrefix}/${script}`, url.origin).toString(),
           metadata: {
             type: 'script' as const,
             script,
           },
         }
       }),
+      {
+        url: new URL(`/${routePrefix}/*`, url.origin).toString(),
+        metadata: {
+          type: 'browserCache' as const,
+        },
+      },
+
       ...getProtectedApis(env)
         .filter((protectedApi) => protectedApi.method === method)
         .map((protectedApi) => {
@@ -61,6 +71,7 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
   const matchedRoute = findMatchingRoute(url, routes)
 
   if (matchedRoute) {
+    console.debug('Matched route', matchedRoute)
     return matchedRoute.metadata
   }
 

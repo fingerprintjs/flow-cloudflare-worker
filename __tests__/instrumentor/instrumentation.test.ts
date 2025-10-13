@@ -31,6 +31,7 @@ describe('Instrumentor', () => {
 
   it('should load fingerprint when DOM is ready only once', async () => {
     await setupInstrumentor({
+      endpoint: '/custom',
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
       protectedApis: [
         {
@@ -58,6 +59,7 @@ describe('Instrumentor', () => {
 
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      endpoint: '/custom',
       protectedApis: [
         {
           url: mockUrl('/protected/*'),
@@ -85,6 +87,7 @@ describe('Instrumentor', () => {
   it('should load fingerprint and prepare agent data processing', async () => {
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      endpoint: '/custom',
       protectedApis: [
         {
           url: mockUrl('/protected/*'),
@@ -108,5 +111,27 @@ describe('Instrumentor', () => {
     expect(mockHandleAgentData).toHaveBeenCalledTimes(2)
     expect(mockHandleAgentData).toHaveBeenCalledWith('agentData')
     expect(mockHandleAgentData).toHaveBeenCalledWith('agentData123')
+  })
+
+  it('should load fingerprint with custom endpoint', async () => {
+    await setupInstrumentor({
+      fingerprintLoader: Promise.resolve(mockFingerprintLoader),
+      endpoint: '/custom',
+      protectedApis: [
+        {
+          url: mockUrl('/protected/*'),
+          method: 'POST',
+        },
+      ],
+    })
+
+    document.dispatchEvent(new Event('DOMContentLoaded'))
+    // Wait for the DOM event handler to finish, since dispatchEvent is async
+    await wait(100)
+
+    expect(mockLoad).toHaveBeenCalledTimes(1)
+    expect(mockLoad).toHaveBeenCalledWith({
+      endpoint: '/custom',
+    })
   })
 })

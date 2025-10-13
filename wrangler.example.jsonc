@@ -6,7 +6,7 @@
     "FP_REGION": "us",
     "FPJS_CDN_URL": "",
     "FPJS_INGRESS_BASE_HOST": "",
-    "SCRIPTS_BEHAVIOR_PATH": "",
+    "WORKER_ROUTE_PREFIX": "",
     "PUBLIC_KEY": "",
     "SECRET_KEY": "",
     "FP_RULESET_ID": "",

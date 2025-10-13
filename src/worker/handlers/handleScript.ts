@@ -10,7 +10,7 @@ type HandleScriptParams = {
   publicApiKey: string
   cdnHost: string
   protectedApis: ProtectedApi[]
-  scriptBehaviorPath: string
+  routePrefix: string
 }
 
 /**
@@ -20,7 +20,7 @@ type HandleScriptParams = {
  * @param {string} params.script - The name of the script to be handled.
  * @param {string} params.publicApiKey - The public API key used for fetching the agent loader.
  * @param {string} params.cdnHost - Hostname of the Fingerprint CDN.
- * @param {string} params.scriptBehaviorPath - Path prefix for scripts.
+ * @param {string} params.routePrefix - Path prefix for worker requests.
  * @param {ProtectedApi[]} params.protectedApis - Array of protected APIs to be injected into the instrumentation code.
  * @return {Promise<Response>} A promise that resolves to the script response.
  */
@@ -29,7 +29,7 @@ export async function handleScript({
   publicApiKey,
   cdnHost,
   protectedApis,
-  scriptBehaviorPath,
+  routePrefix,
 }: HandleScriptParams): Promise<Response> {
   switch (script) {
     case 'instrumentor.iife.js': {
@@ -37,7 +37,7 @@ export async function handleScript({
         resolveTemplates({
           protectedApis,
           code: instrumentorCode,
-          scriptBehaviorPath,
+          routePrefix,
         }),
         {
           headers: {

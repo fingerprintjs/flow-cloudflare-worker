@@ -7,6 +7,7 @@ import { ProtectedApi } from '../shared/types'
 export type InstrumentationParams = {
   fingerprintLoader: Promise<FingerprintLoader>
   protectedApis: ProtectedApi[]
+  endpoint: string
 }
 
 /**
@@ -17,7 +18,7 @@ export type InstrumentationParams = {
  * automatically add security signals to requests targeting protected endpoints.
  *
  */
-export async function setupInstrumentor({ fingerprintLoader, protectedApis }: InstrumentationParams) {
+export async function setupInstrumentor({ fingerprintLoader, protectedApis, endpoint }: InstrumentationParams) {
   if (!protectedApis.length) {
     console.info('No protected APIs configured, skipping instrumentation.')
     return
@@ -28,6 +29,7 @@ export async function setupInstrumentor({ fingerprintLoader, protectedApis }: In
   await setupPatcherContext({
     patcherCtx: patcherCtx,
     fingerprintLoader,
+    endpoint,
   })
 
   patchFetch(patcherCtx)
