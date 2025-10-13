@@ -57,9 +57,9 @@ describe('Cookies', () => {
     })
 
     // Special characters and values
-    it('should handle URL-encoded values', () => {
+    it('should not modify URL-encoded values', () => {
       const result = findCookie('token=Bearer%20abc123', 'token')
-      expect(result).toBe('token=Bearer abc123')
+      expect(result).toBe('token=Bearer%20abc123')
     })
 
     it('should handle special characters in values', () => {

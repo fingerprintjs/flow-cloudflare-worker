@@ -3,7 +3,7 @@ import { SIGNALS_HEADER } from '../../shared/const'
 import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../errors'
 import { getHeaderOrThrow, getIp } from '../utils/headers'
 import { findCookie } from '../cookies'
-import { makeRulesetProcessor, RuleAction, RulesetProcessor } from './ruleset'
+import { makeRuleActionProcessor, RuleAction, RuleActionProcessor } from './ruleset'
 
 /**
  * Request body structure for sending fingerprint data to the identification service.
@@ -44,7 +44,7 @@ export type SendResult = SendResponse & {
   /** Array of Set-Cookie header values to be sent to the client */
   setCookieHeaders: string[]
   /** Optional ruleset processor function to be used for processing the origin request */
-  rulesetProcessor?: RulesetProcessor | undefined
+  ruleActionProcessor?: RuleActionProcessor | undefined
 }
 
 /**
@@ -165,7 +165,9 @@ export class IdentificationClient {
       ...identificationData,
       setCookieHeaders: cookiesToSend,
 
-      rulesetProcessor: identificationData.ruleAction ? makeRulesetProcessor(identificationData.ruleAction) : undefined,
+      ruleActionProcessor: identificationData.ruleAction
+        ? makeRuleActionProcessor(identificationData.ruleAction)
+        : undefined,
     }
   }
 

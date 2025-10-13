@@ -1,6 +1,6 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
-import { fetchOrigin } from '../utils/origin'
+import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
 
 /**
  * Parameters required for handling a protected API call.
@@ -9,7 +9,9 @@ export type HandleProtectedApiCallParams = {
   /** The incoming HTTP request to be processed */
   request: Request
   /** Client for sending fingerprinting data to the ingress service */
-  ingressClient: IdentificationClient
+  identificationClient: IdentificationClient
+  /** Fallback rule if identification client rule evaluation fails */
+  fallbackRule: RuleActionUnion
 }
 
 /**
@@ -28,23 +30,30 @@ export type HandleProtectedApiCallParams = {
  * ```typescript
  * const response = await handleProtectedApiCall({
  *   request: incomingRequest,
- *   ingressClient: new IngressClient('<...>'),
+ *   identificationClient: new IdentificationClient('<...>'),
  * });
  * ```
  */
 export async function handleProtectedApiCall({
   request,
-  ingressClient,
+  identificationClient,
+  fallbackRule,
 }: HandleProtectedApiCallParams): Promise<Response> {
-  const ingressResponse = await ingressClient.send(request)
+  let ingressResponse: SendResult
+
+  try {
+    ingressResponse = await identificationClient.send(request)
+  } catch (error) {
+    console.error('Error sending request to ingress service:', error)
+    return processRuleset(fallbackRule, request)
+  }
 
   let originResponse: Response
-  if (ingressResponse.rulesetProcessor) {
-    originResponse = await ingressResponse.rulesetProcessor(request)
+  if (ingressResponse.ruleActionProcessor) {
+    originResponse = await ingressResponse.ruleActionProcessor(request)
   } else {
-    // TODO Once ruleset is implemented in Warden, this should be removed
-    console.warn('No ruleset processor found for ingress response, falling back to fetchOrigin.')
-    originResponse = await fetchOrigin(request)
+    console.warn('No ruleset processor found for ingress response, using fallback rule.')
+    originResponse = await processRuleset(fallbackRule, request)
   }
 
   const originResponseHeaders = new Headers(originResponse.headers)
