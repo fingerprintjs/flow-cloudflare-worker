@@ -69,7 +69,7 @@ export type RuleAction = RuleActionUnion & {
  * A function type that processes HTTP request based on rule actions.
  * Takes a request and returns a promise that resolves to an HTTP response.
  */
-export type RulesetProcessor = (request: Request) => Promise<Response>
+export type RuleActionProcessor = (request: Request) => Promise<Response>
 
 /**
  * Creates a ruleset processor function based on the provided rule action.
@@ -82,7 +82,7 @@ export type RulesetProcessor = (request: Request) => Promise<Response>
  * @param ruleAction - The rule action configuration to process
  * @returns A processor function that handles HTTP requests according to the rule action
  */
-export const makeRulesetProcessor = (ruleAction: RuleActionUnion): RulesetProcessor => {
+export const makeRuleActionProcessor = (ruleAction: RuleActionUnion): RuleActionProcessor => {
   return async (request) => {
     console.debug('Processing ruleset:', ruleAction)
 
@@ -104,7 +104,7 @@ export const makeRulesetProcessor = (ruleAction: RuleActionUnion): RulesetProces
  * Convenience method for adhoc ruleset processing.
  */
 export function processRuleset(ruleAction: RuleActionUnion, request: Request) {
-  return makeRulesetProcessor(ruleAction)(request)
+  return makeRuleActionProcessor(ruleAction)(request)
 }
 
 /**

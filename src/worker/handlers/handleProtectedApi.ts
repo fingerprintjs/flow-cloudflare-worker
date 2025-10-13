@@ -49,8 +49,8 @@ export async function handleProtectedApiCall({
   }
 
   let originResponse: Response
-  if (ingressResponse.rulesetProcessor) {
-    originResponse = await ingressResponse.rulesetProcessor(request)
+  if (ingressResponse.ruleActionProcessor) {
+    originResponse = await ingressResponse.ruleActionProcessor(request)
   } else {
     console.warn('No ruleset processor found for ingress response, using fallback rule.')
     originResponse = await processRuleset(fallbackRule, request)
