@@ -8,11 +8,11 @@ import { mockUrl } from '../utils/mockEnv'
 vi.mock('../../src/instrumentor/patcher/fetch/fetch')
 
 describe('Instrumentor', () => {
-  const mockLoad = vi.fn()
+  const mockStart = vi.fn()
   const mockHandleAgentData = vi.fn()
   const mockPatchFetch = vi.mocked(patchFetch)
   const mockFingerprintLoader = {
-    load: mockLoad,
+    start: mockStart,
     handleAgentData: mockHandleAgentData,
   } satisfies FingerprintLoader
 
@@ -22,7 +22,7 @@ describe('Instrumentor', () => {
     Object.defineProperty(globalThis, 'window', {
       value: {
         FingerprintJS: {
-          load: mockLoad,
+          load: mockStart,
         },
       },
       writable: true,
@@ -50,12 +50,12 @@ describe('Instrumentor', () => {
     // Wait for the DOM event handler to finish, since dispatchEvent is async
     await wait(100)
 
-    expect(mockLoad).toHaveBeenCalledTimes(1)
+    expect(mockStart).toHaveBeenCalledTimes(1)
   })
 
   it('should load fingerprint and prepare signals collection', async () => {
     const mockCollect = vi.fn().mockResolvedValue('signals')
-    mockLoad.mockResolvedValue({ collect: mockCollect })
+    mockStart.mockResolvedValue({ collect: mockCollect })
 
     await setupInstrumentor({
       fingerprintLoader: Promise.resolve(mockFingerprintLoader),
@@ -72,7 +72,7 @@ describe('Instrumentor', () => {
     // Wait for the DOM event handler to finish, since dispatchEvent is async
     await wait(100)
 
-    expect(mockLoad).toHaveBeenCalledTimes(1)
+    expect(mockStart).toHaveBeenCalledTimes(1)
 
     const patcherContext = mockPatchFetch.mock.calls[0][0]
     expect(patcherContext).toBeTruthy()
@@ -100,7 +100,7 @@ describe('Instrumentor', () => {
     // Wait for the DOM event handler to finish, since dispatchEvent is async
     await wait(100)
 
-    expect(mockLoad).toHaveBeenCalledTimes(1)
+    expect(mockStart).toHaveBeenCalledTimes(1)
 
     const patcherContext = mockPatchFetch.mock.calls[0][0]
     expect(patcherContext).toBeTruthy()
@@ -129,9 +129,9 @@ describe('Instrumentor', () => {
     // Wait for the DOM event handler to finish, since dispatchEvent is async
     await wait(100)
 
-    expect(mockLoad).toHaveBeenCalledTimes(1)
-    expect(mockLoad).toHaveBeenCalledWith({
-      endpoint: '/custom',
+    expect(mockStart).toHaveBeenCalledTimes(1)
+    expect(mockStart).toHaveBeenCalledWith({
+      endpoints: '/custom',
     })
   })
 })

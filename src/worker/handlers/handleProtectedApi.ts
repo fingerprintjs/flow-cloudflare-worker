@@ -80,7 +80,7 @@ export async function handleProtectedApiCall({
  *
  */
 function setHeadersFromIngressToOrigin(ingressResponse: SendResult, originResponseHeaders: Headers) {
-  const { agentData, setCookieHeaders } = ingressResponse
+  const { agent_data: agentData, setCookieHeaders } = ingressResponse
   console.debug('Adding agent data header', agentData)
   originResponseHeaders.set(AGENT_DATA_HEADER, agentData)
 

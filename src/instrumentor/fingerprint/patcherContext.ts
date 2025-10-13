@@ -34,8 +34,8 @@ export async function setupPatcherContext(params: SetupPatcherContextParams) {
  */
 async function setProviders({ fingerprintLoader, endpoint, patcherCtx }: SetupPatcherContextParams) {
   const loader = await fingerprintLoader
-  const agent = await loader.load({
-    endpoint,
+  const agent = await loader.start({
+    endpoints: endpoint,
   })
 
   console.debug('FingerprintJS agent loaded', agent)
