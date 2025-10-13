@@ -1,5 +1,5 @@
-import { FingerprintLoader } from './types'
-import { Script } from '../shared/scripts'
+import { FingerprintLoader } from '../types'
+import { Script } from '../../shared/scripts'
 
 // This template will be replaced during injection by the worker.
 const scriptBehaviorPath = '<SCRIPT_BEHAVIOR_PATH>'

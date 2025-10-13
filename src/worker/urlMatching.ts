@@ -1,7 +1,8 @@
 import { validateScript } from './scripts'
 import { TypedEnv } from './types'
-import { getScriptBehaviorPath } from './env'
+import { getProtectedApis, getScriptBehaviorPath } from './env'
 import { Script } from '../shared/scripts'
+import { isProtectedUrl } from '../shared/protectedApi'
 
 export type UrlType =
   | {
@@ -15,7 +16,7 @@ export type UrlType =
       script: Script
     }
 
-export function matchUrl(url: URL, env: TypedEnv): UrlType | undefined {
+export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
   // TODO After url matching library is published, use it here.
 
   const scriptBehaviorPath = getScriptBehaviorPath(env)
@@ -34,10 +35,17 @@ export function matchUrl(url: URL, env: TypedEnv): UrlType | undefined {
 
   // For now, assume that the root path is the "identification" page
   if (url.pathname === '/') {
-    console.info('Matched identification page')
+    console.info('Matched identification page', url.toString())
 
     return {
       type: 'identification',
+    }
+  }
+
+  if (isProtectedUrl({ url: url.toString(), method, protectedApis: getProtectedApis(env) })) {
+    console.info('Matched protected url', url.toString())
+    return {
+      type: 'protection',
     }
   }
 

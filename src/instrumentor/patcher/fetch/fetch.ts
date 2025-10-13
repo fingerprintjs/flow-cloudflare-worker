@@ -2,6 +2,7 @@ import { PatcherContext } from '../context'
 import { ProtectedApi } from '../../../shared/types'
 import { handleSignalsInjection } from '../signalsInjection'
 import { resolvePatcherRequest } from './patcherRequest'
+import { AGENT_DATA_HEADER } from '../../../shared/const'
 
 /**
  * Parameters required for patching the fetch API.
@@ -27,7 +28,8 @@ export type PatchFetchParams = {
  * ```typescript
  * patchFetch({
  *   protectedApis: [{ url: 'https://api.example.com', method: 'POST' }],
- *   ctx: patcherContext
+ *   ctx: patcherContext,
+ *   agentDataProcessor: (data) => {...}
  * });
  * ```
  */
@@ -46,6 +48,8 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
   const originalFetch = window.fetch
 
   window.fetch = async (...params) => {
+    let didInjectSignals = false
+
     try {
       console.debug('Incoming fetch request', params)
 
@@ -53,13 +57,29 @@ export function patchFetch({ protectedApis, ctx }: PatchFetchParams) {
 
       if (request) {
         console.debug('Resolved fetch request:', request)
-        await handleSignalsInjection({ request, protectedApis, ctx })
+        didInjectSignals = await handleSignalsInjection({ request, protectedApis, ctx })
       }
     } catch (error) {
       console.error('Patched fetch error:', error)
     }
 
-    return originalFetch(...params)
+    const response = await originalFetch(...params)
+
+    try {
+      if (didInjectSignals) {
+        const agentData = response.headers.get(AGENT_DATA_HEADER)
+
+        if (agentData) {
+          ctx.processAgentData(agentData)
+        } else {
+          console.warn('Agent data not found in response')
+        }
+      }
+    } catch (e) {
+      console.error('Error processing agent data:', e)
+    }
+
+    return response
   }
 
   console.debug('Fetch patched successfully.')

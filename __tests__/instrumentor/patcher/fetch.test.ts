@@ -2,12 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { patchFetch } from '../../../src/instrumentor/patcher/fetch/fetch'
 import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
-import { SIGNALS_HEADER } from '../../../src/shared/const'
+import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
 
-import * as urlUtils from '../../../src/instrumentor/patcher/url'
+import * as urlUtils from '../../../src/shared/protectedApi'
 
 describe('Fetch Patcher', () => {
   let mockContext: PatcherContext
+
+  const mockProcessAgentData = vi.fn()
 
   const mockProtectedApis: ProtectedApi[] = [
     {
@@ -30,6 +32,7 @@ describe('Fetch Patcher', () => {
 
     const writableContext = new WritablePatcherContext()
     writableContext.setSignalsProvider(async () => 'test-signals-data')
+    writableContext.setAgentDataProcessor(mockProcessAgentData)
     mockContext = writableContext
   })
 
@@ -108,8 +111,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url: url.toString(),
           method: 'GET',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
       expect(fetch).toHaveBeenCalledWith(
         url,
@@ -141,8 +144,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url: request.url,
           method: 'PUT',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
 
       // Request headers should be modified directly
@@ -360,8 +363,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url,
           method: 'GET',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
     })
 
@@ -379,8 +382,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url,
           method: 'POST',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
     })
 
@@ -398,8 +401,8 @@ describe('Fetch Patcher', () => {
         expect.objectContaining({
           url: url.toString(),
           method: 'PATCH',
-        }),
-        mockProtectedApis
+          protectedApis: mockProtectedApis,
+        })
       )
     })
 
@@ -455,6 +458,91 @@ describe('Fetch Patcher', () => {
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const resultHeaders = (callArgs[0] as RequestInit)?.headers as Headers
       expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
+    })
+
+    it('should process agent data', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      vi.mocked(fetch).mockResolvedValue(
+        new Response('test', {
+          headers: {
+            [AGENT_DATA_HEADER]: 'agent-data',
+          },
+        })
+      )
+
+      const url = 'https://api.example.com/protected'
+
+      await window.fetch(new Request(url, { method: 'POST' }))
+
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(1)
+      expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
+    })
+
+    it('should not process agent data for non-protected routes', async () => {
+      patchFetch({ protectedApis: mockProtectedApis, ctx: mockContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(false)
+      vi.mocked(fetch).mockResolvedValue(
+        new Response('test', {
+          headers: {
+            [AGENT_DATA_HEADER]: 'agent-data',
+          },
+        })
+      )
+
+      const url = 'https://api.example.com/protected'
+
+      await window.fetch(new Request(url, { method: 'POST' }))
+
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(0)
+    })
+
+    it('should not process agent data if no signals were injected', async () => {
+      const writableContext = new WritablePatcherContext()
+      writableContext.setAgentDataProcessor(mockProcessAgentData)
+      // Mock signals provider to return empty string
+      writableContext.setSignalsProvider(async () => '')
+
+      patchFetch({ protectedApis: mockProtectedApis, ctx: writableContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      vi.mocked(fetch).mockResolvedValue(
+        new Response('test', {
+          headers: {
+            [AGENT_DATA_HEADER]: 'agent-data',
+          },
+        })
+      )
+
+      const url = 'https://api.example.com/protected'
+
+      await window.fetch(new Request(url, { method: 'POST' }))
+
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(0)
+    })
+
+    it('should return response if agent data processor throws', async () => {
+      const writableContext = new WritablePatcherContext()
+      writableContext.setAgentDataProcessor(mockProcessAgentData.mockRejectedValueOnce(new Error('Error')))
+      writableContext.setSignalsProvider(async () => 'test-signals-data')
+
+      patchFetch({ protectedApis: mockProtectedApis, ctx: writableContext })
+
+      vi.mocked(urlUtils.isProtectedUrl).mockReturnValue(true)
+      const mockResponse = new Response('test', {
+        headers: {
+          [AGENT_DATA_HEADER]: 'agent-data',
+        },
+      })
+      vi.mocked(fetch).mockResolvedValue(mockResponse)
+
+      const url = 'https://api.example.com/protected'
+
+      const response = await window.fetch(new Request(url, { method: 'POST' }))
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(1)
+      expect(response).toBe(mockResponse)
     })
   })
 })
