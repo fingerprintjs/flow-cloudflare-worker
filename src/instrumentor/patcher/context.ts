@@ -80,18 +80,18 @@ export class WritablePatcherContext implements PatcherContext {
   private readonly protectedMethods = new Set<string>()
 
   constructor(protectedApis: ProtectedApi[]) {
-    this.protectedRoutes = parseRoutes(
-      protectedApis.map((api) => {
-        this.protectedMethods.add(api.method)
+    const routeObjects = protectedApis.map((api) => {
+      this.protectedMethods.add(api.method)
 
-        return {
-          url: api.url,
-          metadata: {
-            method: api.method,
-          },
-        }
-      })
-    )
+      return {
+        url: api.url,
+        metadata: {
+          method: api.method,
+        },
+      }
+    })
+
+    this.protectedRoutes = parseRoutes(routeObjects)
   }
 
   /**
