@@ -98,8 +98,8 @@ To deploy the worker to your Cloudflare account, first prepare `routes` property
 {
   "routes": [
     {
-      "pattern": "<YOUR_DOMAIN>/*",
-      "zone_id": "<YOUR_ZONE_ID>"
+      "pattern": "DOMAIN/*",
+      "zone_id": "ZONE_ID"
     }
   ]
 }
@@ -112,11 +112,11 @@ Keep in mind that `PROTECTED_APIS` and `IDENTIFICATION_PAGE_URLS` should be abso
     "PROTECTED_APIS": [
       {
         "method": "POST",
-        "url": "https://<YOUR_DOMAIN>/api/*"
+        "url": "https://DOMAIN/api/*"
       }
     ],
     "IDENTIFICATION_PAGE_URLS": [
-      "https://<YOUR_DOMAIN>/*"
+      "https://DOMAIN/*"
     ]
   }
 }
