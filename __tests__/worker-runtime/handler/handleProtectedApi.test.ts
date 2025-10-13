@@ -99,7 +99,7 @@ describe('Protected API', () => {
       FP_FAILURE_FALLBACK_ACTION: {
         type: 'allow',
       },
-    } as TypedEnv)
+    })
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -308,7 +308,7 @@ describe('Protected API', () => {
       FP_FAILURE_FALLBACK_ACTION: {
         type: 'allow',
       },
-    } as TypedEnv)
+    })
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -392,7 +392,7 @@ describe('Protected API', () => {
         type: 'allow',
       },
       FP_REGION: region,
-    } as TypedEnv)
+    })
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -474,7 +474,7 @@ describe('Protected API', () => {
 
     const requestHeaders = getCompleteHeaders()
 
-    const request = new CloudflareRequest('https://example.com/api', {
+    const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
@@ -484,7 +484,7 @@ describe('Protected API', () => {
       FP_FAILURE_FALLBACK_ACTION: {
         type: 'allow',
       },
-    } as TypedEnv)
+    })
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)

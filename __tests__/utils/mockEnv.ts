@@ -27,6 +27,12 @@ export const mockEnv: TypedEnv = {
       url: mockUrl('/api/*'),
     },
   ],
+  FP_FAILURE_FALLBACK_ACTION: {
+    type: 'block',
+    status_code: 403,
+    body: 'fallback block',
+    headers: [],
+  },
   IDENTIFICATION_PAGE_URLS: [mockWorkerBaseUrl],
   PUBLIC_KEY: 'public_key',
   SECRET_KEY: 'secret_key',
