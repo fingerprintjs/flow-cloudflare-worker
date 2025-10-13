@@ -33,29 +33,43 @@ export type BlockAction = {
   /** HTTP status code to return */
   status_code: number
   /** Response headers to include */
-  headers: RuleHeader[]
+  headers?: RuleHeader[]
   /** Response body content */
-  body: string
+  body?: string
+}
+
+export type RuleActionUnion = AllowAction | BlockAction
+
+export function isAllowAction(action: object): action is AllowAction {
+  return (action as AllowAction).type === 'allow'
+}
+
+export function isBlockAction(action: object): action is BlockAction {
+  return (action as BlockAction).type === 'block'
+}
+
+export function isRuleActionUnion(action: object): action is RuleActionUnion {
+  return isAllowAction(action) || isBlockAction(action)
 }
 
 /**
  * Represents a rule action from a ingress response.
  * Contains either an 'allow' or 'block' action along with rule metadata.
  */
-export type RuleAction = (AllowAction | BlockAction) & {
+export type RuleAction = RuleActionUnion & {
   /** The ID of the evaluated ruleset */
   ruleset_id: string
-  /** The ID of the rule that generated the action */
-  rule_id: string
-  /** The expression of the rule that generated the action */
-  rule_expression: string
+  /** The ID of the rule that generated the action. Undefined if no rule was matched. */
+  rule_id?: string
+  /** The expression of the rule that generated the action. Undefined if no rule was matched. */
+  rule_expression?: string
 }
 
 /**
  * A function type that processes HTTP request based on rule actions.
  * Takes a request and returns a promise that resolves to an HTTP response.
  */
-export type RulesetProcessor = (request: Request) => Promise<Response>
+export type RuleActionProcessor = (request: Request) => Promise<Response>
 
 /**
  * Creates a ruleset processor function based on the provided rule action.
@@ -68,8 +82,10 @@ export type RulesetProcessor = (request: Request) => Promise<Response>
  * @param ruleAction - The rule action configuration to process
  * @returns A processor function that handles HTTP requests according to the rule action
  */
-export const makeRulesetProcessor = (ruleAction: RuleAction): RulesetProcessor => {
+export const makeRuleActionProcessor = (ruleAction: RuleActionUnion): RuleActionProcessor => {
   return async (request) => {
+    console.debug('Processing ruleset:', ruleAction)
+
     switch (ruleAction.type) {
       case 'block':
         return handleBlock(ruleAction)
@@ -82,6 +98,13 @@ export const makeRulesetProcessor = (ruleAction: RuleAction): RulesetProcessor =
         return fetchOrigin(request)
     }
   }
+}
+
+/**
+ * Convenience method for adhoc ruleset processing.
+ */
+export function processRuleset(ruleAction: RuleActionUnion, request: Request) {
+  return makeRuleActionProcessor(ruleAction)(request)
 }
 
 /**
@@ -107,10 +130,16 @@ function createHeaders(headers: RuleHeader[]) {
  * @returns A Response object that blocks the request with the specified configuration
  */
 function handleBlock(action: BlockAction) {
-  return new Response(action.body, {
-    headers: createHeaders(action.headers),
-    status: action.status_code,
-  })
+  const responseInit: ResponseInit = {}
+  if (action.headers?.length) {
+    responseInit.headers = createHeaders(action.headers)
+  }
+  if (action.status_code) {
+    responseInit.status = action.status_code
+  }
+
+  console.debug('Blocking request with custom response:', action)
+  return new Response(action.body, responseInit)
 }
 
 /**
@@ -124,6 +153,7 @@ function handleBlock(action: BlockAction) {
  * @returns A Promise that resolves to the origin server's response
  */
 function handleAllow(request: Request, action: AllowAction) {
+  console.debug('Allowing request with header modifications:', action)
   const requestClone = request.clone()
 
   action.request_header_modifications?.remove?.forEach((header) => {

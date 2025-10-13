@@ -91,7 +91,7 @@ export function parseCookies(str: string): Cookies {
 
     // only assign once
     if (obj.get(key) === undefined) {
-      obj.set(key, decode(valueSlice(str, eqIdx + 1, endIdx)))
+      obj.set(key, valueSlice(str, eqIdx + 1, endIdx))
     }
 
     index = endIdx + 1
@@ -139,19 +139,4 @@ function valueSlice(str: string, min: number, max: number) {
   }
 
   return str.slice(start, end)
-}
-
-/**
- * URL-decode string value. Optimized to skip native call when no %.
- */
-function decode(str: string): string {
-  if (str.indexOf('%') === -1) {
-    return str
-  }
-
-  try {
-    return decodeURIComponent(str)
-  } catch (e) {
-    return str
-  }
 }

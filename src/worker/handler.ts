@@ -4,6 +4,7 @@ import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
 import {
   getCDNHost,
+  getFallbackRuleAction,
   getFpRegion,
   getIngressBaseHost,
   getProtectedApis,
@@ -32,7 +33,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
 
     switch (matchedUrl?.type) {
       case 'identification':
-        return await handleScriptsInjection({ request: request, env: env })
+        return await handleScriptsInjection({ request, env })
 
       case 'script':
         return await handleScript({
@@ -55,7 +56,8 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
       case 'protection':
         return await handleProtectedApiCall({
           request,
-          ingressClient: identificationClient,
+          identificationClient,
+          fallbackRule: getFallbackRuleAction(env),
         })
 
       default:

@@ -72,6 +72,10 @@ export class WritablePatcherContext implements PatcherContext {
 
   /**
    * A set containing the names of HTTP methods that are designated as protected.
+   *
+   * In most cases, protected methods will be a POST, PUT or DELETE request.
+   * In instances where multiple GET requests are being made, this set can be used to quickly filter out these requests without
+   * unnecessary route matching.
    */
   private readonly protectedMethods = new Set<string>()
 

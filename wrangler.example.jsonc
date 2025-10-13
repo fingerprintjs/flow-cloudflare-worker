@@ -18,7 +18,11 @@
     ],
     "IDENTIFICATION_PAGE_URLS": [
       "http://localhost/"
-    ]
+    ],
+    "FP_FAILURE_FALLBACK_ACTION": {
+      "type": "block",
+      "status_code": 403
+    }
   },
   "observability": {
     "enabled": true,
