@@ -6,14 +6,14 @@ declare namespace Cloudflare {
     mainModule: typeof import('./src/worker/index')
   }
   interface Env {
-    FP_FAILURE_FALLBACK_ACTION: object;
-		FP_REGION: string
-    FPJS_CDN_URL: string
+    FP_FAILURE_FALLBACK_ACTION: object
+    FP_REGION: string
+    FP_CDN_URL: string
     FP_RULESET_ID: string
-    SECRET_KEY: string
-    FPJS_INGRESS_BASE_HOST: string
+    FP_SECRET_KEY: string
+    FP_INGRESS_BASE_HOST: string
     WORKER_ROUTE_PREFIX: string
-    PUBLIC_KEY: string
+    FP_PUBLIC_KEY: string
     PROTECTED_APIS: object[]
     IDENTIFICATION_PAGE_URLS: string[]
   }

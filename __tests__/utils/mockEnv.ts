@@ -19,8 +19,8 @@ export function mockUrl(path: string): string {
 }
 
 export const mockEnv: TypedEnv = {
-  FPJS_CDN_URL: 'fpcdn.io',
-  FPJS_INGRESS_BASE_HOST: 'api.fpjs.io',
+  FP_CDN_URL: 'fpcdn.io',
+  FP_INGRESS_BASE_HOST: 'api.fpjs.io',
   PROTECTED_APIS: [
     {
       method: 'POST',
@@ -34,8 +34,8 @@ export const mockEnv: TypedEnv = {
     headers: [],
   },
   IDENTIFICATION_PAGE_URLS: [mockWorkerBaseUrl],
-  PUBLIC_KEY: 'public_key',
-  SECRET_KEY: 'secret_key',
+  FP_PUBLIC_KEY: 'FP_PUBLIC_KEY',
+  FP_SECRET_KEY: 'FP_SECRET_KEY',
   WORKER_ROUTE_PREFIX: 'scripts',
   FP_RULESET_ID: '',
   FP_REGION: 'us',
