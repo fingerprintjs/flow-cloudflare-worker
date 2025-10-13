@@ -39,6 +39,16 @@ function checkIngressRequest<CfHostMetadata>(
   expect(ingressRequest!.method).toEqual('POST')
 }
 
+function getCompleteHeaders() {
+  return new Headers({
+    [SIGNALS_HEADER]: 'signals',
+    'cf-connecting-ip': '1.2.3.4',
+    host: 'example.com',
+    'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+    'x-custom-header': 'custom-value',
+  })
+}
+
 describe('Protected API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -74,13 +84,7 @@ describe('Protected API', () => {
         }),
     })
 
-    const requestHeaders = new Headers({
-      [SIGNALS_HEADER]: 'signals',
-      'cf-connecting-ip': '1.2.3.4',
-      host: 'example.com',
-      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      'x-custom-header': 'custom-value',
-    })
+    const requestHeaders = getCompleteHeaders()
 
     const cookies = 'client-cookie=value; another-client-cookie=value; _iidt=123456;'
     requestHeaders.append('cookie', cookies)
@@ -90,7 +94,12 @@ describe('Protected API', () => {
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, mockEnv)
+    const response = await handler.fetch(request, {
+      ...mockEnv,
+      FP_FAILURE_FALLBACK_ACTION: {
+        type: 'allow',
+      },
+    } as TypedEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -287,20 +296,19 @@ describe('Protected API', () => {
       mockOriginHandler: async () => new Response('origin'),
     })
 
-    const requestHeaders = new Headers({
-      [SIGNALS_HEADER]: 'signals',
-      'cf-connecting-ip': '1.2.3.4',
-      host: 'example.com',
-      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      'x-custom-header': 'custom-value',
-    })
+    const requestHeaders = getCompleteHeaders()
 
     const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
       headers: requestHeaders,
     })
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, mockEnv)
+    const response = await handler.fetch(request, {
+      ...mockEnv,
+      FP_FAILURE_FALLBACK_ACTION: {
+        type: 'allow',
+      },
+    } as TypedEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -380,8 +388,11 @@ describe('Protected API', () => {
     const ctx = createExecutionContext()
     await handler.fetch(request, {
       ...mockEnv,
+      FP_FAILURE_FALLBACK_ACTION: {
+        type: 'allow',
+      },
       FP_REGION: region,
-    })
+    } as TypedEnv)
     await waitOnExecutionContext(ctx)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
@@ -391,7 +402,7 @@ describe('Protected API', () => {
     expect(ingressRequest!.url).toEqual(`${expectedIngressHost}/send`)
   })
 
-  it('should return empty 403 response if ingress request fails', async () => {
+  it('should evaluate fallback rule if ingress request fails', async () => {
     prepareMockFetch({
       mockIngressHandler: async () => {
         return new Response(
@@ -418,13 +429,7 @@ describe('Protected API', () => {
         }),
     })
 
-    const requestHeaders = new Headers({
-      [SIGNALS_HEADER]: 'signals',
-      'cf-connecting-ip': '1.2.3.4',
-      host: 'example.com',
-      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      'x-custom-header': 'custom-value',
-    })
+    const requestHeaders = getCompleteHeaders()
 
     const request = new CloudflareRequest(mockUrl('/api/test'), {
       method: 'POST',
@@ -437,17 +442,59 @@ describe('Protected API', () => {
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
 
     expect(response.status).toEqual(403)
-    expect(await response.text()).toEqual('')
+    expect(await response.text()).toEqual('fallback block')
   })
 
-  it('should return empty 403 response if signals are missing', async () => {
-    const requestHeaders = new Headers({
-      [SIGNALS_HEADER]: 'signals',
-      'cf-connecting-ip': '1.2.3.4',
-      host: 'example.com',
-      'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      'x-custom-header': 'custom-value',
+  it('should evaluate fallback rule if ingress request fails - allow case', async () => {
+    prepareMockFetch({
+      mockIngressHandler: async () => {
+        return new Response(
+          JSON.stringify({
+            v: '2',
+            requestId: '1234',
+            error: {
+              code: 'RequestCannotBeParsed',
+              message: 'bad request',
+            },
+            products: {},
+          }),
+          {
+            status: 400,
+          }
+        )
+      },
+      mockOriginHandler: async () =>
+        new Response('origin', {
+          headers: {
+            // Origin cookies, should be sent together with cookies from ingress
+            'Set-Cookie': 'origin-cookie=value',
+          },
+        }),
     })
+
+    const requestHeaders = getCompleteHeaders()
+
+    const request = new CloudflareRequest('https://example.com/api', {
+      method: 'POST',
+      headers: requestHeaders,
+    })
+    const ctx = createExecutionContext()
+    const response = await handler.fetch(request, {
+      ...mockEnv,
+      FP_FAILURE_FALLBACK_ACTION: {
+        type: 'allow',
+      },
+    } as TypedEnv)
+    await waitOnExecutionContext(ctx)
+
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+    expect(response.status).toEqual(200)
+    expect(await response.text()).toEqual('origin')
+  })
+
+  it('should evaluate fallback rule if response if signals are missing', async () => {
+    const requestHeaders = getCompleteHeaders()
     requestHeaders.delete(SIGNALS_HEADER)
 
     const request = new CloudflareRequest(mockUrl('/api/test'), {
@@ -459,10 +506,10 @@ describe('Protected API', () => {
     await waitOnExecutionContext(ctx)
 
     expect(response.status).toEqual(403)
-    expect(await response.text()).toEqual('')
+    expect(await response.text()).toEqual('fallback block')
   })
 
-  it('should return empty 403 response if agent data is missing in response', async () => {
+  it('should evaluate fallback rule if agent data is missing in response', async () => {
     prepareMockFetch({
       mockIngressHandler: async () => {
         return new Response(
@@ -506,11 +553,11 @@ describe('Protected API', () => {
     await waitOnExecutionContext(ctx)
 
     expect(response.status).toEqual(403)
-    expect(await response.text()).toEqual('')
+    expect(await response.text()).toEqual('fallback block')
   })
 
   it.each(['cf-connecting-ip', 'host', 'user-agent'])(
-    'should return empty 403 response if one of ingress required header %s is missing',
+    'should evaluate fallback rule response if one of ingress required header %s is missing',
     async (header) => {
       prepareMockFetch({
         mockIngressHandler: async () => {
@@ -538,13 +585,7 @@ describe('Protected API', () => {
           }),
       })
 
-      const requestHeaders = new Headers({
-        [SIGNALS_HEADER]: 'signals',
-        'cf-connecting-ip': '1.2.3.4',
-        host: 'example.com',
-        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-        'x-custom-header': 'custom-value',
-      })
+      const requestHeaders = getCompleteHeaders()
       requestHeaders.delete(header)
 
       const request = new CloudflareRequest(mockUrl('/api/test'), {
@@ -558,7 +599,7 @@ describe('Protected API', () => {
       expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
 
       expect(response.status).toEqual(403)
-      expect(await response.text()).toEqual('')
+      expect(await response.text()).toEqual('fallback block')
     }
   )
 })

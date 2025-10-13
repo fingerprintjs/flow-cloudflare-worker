@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { makeRulesetProcessor, RuleAction } from '../../src/worker/fingerprint/ruleset'
+import { makeRuleActionProcessor, RuleAction } from '../../src/worker/fingerprint/ruleset'
 
 describe('Ruleset evaluation', () => {
   beforeEach(() => {
@@ -40,13 +40,33 @@ describe('Ruleset evaluation', () => {
         method: 'POST',
       })
 
-      const response = await makeRulesetProcessor(rule)(request)
+      const response = await makeRuleActionProcessor(rule)(request)
 
       expect(await response.text()).toEqual('Access denied')
       expect(response.status).toEqual(400)
       expect(response.headers.get('x-blocked')).toEqual('true')
       expect(response.headers.getSetCookie()).toHaveLength(2)
       expect(response.headers.getSetCookie()).toEqual(expect.arrayContaining(['is_blocked=true', 'id=123']))
+      // Request to origin should not be made
+      expect(fetch).toHaveBeenCalledTimes(0)
+    })
+
+    it('should return custom response with just status code', async () => {
+      const rule: RuleAction = {
+        type: 'block',
+        rule_id: '1',
+        rule_expression: '',
+        ruleset_id: '',
+        status_code: 400,
+      }
+      const request = new Request('https://example.com/api', {
+        method: 'POST',
+      })
+
+      const response = await makeRuleActionProcessor(rule)(request)
+
+      expect(await response.text()).toEqual('')
+      expect(response.status).toEqual(400)
       // Request to origin should not be made
       expect(fetch).toHaveBeenCalledTimes(0)
     })
@@ -85,7 +105,7 @@ describe('Ruleset evaluation', () => {
           'set-cookie': 'request_cookie=true',
         },
       })
-      const response = await makeRulesetProcessor(rule)(request)
+      const response = await makeRuleActionProcessor(rule)(request)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
@@ -103,6 +123,49 @@ describe('Ruleset evaluation', () => {
           [
             "x-allow",
             "true",
+          ],
+        ]
+      `)
+    })
+
+    it('should fetch origin with modified request with the same header to delete, set and append', async () => {
+      const mockResponse = new Response('')
+      vi.mocked(fetch).mockResolvedValue(mockResponse)
+
+      const rule: RuleAction = {
+        type: 'allow',
+        request_header_modifications: {
+          set: [
+            {
+              name: 'x-allow',
+              value: 'true',
+            },
+          ],
+          remove: ['x-allow'],
+          append: [
+            {
+              name: 'x-allow',
+              value: 'is_appended=true',
+            },
+          ],
+        },
+        rule_id: '1',
+        rule_expression: '',
+        ruleset_id: '',
+      }
+      const request = new Request('https://example.com/api', {
+        method: 'POST',
+      })
+      const response = await makeRuleActionProcessor(rule)(request)
+      expect(response).toBe(mockResponse)
+
+      const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
+      expect(requestArg).toBeInstanceOf(Request)
+      expect(Array.from(requestArg.headers as unknown as ArrayLike<unknown>)).toMatchInlineSnapshot(`
+        [
+          [
+            "x-allow",
+            "true, is_appended=true",
           ],
         ]
       `)
@@ -128,7 +191,7 @@ describe('Ruleset evaluation', () => {
           'set-cookie': 'request_cookie=true',
         },
       })
-      const response = await makeRulesetProcessor(rule)(request)
+      const response = await makeRuleActionProcessor(rule)(request)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
@@ -168,7 +231,7 @@ describe('Ruleset evaluation', () => {
           'set-cookie': 'request_cookie=true',
         },
       })
-      const response = await makeRulesetProcessor(rule)(request)
+      const response = await makeRuleActionProcessor(rule)(request)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
@@ -216,7 +279,7 @@ describe('Ruleset evaluation', () => {
           'set-cookie': 'request_cookie=true',
         },
       })
-      const response = await makeRulesetProcessor(rule)(request)
+      const response = await makeRuleActionProcessor(rule)(request)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
