@@ -12,7 +12,6 @@ export async function getAgentLoader(publicApiKey: string, cdnHost: string): Pro
 
   const agentLoaderCode = await fetch(fpScriptUrl).then((response) => response.text())
 
-  console.debug('Agent loader code:', agentLoaderCode)
 
   return new Response(agentLoaderCode, {
     headers: {
