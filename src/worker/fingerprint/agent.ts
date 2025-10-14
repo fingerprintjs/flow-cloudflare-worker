@@ -8,7 +8,11 @@
 export async function getAgentLoader(publicApiKey: string, cdnHost: string): Promise<Response> {
   const fpScriptUrl = `https://${cdnHost}/v4/${publicApiKey}`
 
+  console.debug('Fetching agent loader from:', fpScriptUrl)
+
   const agentLoaderCode = await fetch(fpScriptUrl).then((response) => response.text())
+
+  console.debug('Agent loader code:', agentLoaderCode)
 
   return new Response(agentLoaderCode, {
     headers: {

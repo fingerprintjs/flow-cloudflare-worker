@@ -5,6 +5,9 @@ import { getHeaderOrThrow, getIp } from '../utils/headers'
 import { findCookie } from '../cookies'
 import { makeRuleActionProcessor, RuleAction, RuleActionProcessor } from './ruleset'
 
+type RulesetContext = {
+  ruleset_id: string
+}
 /**
  * Request body structure for sending fingerprint data to the identification service.
  *
@@ -23,9 +26,8 @@ export type SendBody = {
   client_cookie?: string
   /** Optional additional client headers (excluding cookies) */
   client_headers?: Record<string, string>
-  ruleset_context?: {
-    ruleset_id: string
-  }
+  /** Ruleset context for rule action evaluation */
+  ruleset_context?: RulesetContext
 }
 
 /**
@@ -63,6 +65,7 @@ export class IdentificationClient {
    * @param baseUrl - Base URL hostname for the identification service, e.g. "api.fpjs.io"
    * @param apiKey - API key for authentication with the identification service
    * @param routePrefix - Path prefix for worker requests.
+   * @param rulesetId - If of ruleset that will be evaluated by the identification service.
    */
   constructor(
     region: Region,

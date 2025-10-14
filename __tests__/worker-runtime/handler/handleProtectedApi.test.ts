@@ -125,6 +125,9 @@ describe('Protected API', () => {
       client_ip: '1.2.3.4',
       client_user_agent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
       fingerprint_data: 'signals',
+      ruleset_context: {
+        ruleset_id: 'r_1',
+      },
     } satisfies SendBody)
 
     const setCookie = response.headers.getAll('Set-Cookie')
@@ -332,6 +335,9 @@ describe('Protected API', () => {
       client_ip: '1.2.3.4',
       client_user_agent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
       fingerprint_data: 'signals',
+      ruleset_context: {
+        ruleset_id: 'r_1',
+      },
     } satisfies SendBody)
 
     const setCookie = response.headers.getAll('Set-Cookie')

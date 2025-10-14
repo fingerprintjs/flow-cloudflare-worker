@@ -37,6 +37,6 @@ export const mockEnv: TypedEnv = {
   PUBLIC_KEY: 'public_key',
   SECRET_KEY: 'secret_key',
   WORKER_ROUTE_PREFIX: 'scripts',
-  FP_RULESET_ID: '',
+  FP_RULESET_ID: 'r_1',
   FP_REGION: 'us',
 }
