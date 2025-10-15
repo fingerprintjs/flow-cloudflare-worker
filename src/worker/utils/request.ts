@@ -13,16 +13,23 @@ interface CopyRequestParams {
  *
  * @return {Request} A new Request object based on the original, with any modifications applied.
  *
- * @example
+ * @example Modifing headers in a request.
  * ```typescript
+ * const request = new Request('https://example.com/', { headers: { 'Original-Header': 'value' } })
  *
- * const request = new Request('https://example.com/api/resource');
+ * const updatedHeaders = new Headers(request.headers)
+ * updatedHeaders.set('X-New-Header', 'value')
  *
- * const modifiedRequest = copyRequest(request, {
- *    headers: {
- *     'X-Custom-Header': 'custom-value'
- *   }
- * }, 'https://example.com/api/modified-resource');
+ * const modifiedRequest = copyRequest({
+ *   request,
+ *   init: {
+ *     // Overwrites original headers completely
+ *     headers: updatedHeaders,
+ *   },
+ * })
+ *
+ * console.log(modifiedRequest.headers.get('X-New-Header')) // 'value'
+ * console.log(modifiedRequest.headers.get('Original-Header')) // undefined
  * ```
  */
 export function copyRequest({ request, init, url }: CopyRequestParams): Request<unknown, IncomingRequestCfProperties> {
