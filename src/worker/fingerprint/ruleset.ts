@@ -1,4 +1,5 @@
 import { fetchOrigin } from '../utils/origin'
+import { copyRequest } from '../utils/request'
 
 /**
  * Represents an HTTP header with name and value.
@@ -154,18 +155,26 @@ function handleBlock(action: BlockAction) {
  */
 function handleAllow(request: Request, action: AllowAction) {
   console.debug('Allowing request with header modifications:', action)
-  const requestClone = request.clone()
+
+  const requestHeaders = new Headers(request.headers)
 
   action.request_header_modifications?.remove?.forEach((header) => {
-    requestClone.headers.delete(header)
+    requestHeaders.delete(header)
   })
 
   action.request_header_modifications?.set?.forEach((header) => {
-    requestClone.headers.set(header.name, header.value)
+    requestHeaders.set(header.name, header.value)
   })
 
   action.request_header_modifications?.append?.forEach((header) => {
-    requestClone.headers.append(header.name, header.value)
+    requestHeaders.append(header.name, header.value)
+  })
+
+  const requestClone = copyRequest({
+    request,
+    init: {
+      headers: requestHeaders,
+    },
   })
 
   return fetchOrigin(requestClone)
