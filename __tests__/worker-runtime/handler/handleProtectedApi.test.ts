@@ -4,7 +4,7 @@ import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import handler from '../../../src/worker'
 import { CloudflareRequest } from '../request'
 import { Region } from '../../../src/worker/fingerprint/region'
-import { SendResponse } from '../../../src/worker/fingerprint/identificationClient'
+import { SendBody, SendResponse } from '../../../src/worker/fingerprint/identificationClient'
 import { mockEnv, mockUrl } from '../../utils/mockEnv'
 
 type PrepareMockFetchParams = {
@@ -35,7 +35,7 @@ function checkIngressRequest<CfHostMetadata>(
   ingressRequest: Request<unknown, CfProperties<CfHostMetadata>> | undefined
 ) {
   expect(ingressRequest).toBeTruthy()
-  expect(ingressRequest!.url).toEqual('https://api.fpjs.io/send')
+  expect(ingressRequest!.url).toEqual('https://api.fpjs.io/v4/send')
   expect(ingressRequest!.method).toEqual('POST')
 }
 
@@ -68,7 +68,7 @@ describe('Protected API', () => {
 
         return new Response(
           JSON.stringify({
-            agentData: 'agent-data',
+            agent_data: 'agent-data',
           }),
           {
             headers,
@@ -113,19 +113,22 @@ describe('Protected API', () => {
     const ingressBody = await ingressRequest!.json()
     expect(ingressBody).toEqual({
       // Only _iidt cookie should be sent to ingress
-      clientCookie: '_iidt=123456',
-      clientHeaders: {
+      client_cookie: '_iidt=123456',
+      client_headers: {
         'cf-connecting-ip': '1.2.3.4',
         'fp-data': 'signals',
         host: 'example.com',
         'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
         'x-custom-header': 'custom-value',
       },
-      clientHost: 'example.com',
-      clientIP: '1.2.3.4',
-      clientUserAgent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      fingerprintData: 'signals',
-    })
+      client_host: 'example.com',
+      client_ip: '1.2.3.4',
+      client_user_agent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+      fingerprint_data: 'signals',
+      ruleset_context: {
+        ruleset_id: 'r_1',
+      },
+    } satisfies SendBody)
 
     const setCookie = response.headers.getAll('Set-Cookie')
     expect(setCookie).toHaveLength(3)
@@ -151,8 +154,8 @@ describe('Protected API', () => {
 
         return new Response(
           JSON.stringify({
-            agentData: 'agent-data',
-            ruleAction: {
+            agent_data: 'agent-data',
+            rule_action: {
               type: 'block',
               headers: [
                 {
@@ -212,8 +215,8 @@ describe('Protected API', () => {
 
         return new Response(
           JSON.stringify({
-            agentData: 'agent-data',
-            ruleAction: {
+            agent_data: 'agent-data',
+            rule_action: {
               type: 'allow',
               request_header_modifications: {
                 set: [
@@ -286,7 +289,7 @@ describe('Protected API', () => {
 
         return new Response(
           JSON.stringify({
-            agentData: 'agent-data',
+            agent_data: 'agent-data',
           }),
           {
             headers,
@@ -321,18 +324,21 @@ describe('Protected API', () => {
 
     const ingressBody = await ingressRequest!.json()
     expect(ingressBody).toEqual({
-      clientHeaders: {
+      client_headers: {
         'cf-connecting-ip': '1.2.3.4',
         'fp-data': 'signals',
         host: 'example.com',
         'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
         'x-custom-header': 'custom-value',
       },
-      clientHost: 'example.com',
-      clientIP: '1.2.3.4',
-      clientUserAgent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-      fingerprintData: 'signals',
-    })
+      client_host: 'example.com',
+      client_ip: '1.2.3.4',
+      client_user_agent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+      fingerprint_data: 'signals',
+      ruleset_context: {
+        ruleset_id: 'r_1',
+      },
+    } satisfies SendBody)
 
     const setCookie = response.headers.getAll('Set-Cookie')
     expect(setCookie).toHaveLength(1)
@@ -399,7 +405,7 @@ describe('Protected API', () => {
 
     const ingressRequest = getIngressRequest()
     expect(ingressRequest).toBeTruthy()
-    expect(ingressRequest!.url).toEqual(`${expectedIngressHost}/send`)
+    expect(ingressRequest!.url).toEqual(`${expectedIngressHost}/v4/send`)
   })
 
   it('should evaluate fallback rule if ingress request fails', async () => {

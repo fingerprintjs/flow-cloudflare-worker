@@ -4,14 +4,21 @@
   "compatibility_date": "2025-09-15",
   "vars": {
     "FP_REGION": "us",
-    "FPJS_CDN_URL": "",
-    "FPJS_INGRESS_BASE_HOST": "",
-    "WORKER_ROUTE_PREFIX": "",
-    "PUBLIC_KEY": "",
-    "SECRET_KEY": "",
-    "FP_RULESET_ID": "",
-    "PROTECTED_APIS": [],
-    "IDENTIFICATION_PAGE_URLS": [],
+    "FP_CDN_URL": "",
+    "FP_INGRESS_BASE_HOST": "",
+    "WORKER_ROUTE_PREFIX": "W0cuVtnPs",
+    "FP_PUBLIC_KEY": "FINGERPRINT_PUBLIC_KEY",
+    "FP_SECRET_KEY": "FINGERPRINT_SECRET_KEY",
+    "FP_RULESET_ID": "FINGERPRINT_RULESET_ID",
+    "PROTECTED_APIS": [
+      {
+        "method": "POST",
+        "url": "http://localhost/api/*"
+      }
+    ],
+    "IDENTIFICATION_PAGE_URLS": [
+      "http://localhost/"
+    ],
     "FP_FAILURE_FALLBACK_ACTION": {
       "type": "block",
       "status_code": 403

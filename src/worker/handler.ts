@@ -10,6 +10,7 @@ import {
   getProtectedApis,
   getPublicKey,
   getRoutePrefix,
+  getRulesetId,
   getSecretKey,
 } from './env'
 
@@ -25,7 +26,8 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
     getFpRegion(env),
     getIngressBaseHost(env),
     getSecretKey(env),
-    getRoutePrefix(env)
+    getRoutePrefix(env),
+    getRulesetId(env)
   )
 
   try {

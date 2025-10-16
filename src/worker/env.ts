@@ -4,8 +4,8 @@ import { isRegion, Region } from './fingerprint/region'
 import { isRuleActionUnion, RuleActionUnion } from './fingerprint/ruleset'
 
 const defaults = {
-  FPJS_CDN_URL: 'fpcdn.io',
-  FPJS_INGRESS_BASE_HOST: 'api.fpjs.io',
+  FP_CDN_URL: 'fpcdn.io',
+  FP_INGRESS_BASE_HOST: 'api.fpjs.io',
   PROTECTED_APIS: [],
   IDENTIFICATION_PAGE_URLS: [],
   FP_RULESET_ID: '',
@@ -24,11 +24,11 @@ function assertVariableIsSet(env: TypedEnv, key: keyof TypedEnv) {
 }
 
 export function getCDNHost(env: TypedEnv) {
-  return env.FPJS_CDN_URL || defaults.FPJS_CDN_URL
+  return env.FP_CDN_URL || defaults.FP_CDN_URL
 }
 
 export function getIngressBaseHost(env: TypedEnv) {
-  return env.FPJS_INGRESS_BASE_HOST || defaults.FPJS_INGRESS_BASE_HOST
+  return env.FP_INGRESS_BASE_HOST || defaults.FP_INGRESS_BASE_HOST
 }
 export function getProtectedApis(env: TypedEnv) {
   return env.PROTECTED_APIS ?? defaults.PROTECTED_APIS
@@ -39,15 +39,15 @@ export function getIdentificationPageUrls(env: TypedEnv) {
 }
 
 export function getPublicKey(env: TypedEnv) {
-  assertVariableIsSet(env, 'PUBLIC_KEY')
+  assertVariableIsSet(env, 'FP_PUBLIC_KEY')
 
-  return env.PUBLIC_KEY
+  return env.FP_PUBLIC_KEY
 }
 
 export function getSecretKey(env: TypedEnv) {
-  assertVariableIsSet(env, 'SECRET_KEY')
+  assertVariableIsSet(env, 'FP_SECRET_KEY')
 
-  return env.SECRET_KEY
+  return env.FP_SECRET_KEY
 }
 
 export function getRulesetId(env: TypedEnv) {
