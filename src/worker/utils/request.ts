@@ -15,21 +15,24 @@ interface CopyRequestParams {
  *
  * @example Modifing headers in a request.
  * ```typescript
- * const request = new Request('https://example.com/', { headers: { 'Original-Header': 'value' } })
+ * const request = new Request('https://example.com/', { headers: { 'Original-Header': 'value' }, method: 'GET' })
  *
+ * // In case if you'd like to completly overwrite headers, use 'new Headers()' instead.
  * const updatedHeaders = new Headers(request.headers)
- * updatedHeaders.set('X-New-Header', 'value')
+ * updatedHeaders.set('X-New-Header', 'new-value')
  *
  * const modifiedRequest = copyRequest({
  *   request,
  *   init: {
- *     // Overwrites original headers completely
+ *     // Updates request headers with new values
  *     headers: updatedHeaders,
+ *     // Modify request method
+ *     method: 'POST',
  *   },
  * })
  *
- * console.log(modifiedRequest.headers.get('X-New-Header')) // 'value'
- * console.log(modifiedRequest.headers.get('Original-Header')) // undefined
+ * console.log(modifiedRequest.headers.get('X-New-Header')) // 'new-value'
+ * console.log(modifiedRequest.headers.get('Original-Header')) // 'value'
  * ```
  */
 export function copyRequest({ request, init, url }: CopyRequestParams): Request<unknown, IncomingRequestCfProperties> {
