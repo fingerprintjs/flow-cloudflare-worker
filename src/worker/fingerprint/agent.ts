@@ -6,9 +6,12 @@
  * @return {Promise<Response>} A promise that resolves to a Response object containing the fetched script with the 'Content-Type' header set to 'application/javascript'.
  */
 export async function getAgentLoader(publicApiKey: string, cdnHost: string): Promise<Response> {
-  const fpScriptUrl = `https://${cdnHost}/v3/${publicApiKey}`
+  const fpScriptUrl = `https://${cdnHost}/v4/${publicApiKey}`
+
+  console.debug('Fetching agent loader from:', fpScriptUrl)
 
   const agentLoaderCode = await fetch(fpScriptUrl).then((response) => response.text())
+
 
   return new Response(agentLoaderCode, {
     headers: {

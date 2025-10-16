@@ -3,26 +3,31 @@ import { SIGNALS_HEADER } from '../../shared/const'
 import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../errors'
 import { getHeaderOrThrow, getIp } from '../utils/headers'
 import { findCookie } from '../cookies'
-import { makeRuleActionProcessor, RuleAction, RuleActionProcessor } from './ruleset'
+import { RuleAction } from './ruleset'
 
+type RulesetContext = {
+  ruleset_id: string
+}
 /**
  * Request body structure for sending fingerprint data to the identification service.
  *
  * Is in camelCase format until https://fingerprintjs.atlassian.net/browse/PLAT-1437 is resolved
  */
-type SendBody = {
+export type SendBody = {
   /** Fingerprint data with signals */
-  fingerprintData: string
+  fingerprint_data: string
   /** Client's host header value */
-  clientHost: string
+  client_host: string
   /** Client's IP address from Cloudflare headers */
-  clientIP: string
+  client_ip: string
   /** Client's user agent string */
-  clientUserAgent: string
+  client_user_agent: string
   /** Optional client cookie data (filtered to include only _iidt cookie) */
-  clientCookie?: string
+  client_cookie?: string
   /** Optional additional client headers (excluding cookies) */
-  clientHeaders?: Record<string, string>
+  client_headers?: Record<string, string>
+  /** Ruleset context for rule action evaluation */
+  ruleset_context?: RulesetContext
 }
 
 /**
@@ -32,19 +37,21 @@ type SendBody = {
  */
 export type SendResponse = {
   /** Agent data returned by the identification service */
-  agentData: string
+  agent_data: string
   /** Rule action resolved by ingress. */
-  ruleAction?: RuleAction
+  rule_action?: RuleAction
 }
 
 /**
  * Extended response structure that includes both agent data and cookie headers.
  */
-export type SendResult = SendResponse & {
+export type SendResult = {
+  /** Agent data returned by the identification service */
+  agentData: string
   /** Array of Set-Cookie header values to be sent to the client */
   setCookieHeaders: string[]
-  /** Optional ruleset processor function to be used for processing the origin request */
-  ruleActionProcessor?: RuleActionProcessor | undefined
+  /** Optional rule action that was resolved by ingress */
+  ruleAction: RuleAction | undefined
 }
 
 /**
@@ -60,12 +67,14 @@ export class IdentificationClient {
    * @param baseUrl - Base URL hostname for the identification service, e.g. "api.fpjs.io"
    * @param apiKey - API key for authentication with the identification service
    * @param routePrefix - Path prefix for worker requests.
+   * @param rulesetId - If of ruleset that will be evaluated by the identification service.
    */
   constructor(
     region: Region,
     baseUrl: string,
     private readonly apiKey: string,
-    private readonly routePrefix: string
+    private readonly routePrefix: string,
+    private readonly rulesetId?: string
   ) {
     const resolvedUrl = IdentificationClient.resolveUrl(region, baseUrl)
     console.debug('Resolved identification URL:', resolvedUrl)
@@ -99,7 +108,7 @@ export class IdentificationClient {
 
     const headers = new Headers()
     headers.set('Content-Type', 'application/json')
-    headers.set('Auth-API-Key', this.apiKey)
+    headers.set('Authorization', `Bearer ${this.apiKey}`)
 
     const clientHeaders = new Headers(clientRequest.headers)
     clientHeaders.delete('cookie')
@@ -115,23 +124,24 @@ export class IdentificationClient {
     }
 
     const sendBody: SendBody = {
-      clientIP,
-      clientHost,
-      clientUserAgent,
-      fingerprintData: signals,
+      client_ip: clientIP,
+      client_host: clientHost,
+      client_user_agent: clientUserAgent,
+      fingerprint_data: signals,
+      ...(this.rulesetId ? { ruleset_context: { ruleset_id: this.rulesetId } } : {}),
     }
 
     if (cookieToSend) {
-      sendBody.clientCookie = cookieToSend
+      sendBody.client_cookie = cookieToSend
     }
 
     const clientHeadersEntries = Array.from(clientHeaders.entries())
     if (clientHeadersEntries.length) {
-      sendBody.clientHeaders = Object.fromEntries(clientHeadersEntries)
+      sendBody.client_headers = Object.fromEntries(clientHeadersEntries)
     }
 
     const requestUrl = new URL(this.url)
-    requestUrl.pathname = '/send'
+    requestUrl.pathname = '/v4/send'
 
     const identificationRequest = new Request(requestUrl, {
       method: 'POST',
@@ -152,7 +162,7 @@ export class IdentificationClient {
 
     const identificationData = await identificationResponse.json<SendResponse>()
     console.debug(`Identification response data:`, identificationData)
-    if (!identificationData.agentData) {
+    if (!identificationData.agent_data) {
       throw new IdentificationRequestFailedError(
         'Identification response does not contain agent data',
         identificationResponse.status
@@ -162,12 +172,9 @@ export class IdentificationClient {
     const cookiesToSend = identificationResponse.headers.getAll('Set-Cookie')
 
     return {
-      ...identificationData,
       setCookieHeaders: cookiesToSend,
-
-      ruleActionProcessor: identificationData.ruleAction
-        ? makeRuleActionProcessor(identificationData.ruleAction)
-        : undefined,
+      agentData: identificationData.agent_data,
+      ruleAction: identificationData.rule_action,
     }
   }
 

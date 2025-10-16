@@ -19,3 +19,7 @@ wrangler.jsonc
 
 # Public built assets
 /public/*.js
+
+# Ignored dotenv files
+.env.*.local
+.env.local

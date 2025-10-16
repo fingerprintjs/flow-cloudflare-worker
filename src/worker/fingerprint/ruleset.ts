@@ -67,12 +67,6 @@ export type RuleAction = RuleActionUnion & {
 
 /**
  * A function type that processes HTTP request based on rule actions.
- * Takes a request and returns a promise that resolves to an HTTP response.
- */
-export type RuleActionProcessor = (request: Request) => Promise<Response>
-
-/**
- * Creates a ruleset processor function based on the provided rule action.
  *
  * The processor handles different action types:
  * - 'block': Returns a blocking response with custom status and headers
@@ -80,31 +74,23 @@ export type RuleActionProcessor = (request: Request) => Promise<Response>
  * - default: Forwards request to origin without modifications
  *
  * @param ruleAction - The rule action configuration to process
- * @returns A processor function that handles HTTP requests according to the rule action
+ * @param request - The original HTTP request to process
+ * @returns Request modified based on the rule action
  */
-export const makeRuleActionProcessor = (ruleAction: RuleActionUnion): RuleActionProcessor => {
-  return async (request) => {
-    console.debug('Processing ruleset:', ruleAction)
+export async function processRuleset(ruleAction: RuleActionUnion, request: Request) {
+  console.debug('Processing ruleset:', ruleAction)
 
-    switch (ruleAction.type) {
-      case 'block':
-        return handleBlock(ruleAction)
+  switch (ruleAction.type) {
+    case 'block':
+      return handleBlock(ruleAction)
 
-      case 'allow':
-        return handleAllow(request, ruleAction)
+    case 'allow':
+      return handleAllow(request, ruleAction)
 
-      default:
-        console.warn('Invalid rule type:', ruleAction)
-        return fetchOrigin(request)
-    }
+    default:
+      console.warn('Invalid rule type:', ruleAction)
+      return fetchOrigin(request)
   }
-}
-
-/**
- * Convenience method for adhoc ruleset processing.
- */
-export function processRuleset(ruleAction: RuleActionUnion, request: Request) {
-  return makeRuleActionProcessor(ruleAction)(request)
 }
 
 /**
