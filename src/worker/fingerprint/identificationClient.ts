@@ -4,6 +4,7 @@ import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../e
 import { getHeaderOrThrow, getIp } from '../utils/headers'
 import { findCookie } from '../cookies'
 import { RuleAction } from './ruleset'
+import { copyRequest } from '../utils/request'
 
 type RulesetContext = {
   ruleset_id: string
@@ -195,7 +196,7 @@ export class IdentificationClient {
     const headers = new Headers(clientRequest.headers)
     headers.delete('cookie')
 
-    const request = new Request(ingressUrl, new Request(clientRequest, { headers }))
+    const request = copyRequest({ request: clientRequest, init: { headers }, url: ingressUrl })
     console.debug(`Sending browser cache request to ${ingressUrl}`, request)
 
     return fetch(request as unknown as Request<unknown, IncomingRequestCfProperties>)
