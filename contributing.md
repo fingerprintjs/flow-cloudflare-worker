@@ -37,6 +37,8 @@ To run the project locally, you need to run these processes in parallel.
     ```
    > Note: After making changes to the instrumentor code, you need to **reload** the browser page to see the changes.
 
+   > Note: In your terminal you might see the following warning:  `The public directory feature may not work correctly`.  This is expected behavior, as the instrumentor artifact is output to the public directory, from which the worker imports it. 
+
 
 3. **Start the worker:**
    This command starts the Cloudflare Worker in development mode. The worker will proxy requests to the React SPA and inject the necessary scripts.
