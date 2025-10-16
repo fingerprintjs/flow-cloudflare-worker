@@ -3,7 +3,7 @@ import { SIGNALS_HEADER } from '../../shared/const'
 import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../errors'
 import { getHeaderOrThrow, getIp } from '../utils/headers'
 import { findCookie } from '../cookies'
-import { makeRuleActionProcessor, RuleAction, RuleActionProcessor } from './ruleset'
+import { RuleAction } from './ruleset'
 
 type RulesetContext = {
   ruleset_id: string
@@ -45,11 +45,13 @@ export type SendResponse = {
 /**
  * Extended response structure that includes both agent data and cookie headers.
  */
-export type SendResult = SendResponse & {
+export type SendResult = {
+  /** Agent data returned by the identification service */
+  agentData: string
   /** Array of Set-Cookie header values to be sent to the client */
   setCookieHeaders: string[]
-  /** Optional ruleset processor function to be used for processing the origin request */
-  ruleActionProcessor?: RuleActionProcessor | undefined
+  /** Optional rule action that was resolved by ingress */
+  ruleAction: RuleAction | undefined
 }
 
 /**
@@ -170,12 +172,9 @@ export class IdentificationClient {
     const cookiesToSend = identificationResponse.headers.getAll('Set-Cookie')
 
     return {
-      ...identificationData,
       setCookieHeaders: cookiesToSend,
-
-      ruleActionProcessor: identificationData.rule_action
-        ? makeRuleActionProcessor(identificationData.rule_action)
-        : undefined,
+      agentData: identificationData.agent_data,
+      ruleAction: identificationData.rule_action,
     }
   }
 
