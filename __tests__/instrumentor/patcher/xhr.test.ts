@@ -68,13 +68,10 @@ describe('XMLHttpRequest Patcher', () => {
 
   describe('patchXMLHttpRequest', () => {
     it('should patch XMLHttpRequest successfully', () => {
-      const originalOpen = (XMLHttpRequest as any).prototype.open
-      const originalSend = (XMLHttpRequest as any).prototype.send
-
       patchXMLHttpRequest(mockContext)
 
-      expect((XMLHttpRequest as any).prototype.open).not.toBe(originalOpen)
-      expect((XMLHttpRequest as any).prototype.send).not.toBe(originalSend)
+      expect(XMLHttpRequest.prototype.open).not.toBe(originalOpen)
+      expect(XMLHttpRequest.prototype.send).not.toBe(originalSend)
     })
   })
 
