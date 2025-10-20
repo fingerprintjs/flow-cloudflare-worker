@@ -12,8 +12,8 @@ import { AGENT_DATA_HEADER } from '../../../shared/const'
 export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.prototype.send {
   const originalSend = XMLHttpRequest.prototype.send
 
-  return function patchedSend(this: DecoratedXMLHttpRequest, body?: Document | BodyInit | null) {
-    const sendRequest = () => originalSend.call(this, body as any)
+  return function patchedSend(this: DecoratedXMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
+    const sendRequest = () => originalSend.call(this, body)
 
     const fingerprintContext = this[FingerprintContextSymbol]
 
