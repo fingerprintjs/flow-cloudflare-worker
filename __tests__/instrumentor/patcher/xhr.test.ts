@@ -53,6 +53,8 @@ describe('XMLHttpRequest Patcher', () => {
     writableContext.setAgentDataProcessor(mockProcessAgentData)
     mockContext = writableContext
     vi.spyOn(mockContext, 'isProtectedUrl')
+    vi.spyOn(mockContext, 'getSignals')
+    vi.spyOn(mockContext, 'processAgentData')
   })
 
   afterEach(async () => {
@@ -214,6 +216,38 @@ describe('XMLHttpRequest Patcher', () => {
       await awaitResponse(xhr)
 
       expect(sendSpy).toHaveBeenCalled()
+    })
+
+    it('should fail silently if signals collection fails', async () => {
+      vi.mocked(mockContext.getSignals).mockRejectedValue(new Error('Failed to get signals'))
+
+      patchXMLHttpRequest(mockContext)
+
+      const xhr = new XMLHttpRequest()
+      const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
+
+      xhr.open('POST', '/protected/endpoint')
+      xhr.send()
+      await awaitResponse(xhr)
+
+      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(mockProcessAgentData).not.toHaveBeenCalledWith('agent-data')
+    })
+
+    it('should fail silently if agent processing fails', async () => {
+      vi.mocked(mockContext.processAgentData).mockRejectedValue(new Error('Failed to process agent data'))
+
+      patchXMLHttpRequest(mockContext)
+
+      const xhr = new XMLHttpRequest()
+      const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
+
+      xhr.open('POST', '/protected/endpoint')
+      xhr.send()
+      await awaitResponse(xhr)
+
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(mockProcessAgentData).not.toHaveBeenCalledWith('agent-data')
     })
   })
 })
