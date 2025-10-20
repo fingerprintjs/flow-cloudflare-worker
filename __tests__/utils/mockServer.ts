@@ -34,7 +34,6 @@ export class MockServer {
     return this._requests
   }
 
-  constructor() {}
 
   listen(): Promise<void> {
     return new Promise<void>((resolve) => {
