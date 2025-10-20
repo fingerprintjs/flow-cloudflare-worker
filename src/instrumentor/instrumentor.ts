@@ -3,7 +3,7 @@ import { patchFetch } from './patcher/fetch/fetch'
 import { setupPatcherContext } from './fingerprint/patcherContext'
 import { FingerprintLoader } from './types'
 import { ProtectedApi } from '../shared/types'
-import { patchXMLHttpRequest } from './patcher/xml-http-request/xhr'
+import { patchXMLHttpRequest } from './patcher/xhr/xhr'
 
 export type InstrumentationParams = {
   fingerprintLoader: Promise<FingerprintLoader>

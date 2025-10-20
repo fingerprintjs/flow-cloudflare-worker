@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
 import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
-import { patchXMLHttpRequest } from '../../../src/instrumentor/patcher/xml-http-request/xhr'
+import { patchXMLHttpRequest } from '../../../src/instrumentor/patcher/xhr/xhr'
 import { MockServer } from '../../utils/mockServer'
 
 async function awaitResponse(request: XMLHttpRequest) {
