@@ -56,7 +56,7 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
  */
 function prepareResponseHandling(request: XMLHttpRequest, ctx: PatcherContext, didInjectSignals: () => boolean) {
   // Helper to process agent data after response, only once
-  const processAgentDataIfAny = () => {
+  const processAgentData = () => {
     try {
       if (didInjectSignals()) {
         const agentData = request.getResponseHeader?.(AGENT_DATA_HEADER)
@@ -66,14 +66,14 @@ function prepareResponseHandling(request: XMLHttpRequest, ctx: PatcherContext, d
         }
       }
 
-      request.removeEventListener?.('loadend', processAgentDataIfAny)
+      request.removeEventListener?.('loadend', processAgentData)
     } catch (e) {
       console.error('Error processing XHR agent data:', e)
     }
   }
 
   try {
-    request.addEventListener?.('loadend', processAgentDataIfAny)
+    request.addEventListener?.('loadend', processAgentData)
   } catch {
     console.error('Failed to add event listener for XHR agent data processing')
   }
