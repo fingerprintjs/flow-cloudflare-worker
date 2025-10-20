@@ -42,25 +42,23 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
     }
 
     try {
-      if (metadata) {
-        const request = createPatcherRequest(this, metadata)
-        // Start gathering signals as soon as possible.
-        const signalsPromise = handleSignalsInjection({
-          request,
-          ctx,
-        }).catch((error) => {
-          console.error('Error injecting signals:', error)
-          return false
-        })
+      const request = createPatcherRequest(this, metadata)
+      // Start gathering signals as soon as possible.
+      const signalsPromise = handleSignalsInjection({
+        request,
+        ctx,
+      }).catch((error) => {
+        console.error('Error injecting signals:', error)
+        return false
+      })
 
-        const fingerprintContext: XMLHttpRequestRequestContext = {
-          signalsPromise,
-          ...metadata,
-        }
-        Object.assign(this, {
-          [FingerprintContextSymbol]: fingerprintContext,
-        })
+      const fingerprintContext: XMLHttpRequestRequestContext = {
+        signalsPromise,
+        ...metadata,
       }
+      Object.assign(this, {
+        [FingerprintContextSymbol]: fingerprintContext,
+      })
     } catch (e) {
       console.error('Error setting XHR fingerprint context:', e)
     }
