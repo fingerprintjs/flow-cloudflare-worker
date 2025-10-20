@@ -13,6 +13,9 @@ async function awaitResponse(request: XMLHttpRequest) {
   })
 }
 
+/**
+ * Use an instance of Mock HTTP server rather than mocking the actual XHR methods, for more accurate testing.
+ * */
 let server: MockServer
 
 function withAgentData() {
