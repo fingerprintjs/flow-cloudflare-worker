@@ -2,13 +2,20 @@ import { createServer, IncomingMessage, ServerResponse } from 'node:http'
 
 type RequestHandler = (req: IncomingMessage, res: ServerResponse) => void
 
+type MockServerRequest = IncomingMessage & { body?: Buffer }
+
+/**
+ * Represents a mock server for testing HTTP requests and responses.
+ */
 export class MockServer {
-  private _requests: IncomingMessage[] = []
+  private _requests: MockServerRequest[] = []
 
-  private server = createServer((req, res) => {
-    this._requests.push(req)
-
+  private server = createServer(async (req, res) => {
     this.middlewares.forEach((middleware) => middleware(req, res))
+
+    const body = await MockServer.readBody(req)
+    Object.assign(req, { body })
+    this._requests.push(req)
 
     if (this.requestHandler) {
       this.requestHandler(req, res)
@@ -62,5 +69,23 @@ export class MockServer {
     this._requests = []
     this.middlewares = []
     this.requestHandler = undefined
+  }
+
+  private static readBody(req: IncomingMessage) {
+    return new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = []
+
+      req.on('data', (chunk: Buffer) => {
+        chunks.push(chunk)
+      })
+
+      req.on('end', () => {
+        resolve(Buffer.concat(chunks))
+      })
+
+      req.on('error', (err) => {
+        reject(err)
+      })
+    })
   }
 }

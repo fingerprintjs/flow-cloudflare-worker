@@ -108,6 +108,48 @@ describe('XMLHttpRequest Patcher', () => {
       expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
     })
 
+    it('should add signals header for a request with a body', async () => {
+      withAgentData()
+      patchXMLHttpRequest(mockContext)
+
+      const xhr = new XMLHttpRequest()
+      const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
+
+      xhr.open('POST', '/protected/endpoint')
+      xhr.send('test')
+      await awaitResponse(xhr)
+
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
+
+      const [request] = server.requests
+      expect(request.body?.toString('utf-8')).toEqual('test')
+    })
+
+    it('should add signals header for a request with a form data', async () => {
+      withAgentData()
+      patchXMLHttpRequest(mockContext)
+
+      const xhr = new XMLHttpRequest()
+      const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
+
+      const data = new FormData()
+      data.set('test', 'value')
+
+      xhr.open('POST', '/protected/endpoint')
+      xhr.send(data)
+      await awaitResponse(xhr)
+
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
+
+      const [request] = server.requests
+      const requestBodyStr = request.body?.toString('utf-8')
+
+      expect(requestBodyStr?.includes('name="test"')).toBe(true)
+      expect(requestBodyStr?.includes('value')).toBe(true)
+    })
+
     it('should not add signals header for non-protected URLs', async () => {
       withAgentData()
       patchXMLHttpRequest(mockContext)
