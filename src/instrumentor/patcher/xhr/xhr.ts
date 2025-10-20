@@ -6,7 +6,7 @@ import { createPatchedSend } from './send'
  * Patches the global XMLHttpRequest to automatically add Fingerprint signals
  * to requests made to protected APIs.
  */
-export function patchXMLHttpRequest(ctx: PatcherContext) {
+export function patchXHR(ctx: PatcherContext) {
   const XHR = (globalThis as any).XMLHttpRequest as typeof XMLHttpRequest | undefined
 
   if (!XHR || typeof XHR.prototype?.open !== 'function' || typeof XHR.prototype?.send !== 'function') {

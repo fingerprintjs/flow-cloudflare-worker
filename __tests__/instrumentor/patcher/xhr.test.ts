@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
 import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
-import { patchXMLHttpRequest } from '../../../src/instrumentor/patcher/xhr/xhr'
+import { patchXHR } from '../../../src/instrumentor/patcher/xhr/xhr'
 import { MockServer } from '../../utils/mockServer'
 
 async function awaitResponse(request: XMLHttpRequest) {
@@ -70,7 +70,7 @@ describe('XMLHttpRequest Patcher', () => {
 
   describe('patchXMLHttpRequest', () => {
     it('should patch XMLHttpRequest successfully', () => {
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       expect(XMLHttpRequest.prototype.open).not.toBe(originalOpen)
       expect(XMLHttpRequest.prototype.send).not.toBe(originalSend)
@@ -80,7 +80,7 @@ describe('XMLHttpRequest Patcher', () => {
   describe('patched XHR behavior', () => {
     it('should add signals header for protected URLs with absolute URL', async () => {
       withAgentData()
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
 
@@ -97,7 +97,7 @@ describe('XMLHttpRequest Patcher', () => {
 
     it('should add signals header for protected URLs with relative path', async () => {
       withAgentData()
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
       const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
@@ -112,7 +112,7 @@ describe('XMLHttpRequest Patcher', () => {
 
     it('should add signals header for a request with a body', async () => {
       withAgentData()
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
       const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
@@ -130,7 +130,7 @@ describe('XMLHttpRequest Patcher', () => {
 
     it('should add signals header for a request with a form data', async () => {
       withAgentData()
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
       const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
@@ -154,7 +154,7 @@ describe('XMLHttpRequest Patcher', () => {
 
     it('should not add signals header for non-protected URLs', async () => {
       withAgentData()
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
       const setHeaderSpy = vi.spyOn(xhr as any, 'setRequestHeader')
@@ -173,7 +173,7 @@ describe('XMLHttpRequest Patcher', () => {
       emptyContext.setSignalsProvider(async () => '')
       emptyContext.setAgentDataProcessor(mockProcessAgentData)
 
-      patchXMLHttpRequest(emptyContext)
+      patchXHR(emptyContext)
 
       const xhr = new XMLHttpRequest()
       const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
@@ -187,7 +187,7 @@ describe('XMLHttpRequest Patcher', () => {
     })
 
     it('should not process agent data if it is not available', async () => {
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
       const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
@@ -206,7 +206,7 @@ describe('XMLHttpRequest Patcher', () => {
       vi.mocked(mockContext.isProtectedUrl).mockImplementation(() => {
         throw new Error('Test error')
       })
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
       const sendSpy = vi.spyOn(xhr, 'send')
@@ -221,7 +221,7 @@ describe('XMLHttpRequest Patcher', () => {
     it('should fail silently if signals collection fails', async () => {
       vi.mocked(mockContext.getSignals).mockRejectedValue(new Error('Failed to get signals'))
 
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
       const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
@@ -237,7 +237,7 @@ describe('XMLHttpRequest Patcher', () => {
     it('should fail silently if agent processing fails', async () => {
       vi.mocked(mockContext.processAgentData).mockRejectedValue(new Error('Failed to process agent data'))
 
-      patchXMLHttpRequest(mockContext)
+      patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
       const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
