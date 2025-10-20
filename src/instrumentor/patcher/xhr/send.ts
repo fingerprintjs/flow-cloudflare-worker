@@ -1,5 +1,5 @@
 import { PatcherContext } from '../context'
-import { DecoratedXMLHttpRequest, FingerprintContextSymbol } from './types'
+import { XHRWithFingerprintContext, FingerprintContextSymbol } from './types'
 import { AGENT_DATA_HEADER } from '../../../shared/const'
 
 /**
@@ -12,7 +12,7 @@ import { AGENT_DATA_HEADER } from '../../../shared/const'
 export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.prototype.send {
   const originalSend = XMLHttpRequest.prototype.send
 
-  return function patchedSend(this: DecoratedXMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
+  return function patchedSend(this: XHRWithFingerprintContext, body?: Document | XMLHttpRequestBodyInit | null) {
     const sendRequest = () => originalSend.call(this, body)
 
     const fingerprintContext = this[FingerprintContextSymbol]

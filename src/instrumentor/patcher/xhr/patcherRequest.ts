@@ -1,17 +1,14 @@
-import { XMLHttpRequestFingerprintMetadata } from './types'
+import { XHRFingerprintMetadata } from './types'
 import { PatcherRequest } from '../types'
 
 /**
  * Creates a PatcherRequest object from an XMLHttpRequest and its metadata.
  *
  * @param {XMLHttpRequest} request - The XMLHttpRequest instance to configure.
- * @param {XMLHttpRequestFingerprintMetadata} metadata - The metadata containing URL and method for the request.
+ * @param {XHRFingerprintMetadata} metadata - The metadata containing URL and method for the request.
  * @return {PatcherRequest} A PatcherRequest object with URL, method, and header-setting capability.
  */
-export function createPatcherRequest(
-  request: XMLHttpRequest,
-  metadata: XMLHttpRequestFingerprintMetadata
-): PatcherRequest {
+export function createPatcherRequest(request: XMLHttpRequest, metadata: XHRFingerprintMetadata): PatcherRequest {
   return {
     url: metadata.url,
     method: metadata.method,

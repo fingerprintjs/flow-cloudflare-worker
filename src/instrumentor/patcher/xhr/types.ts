@@ -1,6 +1,6 @@
-export type XMLHttpRequestFingerprintMetadata = { method: string; url: string; async: boolean }
+export type XHRFingerprintMetadata = { method: string; url: string; async: boolean }
 
-export type XMLHttpRequestRequestContext = XMLHttpRequestFingerprintMetadata & {
+export type XHRRequestContext = XHRFingerprintMetadata & {
   signalsPromise?: Promise<boolean>
 }
 
@@ -9,4 +9,4 @@ export type XMLHttpRequestRequestContext = XMLHttpRequestFingerprintMetadata & {
  */
 export const FingerprintContextSymbol = Symbol('FingerprintMetadata')
 
-export type DecoratedXMLHttpRequest = XMLHttpRequest & { [FingerprintContextSymbol]?: XMLHttpRequestRequestContext }
+export type XHRWithFingerprintContext = XMLHttpRequest & { [FingerprintContextSymbol]?: XHRRequestContext }
