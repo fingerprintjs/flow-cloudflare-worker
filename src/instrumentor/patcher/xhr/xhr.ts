@@ -14,10 +14,7 @@ export function patchXMLHttpRequest(ctx: PatcherContext) {
     return
   }
 
-  // Wrap open to store request metadata
   XHR.prototype.open = createPatchedOpen(ctx)
-
-  // Wrap `send` to inject a signal header if needed and process agent data on completion
   XHR.prototype.send = createPatchedSend(ctx)
 
   console.debug('XMLHttpRequest patched successfully.')
