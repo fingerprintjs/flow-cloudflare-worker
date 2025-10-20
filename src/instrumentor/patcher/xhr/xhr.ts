@@ -7,7 +7,7 @@ import { createPatchedSend } from './send'
  * to requests made to protected APIs.
  */
 export function patchXHR(ctx: PatcherContext) {
-  const XHR = (globalThis as any).XMLHttpRequest as typeof XMLHttpRequest | undefined
+  const XHR = globalThis.XMLHttpRequest
 
   if (!XHR || typeof XHR.prototype?.open !== 'function' || typeof XHR.prototype?.send !== 'function') {
     console.warn('XMLHttpRequest is not available.')
