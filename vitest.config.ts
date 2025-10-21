@@ -29,14 +29,6 @@ export default defineConfig({
           inspector: {
             port: 3456,
           },
-          deps: {
-            optimizer: {
-              ssr: {
-                enabled: true,
-                include: ['node:inspector'],
-              },
-            },
-          },
           poolOptions: {
             workers: {
               wrangler: {
