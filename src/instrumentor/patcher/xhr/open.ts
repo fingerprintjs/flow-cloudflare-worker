@@ -19,50 +19,54 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
     this: XMLHttpRequest & XHRFingerprintMetadata,
     method: string,
     url: string,
-    async: boolean = true
+    async: boolean = true,
+    username?: string | null,
+    password?: string | null
   ) {
-    let metadata: XHRFingerprintMetadata
+    if (async) {
+      let metadata: XHRFingerprintMetadata
 
-    try {
-      metadata = {
-        method: method?.toUpperCase?.(),
-        // Resolve relative URLs against the current location
-        url: new URL(url, location.origin).toString(),
-        async,
+      try {
+        metadata = {
+          method: method?.toUpperCase?.(),
+          // Resolve relative URLs against the current location
+          url: new URL(url, location.origin).toString(),
+          async,
+        }
+      } catch (e) {
+        // If URL cannot be resolved (very unlikely)
+        console.warn('Failed to resolve XHR URL for patching:', e)
+
+        metadata = {
+          method: method?.toUpperCase?.(),
+          url,
+          async,
+        }
       }
-    } catch (e) {
-      // If URL cannot be resolved (very unlikely)
-      console.warn('Failed to resolve XHR URL for patching:', e)
 
-      metadata = {
-        method: method?.toUpperCase?.(),
-        url,
-        async,
+      try {
+        const request = createPatcherRequest(this, metadata)
+        // Start gathering signals as soon as possible.
+        const signalsPromise = handleSignalsInjection({
+          request,
+          ctx,
+        }).catch((error) => {
+          console.error('Error injecting signals:', error)
+          return false
+        })
+
+        const fingerprintContext: XHRRequestContext = {
+          signalsPromise,
+          ...metadata,
+        }
+        Object.assign(this, {
+          [FingerprintContextSymbol]: fingerprintContext,
+        })
+      } catch (e) {
+        console.error('Error setting XHR fingerprint context:', e)
       }
     }
 
-    try {
-      const request = createPatcherRequest(this, metadata)
-      // Start gathering signals as soon as possible.
-      const signalsPromise = handleSignalsInjection({
-        request,
-        ctx,
-      }).catch((error) => {
-        console.error('Error injecting signals:', error)
-        return false
-      })
-
-      const fingerprintContext: XHRRequestContext = {
-        signalsPromise,
-        ...metadata,
-      }
-      Object.assign(this, {
-        [FingerprintContextSymbol]: fingerprintContext,
-      })
-    } catch (e) {
-      console.error('Error setting XHR fingerprint context:', e)
-    }
-
-    return originalOpen.call(this, method, url, async)
+    return originalOpen.call(this, method, url, async, username, password)
   }
 }
