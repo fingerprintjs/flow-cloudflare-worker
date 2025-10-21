@@ -1,0 +1,220 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
+import { patchForms } from '../../../src/instrumentor/patcher/form/form'
+import { FP_FIELD_NAME } from '../../../src/instrumentor/patcher/form/const'
+import { wait } from '../../utils/wait'
+import { MockServer } from '../../utils/mockServer'
+
+const formHtml = `
+  <form id="loginForm" action="/login" method="POST">
+    <input type="text" name="username">
+    <input type="password" name="password">
+    <button type="submit">Login</button>
+  </form>
+`
+
+const sampleHtmlWithForm = `
+<!DOCTYPE html>
+<html>
+<body>
+  ${formHtml}
+</body>
+</html>
+`
+
+async function submitForm(form: HTMLFormElement) {
+  form.querySelector<HTMLButtonElement>('[type="submit"]')?.click()
+
+  await wait(10)
+}
+
+async function emitDomReadyEvent() {
+  document.dispatchEvent(new Event('DOMContentLoaded'))
+
+  // Wait for event to propagate
+  await wait(10)
+}
+
+describe('Form patcher', () => {
+  const mockAgentDataProcessor = vi.fn()
+
+  let mockContext: WritablePatcherContext
+  let mockServer: MockServer
+
+  beforeEach(async () => {
+    mockServer = new MockServer()
+    await mockServer.listen()
+
+    vi.clearAllMocks()
+
+    location.href = mockServer.getUrl('/')
+
+    mockContext = new WritablePatcherContext([
+      {
+        method: 'POST',
+        url: mockServer.getUrl('/login'),
+      },
+    ])
+
+    mockContext.setAgentDataProcessor(mockAgentDataProcessor)
+    mockContext.setSignalsProvider(async () => 'test-signals-data')
+
+    document.body.innerHTML = sampleHtmlWithForm
+  })
+
+  afterEach(async () => {
+    await mockServer.close()
+  })
+
+  it('should inject signals element into forms on submission', async () => {
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    expect(input).toBeTruthy()
+    expect(input!.hidden).toEqual(true)
+    expect(input!.value).toEqual('test-signals-data')
+  })
+
+  it('should not inject signals element into forms on submission if the action is not protected', async () => {
+    document.querySelector<HTMLFormElement>('#loginForm')!.action = '/public/login'
+
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    expect(input).toBeFalsy()
+  })
+
+  it('should not inject signals element into forms on submission if the method is not protected', async () => {
+    document.querySelector<HTMLFormElement>('#loginForm')!.method = 'PUT'
+
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    expect(input).toBeFalsy()
+  })
+
+  it('should inject signals if the URL changes to protected', async () => {
+    document.querySelector<HTMLFormElement>('#loginForm')!.action = '/public/login'
+
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    form!.action = '/login'
+
+    // Wait for mutation observer to process the change
+    await wait(10)
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    expect(input).toBeTruthy()
+  })
+
+  it('should inject signals if the method changes to protected', async () => {
+    document.querySelector<HTMLFormElement>('#loginForm')!.method = 'PUT'
+
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    form!.method = 'POST'
+
+    // Wait for mutation observer to process the change
+    await wait(10)
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    expect(input).toBeTruthy()
+  })
+
+  it('should inject signals for dynamically added form via innerHTML', async () => {
+    document.body.innerHTML = ''
+
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    document.body.innerHTML = sampleHtmlWithForm
+
+    // Wait for mutation observer to handle change
+    await wait(10)
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    expect(input).toBeTruthy()
+  })
+
+  it('should inject signals for dynamically added form via append', async () => {
+    document.body.innerHTML = ''
+
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const container = document.createElement('div')
+    container.innerHTML = formHtml
+
+    document.body.appendChild(container)
+
+    // Wait for mutation observer to handle change
+    await wait(10)
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    expect(input).toBeTruthy()
+  })
+
+  it('should not inject signals for dynamically added form if the url is not protected', async () => {
+    document.body.innerHTML = ''
+
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const container = document.createElement('div')
+    container.innerHTML = formHtml
+    container.querySelector<HTMLFormElement>('#loginForm')!.action = '/public/login'
+
+    document.body.appendChild(container)
+
+    // Wait for mutation observer to handle change
+    await wait(10)
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    expect(input).toBeFalsy()
+  })
+})
