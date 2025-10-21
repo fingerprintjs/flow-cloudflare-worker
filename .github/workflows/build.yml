@@ -7,5 +7,5 @@ jobs:
     name: Build project and run CI checks
     uses: fingerprintjs/dx-team-toolkit/.github/workflows/build-typescript-project.yml@v1
     with:
-      runAfterInstall: cp wrangler.dist.jsonc wrangler.jsonc
+      runAfterInstall: cp wrangler.example.jsonc wrangler.jsonc
       checkTypes: false
