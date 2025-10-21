@@ -31,7 +31,6 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
           method: method?.toUpperCase?.(),
           // Resolve relative URLs against the current location
           url: new URL(url, location.origin).toString(),
-          async,
         }
       } catch (e) {
         // If URL cannot be resolved (very unlikely)
@@ -40,7 +39,6 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
         metadata = {
           method: method?.toUpperCase?.(),
           url,
-          async,
         }
       }
 

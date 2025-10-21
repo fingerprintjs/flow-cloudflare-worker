@@ -1,4 +1,4 @@
-export type XHRFingerprintMetadata = { method: string; url: string; async: boolean }
+export type XHRFingerprintMetadata = { method: string; url: string }
 
 export type XHRRequestContext = XHRFingerprintMetadata & {
   signalsPromise?: Promise<boolean>
