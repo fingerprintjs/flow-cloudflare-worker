@@ -1,8 +1,8 @@
 import { PatcherContext } from '../context'
-import { ProtectedApi } from '../../../shared/types'
+import { ProtectedApi } from '../../../../shared/types'
 import { handleSignalsInjection } from '../signalsInjection'
 import { resolvePatcherRequest } from './patcherRequest'
-import { AGENT_DATA_HEADER } from '../../../shared/const'
+import { AGENT_DATA_HEADER } from '../../../../shared/const'
 
 /**
  * Parameters required for patching the fetch API.

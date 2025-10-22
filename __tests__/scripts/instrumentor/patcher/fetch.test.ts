@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { patchFetch } from '../../../src/instrumentor/patcher/fetch/fetch'
-import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
-import { ProtectedApi } from '../../../src/shared/types'
-import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../src/shared/const'
-import { mockUrl, mockWorkerBaseUrl } from '../../utils/mockEnv'
+import { patchFetch } from '../../../../src/scripts/instrumentor/patcher/fetch/fetch'
+import { PatcherContext, WritablePatcherContext } from '../../../../src/scripts/instrumentor/patcher/context'
+import { ProtectedApi } from '../../../../src/shared/types'
+import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../../src/shared/const'
+import { mockUrl, mockWorkerBaseUrl } from '../../../utils/mockEnv'
 
 describe('Fetch Patcher', () => {
   let mockContext: PatcherContext

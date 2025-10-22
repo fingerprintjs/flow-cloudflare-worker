@@ -1,5 +1,5 @@
 import { describe, it, vi, expect } from 'vitest'
-import { WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
+import { WritablePatcherContext } from '../../../../src/scripts/instrumentor/patcher/context'
 
 describe('Patcher context', () => {
   describe('Agent data processor', () => {

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
-import { patchForms } from '../../../src/instrumentor/patcher/form/form'
-import { wait } from '../../utils/wait'
-import { SIGNALS_KEY } from '../../../src/shared/const'
-import { mockUrl } from '../../utils/mockEnv'
+import { WritablePatcherContext } from '../../../../src/scripts/instrumentor/patcher/context'
+import { patchForms } from '../../../../src/scripts/instrumentor/patcher/form/form'
+import { wait } from '../../../utils/wait'
+import { SIGNALS_KEY } from '../../../../src/shared/const'
+import { mockUrl } from '../../../utils/mockEnv'
 
 const formHtml = `
   <form id="loginForm" action="/login" method="POST">

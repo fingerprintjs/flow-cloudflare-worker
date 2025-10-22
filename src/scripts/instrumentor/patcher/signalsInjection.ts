@@ -1,6 +1,6 @@
 import { PatcherRequest } from './types'
 import { PatcherContext } from './context'
-import { SIGNALS_KEY } from '../../shared/const'
+import { SIGNALS_KEY } from '../../../shared/const'
 
 /**
  * Parameters required for handling signals injection into requests.

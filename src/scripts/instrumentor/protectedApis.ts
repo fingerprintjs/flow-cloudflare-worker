@@ -1,4 +1,4 @@
-import { ProtectedApi } from '../shared/types'
+import { ProtectedApi } from '../../shared/types'
 
 // This template will be replaced during injection by the worker.
 const PROTECTED_APIS_STR: any = '<PROTECTED_APIS>'

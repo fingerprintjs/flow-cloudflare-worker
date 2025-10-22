@@ -15,8 +15,8 @@
     "isolatedModules": true
   },
   "include": [
-    "./src/agent-processor/**/*",
-    "./src/shared-scripts/**/*",
+    "./src/scripts/agent-processor/**/*",
+    "./src/scripts/shared/**/*",
     "./src/shared/**/*"
   ]
 }

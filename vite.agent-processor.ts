@@ -12,7 +12,7 @@ export default defineConfig({
   build: {
     outDir: 'dist/agent-processor',
     lib: {
-      entry: 'src/agent-processor/index.ts',
+      entry: 'src/scripts/agent-processor/index.ts',
       formats: ['iife'],
       name: 'agentProcessor',
       fileName: 'agent-processor',

@@ -15,8 +15,8 @@
     "isolatedModules": true
   },
   "include": [
-    "./src/instrumentor/**/*",
+    "./src/scripts/instrumentor/**/*",
     "./src/shared/**/*",
-    "./src/shared-scripts/**/*"
+    "./src/scripts/shared/**/*"
   ]
 }

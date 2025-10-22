@@ -1,5 +1,5 @@
 import { PatcherContext } from '../context'
-import { SIGNALS_KEY } from '../../../shared/const'
+import { SIGNALS_KEY } from '../../../../shared/const'
 
 const REMOVE_LISTENER_SYMBOL = Symbol('removeListener')
 

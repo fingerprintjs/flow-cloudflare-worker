@@ -1,4 +1,4 @@
-import { ProtectedApi, ProtectedApiHttpMethod } from '../../shared/types'
+import { ProtectedApi, ProtectedApiHttpMethod } from '../../../shared/types'
 import { findMatchingRoute, parseRoutes, Route } from '@fingerprintjs/url-matcher'
 
 /**

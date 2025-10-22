@@ -1,4 +1,4 @@
-import { importFingerprintLoader } from '../shared-scripts/fingerprint/import'
+import { importFingerprintLoader } from '../shared/fingerprint/import'
 
 const scriptTag = document.currentScript
 const agentData = scriptTag?.dataset?.agentData

@@ -1,6 +1,6 @@
 import { PatcherContext } from '../context'
 import { XHRWithFingerprintContext, FingerprintContextSymbol } from './types'
-import { AGENT_DATA_HEADER } from '../../../shared/const'
+import { AGENT_DATA_HEADER } from '../../../../shared/const'
 
 /**
  * Creates a patched version of the `send` method for `XMLHttpRequest` instances.

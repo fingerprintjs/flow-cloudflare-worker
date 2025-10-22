@@ -12,7 +12,7 @@ export default defineConfig({
   build: {
     outDir: 'dist/instrumentor',
     lib: {
-      entry: 'src/instrumentor/index.ts',
+      entry: 'src/scripts/instrumentor/index.ts',
       formats: ['iife'],
       name: 'instrumentor',
       fileName: 'instrumentor',

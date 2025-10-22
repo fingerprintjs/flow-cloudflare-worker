@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { patchFetch } from '../../src/instrumentor/patcher/fetch/fetch'
-import { setupInstrumentor } from '../../src/instrumentor/instrumentor'
-import { wait } from '../utils/wait'
-import { FingerprintLoader } from '../../src/shared-scripts/fingerprint/types'
-import { mockUrl } from '../utils/mockEnv'
+import { patchFetch } from '../../../src/scripts/instrumentor/patcher/fetch/fetch'
+import { setupInstrumentor } from '../../../src/scripts/instrumentor/instrumentor'
+import { wait } from '../../utils/wait'
+import { FingerprintLoader } from '../../../src/scripts/shared/fingerprint/types'
+import { mockUrl } from '../../utils/mockEnv'
 
-vi.mock('../../src/instrumentor/patcher/fetch/fetch')
+vi.mock('../../../src/scripts/instrumentor/patcher/fetch/fetch')
 
 describe('Instrumentor', () => {
   const mockStart = vi.fn()

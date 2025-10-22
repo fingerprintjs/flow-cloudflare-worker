@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
-import { ProtectedApi } from '../../../src/shared/types'
-import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../src/shared/const'
-import { patchXHR } from '../../../src/instrumentor/patcher/xhr/xhr'
-import { MockServer } from '../../utils/mockServer'
+import { PatcherContext, WritablePatcherContext } from '../../../../src/scripts/instrumentor/patcher/context'
+import { ProtectedApi } from '../../../../src/shared/types'
+import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../../src/shared/const'
+import { patchXHR } from '../../../../src/scripts/instrumentor/patcher/xhr/xhr'
+import { MockServer } from '../../../utils/mockServer'
 
 async function awaitEvent(request: XMLHttpRequest, event: keyof XMLHttpRequestEventTargetEventMap) {
   return new Promise<void>((resolve) => {

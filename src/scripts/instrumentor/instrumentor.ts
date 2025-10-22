@@ -1,8 +1,8 @@
 import { WritablePatcherContext } from './patcher/context'
 import { patchFetch } from './patcher/fetch/fetch'
 import { setupPatcherContext } from './fingerprint/patcherContext'
-import { FingerprintLoader } from '../shared-scripts/fingerprint/types'
-import { ProtectedApi } from '../shared/types'
+import { FingerprintLoader } from '../shared/fingerprint/types'
+import { ProtectedApi } from '../../shared/types'
 import { patchXHR } from './patcher/xhr/xhr'
 import { patchForms } from './patcher/form/form'
 

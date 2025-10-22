@@ -11,7 +11,7 @@ export default defineConfig({
             label: 'Instrumentor',
             color: 'green',
           },
-          include: ['__tests__/instrumentor/**/*.test.ts'],
+          include: ['__tests__/scripts/**/*.test.ts'],
         },
       },
       // Tests in worker-runtime will use a separate worker project for a more accurate runtime
