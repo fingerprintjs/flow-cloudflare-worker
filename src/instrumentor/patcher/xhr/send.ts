@@ -16,20 +16,15 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
     const sendRequest = () => originalSend.call(this, body)
 
     const fingerprintContext = this[FingerprintContextSymbol]
+    const handleSignalsInjectionPromise = fingerprintContext?.handleSignalsInjectionPromise
 
-    if (!fingerprintContext) {
-      return sendRequest()
-    }
-
-    const { signalsPromise } = fingerprintContext
-
-    if (signalsPromise) {
+    if (handleSignalsInjectionPromise) {
       let didInjectSignals = false
 
       prepareResponseHandling(this, ctx, () => didInjectSignals)
 
       // Signals' promise is present only in async requests. In that case, we can await the signal promise before sending the request
-      signalsPromise
+      handleSignalsInjectionPromise
         .then((didInject) => {
           didInjectSignals = didInject
         })
@@ -58,22 +53,22 @@ function prepareResponseHandling(request: XMLHttpRequest, ctx: PatcherContext, d
   // Helper to process agent data after response, only once
   const processAgentData = () => {
     try {
+      request.removeEventListener?.('loadend', processAgentData)
+
       if (didInjectSignals()) {
-        const agentData = request.getResponseHeader?.(AGENT_DATA_HEADER)
+        const agentData = request.getResponseHeader(AGENT_DATA_HEADER)
 
         if (agentData) {
           ctx.processAgentData(agentData)
         }
       }
-
-      request.removeEventListener?.('loadend', processAgentData)
     } catch (e) {
       console.error('Error processing XHR agent data:', e)
     }
   }
 
   try {
-    request.addEventListener?.('loadend', processAgentData)
+    request.addEventListener('loadend', processAgentData)
   } catch {
     console.error('Failed to add event listener for XHR agent data processing')
   }
