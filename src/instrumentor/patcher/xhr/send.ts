@@ -16,12 +16,7 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
     const sendRequest = () => originalSend.call(this, body)
 
     const fingerprintContext = this[FingerprintContextSymbol]
-
-    if (!fingerprintContext) {
-      return sendRequest()
-    }
-
-    const { handleSignalsInjectionPromise } = fingerprintContext
+    const handleSignalsInjectionPromise = fingerprintContext?.handleSignalsInjectionPromise
 
     if (handleSignalsInjectionPromise) {
       let didInjectSignals = false
