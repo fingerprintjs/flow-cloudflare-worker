@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { patchForms } from '../../../src/instrumentor/patcher/form/form'
 import { wait } from '../../utils/wait'
-import { MockServer } from '../../utils/mockServer'
 import { SIGNALS_KEY } from '../../../src/shared/const'
+import { mockUrl } from '../../utils/mockEnv'
 
 const formHtml = `
   <form id="loginForm" action="/login" method="POST">
@@ -36,34 +36,23 @@ async function emitDomReadyEvent() {
 }
 
 describe('Form patcher', () => {
-  const mockAgentDataProcessor = vi.fn()
-
   let mockContext: WritablePatcherContext
-  let mockServer: MockServer
 
   beforeEach(async () => {
-    mockServer = new MockServer()
-    await mockServer.listen()
-
     vi.clearAllMocks()
 
-    location.href = mockServer.getUrl('/')
+    location.href = mockUrl('/')
 
     mockContext = new WritablePatcherContext([
       {
         method: 'POST',
-        url: mockServer.getUrl('/login'),
+        url: mockUrl('/login'),
       },
     ])
 
-    mockContext.setAgentDataProcessor(mockAgentDataProcessor)
     mockContext.setSignalsProvider(async () => 'test-signals-data')
 
     document.body.innerHTML = sampleHtmlWithForm
-  })
-
-  afterEach(async () => {
-    await mockServer.close()
   })
 
   it('should inject signals element into forms on submission', async () => {
