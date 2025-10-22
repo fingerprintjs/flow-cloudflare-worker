@@ -13,7 +13,7 @@ function isForm(element: Node): element is HTMLFormElement {
 export function observeForms(ctx: PatcherContext) {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      // Track changes to "action" attribute in existing forms
+      // Track changes to the "action" or "method" attributes in existing forms
       if (mutation.type === 'attributes' && isForm(mutation.target)) {
         console.debug('Form action changed')
         onFormChange(mutation.target, ctx)
@@ -48,12 +48,11 @@ export function observeForms(ctx: PatcherContext) {
     subtree: true, // Important: observe all descendants, not just direct children
     attributes: true,
     attributeFilter: ['action', 'method'],
-    attributeOldValue: true, // Capture the old value when action changes
   })
 }
 
 /**
- * Handles changes to a given form element and applies necessary patches.
+ * Handles changes to a given form element and applies the necessary patches.
  *
  * @param {HTMLFormElement} form - The form element that has changed.
  * @param {PatcherContext} ctx - Context information used to apply the patch.
