@@ -17,5 +17,6 @@
   "include": [
     "./src/instrumentor/**/*",
     "./src/shared/**/*",
+    "./src/shared-scripts/**/*"
   ]
 }

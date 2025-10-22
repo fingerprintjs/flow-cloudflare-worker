@@ -1,5 +1,5 @@
 import { WritablePatcherContext } from '../patcher/context'
-import { FingerprintLoader } from '../../shared/fingerprint/types'
+import { FingerprintLoader } from '../../shared-scripts/fingerprint/types'
 
 export type SetupPatcherContextParams = {
   // Writable patcher context to configure with signals' provider

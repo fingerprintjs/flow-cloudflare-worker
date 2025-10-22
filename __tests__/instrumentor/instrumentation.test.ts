@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { patchFetch } from '../../src/instrumentor/patcher/fetch/fetch'
 import { setupInstrumentor } from '../../src/instrumentor/instrumentor'
 import { wait } from '../utils/wait'
-import { FingerprintLoader } from '../../src/shared/fingerprint/types'
+import { FingerprintLoader } from '../../src/shared-scripts/fingerprint/types'
 import { mockUrl } from '../utils/mockEnv'
 
 vi.mock('../../src/instrumentor/patcher/fetch/fetch')

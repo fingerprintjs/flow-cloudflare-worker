@@ -16,6 +16,7 @@
   },
   "include": [
     "./src/agent-processor/**/*",
-    "./src/shared/**/*",
+    "./src/shared-scripts/**/*",
+    "./src/shared/**/*"
   ]
 }

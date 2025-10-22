@@ -12,7 +12,6 @@ type HandleScriptParams = {
   cdnHost: string
   protectedApis: ProtectedApi[]
   routePrefix: string
-  agentData?: string
 }
 
 /**
@@ -23,7 +22,6 @@ type HandleScriptParams = {
  * @param {string} params.publicApiKey - The public API key used for fetching the agent loader.
  * @param {string} params.cdnHost - Hostname of the Fingerprint CDN.
  * @param {string} params.routePrefix - Path prefix for worker requests.
- * @param {string} params.agentData - Optional data to be injected into the agent processor script.
  * @param {ProtectedApi[]} params.protectedApis - Array of protected APIs to be injected into the instrumentation code.
  * @return {Promise<Response>} A promise that resolves to the script response.
  */
@@ -33,7 +31,6 @@ export async function handleScript({
   cdnHost,
   protectedApis,
   routePrefix,
-  agentData,
 }: HandleScriptParams): Promise<Response> {
   switch (script) {
     case 'instrumentor.iife.js': {
@@ -54,7 +51,7 @@ export async function handleScript({
     case 'agent-processor.iife.js': {
       return new Response(
         resolveTemplates(agentProcessorCode, {
-          '<AGENT_DATA>': agentData ?? '',
+          '<WORKER_ROUTE_PREFIX>': routePrefix,
         }),
         {
           headers: {

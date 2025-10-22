@@ -1,6 +1,8 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
 import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
+import { hasContentType } from '../utils/headers'
+import { getScriptUrl } from '../scripts'
 
 /**
  * Parameters required for handling a protected API call.
@@ -12,6 +14,49 @@ export type HandleProtectedApiCallParams = {
   identificationClient: IdentificationClient
   /** Fallback rule if identification client rule evaluation fails */
   fallbackRule: RuleActionUnion
+  /** Route prefix for the worker requests */
+  routePrefix: string
+}
+
+/**
+ * Handles a protected API call by validating signals and processing the request.
+ * For HTML responses, injects the agent processor script into the <head> element to process the agent data.
+ */
+export async function handleProtectedApiCall({
+  request,
+  identificationClient,
+  fallbackRule,
+  routePrefix,
+}: HandleProtectedApiCallParams): Promise<Response> {
+  const [response, agentData] = await getResponseForProtectedCall({
+    request,
+    identificationClient,
+    fallbackRule,
+  })
+
+  /**
+   * For HTML responses, inject the agent processor script into the <head> element to process the agent data.
+   * */
+  if (agentData && hasContentType(response.headers, 'text/html')) {
+    console.info('Injecting agent processor script into HTML response.')
+    return new HTMLRewriter()
+      .on('head', {
+        element(element) {
+          console.info('Injecting agent processor script into <head> element.')
+
+          // Append script that loads the agent processor. Injects agent data as a data attribute.
+          element.append(
+            `<script data-agent-data="${agentData}" defer src="${getScriptUrl('agent-processor.iife.js', routePrefix)}"></script>\n`,
+            {
+              html: true,
+            }
+          )
+        },
+      })
+      .transform(response)
+  }
+
+  return response
 }
 
 /**
@@ -24,21 +69,12 @@ export type HandleProtectedApiCallParams = {
  * 4. Returns the combined response with updated headers
  *
  * @param params - Configuration object containing request, ingress client, and error response
- * @returns Promise resolving to the processed HTTP response
- *
- * @example
- * ```typescript
- * const response = await handleProtectedApiCall({
- *   request: incomingRequest,
- *   identificationClient: new IdentificationClient('<...>'),
- * });
- * ```
  */
-export async function handleProtectedApiCall({
+async function getResponseForProtectedCall({
   request,
   identificationClient,
   fallbackRule,
-}: HandleProtectedApiCallParams): Promise<Response> {
+}: Omit<HandleProtectedApiCallParams, 'routePrefix'>): Promise<[response: Response, agentData: string | null]> {
   let ingressResponse: SendResult
   let originRequest: Request
   let signals: string
@@ -47,14 +83,14 @@ export async function handleProtectedApiCall({
     ;[signals, originRequest] = await IdentificationClient.parseIncomingRequest(request)
   } catch (e) {
     console.error('Failed to parse incoming request:', e)
-    return processRuleset(fallbackRule, request)
+    return [await processRuleset(fallbackRule, request), null]
   }
 
   try {
     ingressResponse = await identificationClient.send(originRequest, signals)
   } catch (error) {
     console.error('Error sending request to ingress service:', error)
-    return processRuleset(fallbackRule, originRequest)
+    return [await processRuleset(fallbackRule, originRequest), null]
   }
 
   let originResponse: Response
@@ -69,12 +105,15 @@ export async function handleProtectedApiCall({
   setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
-  return new Response(originResponse.body, {
-    status: originResponse.status,
-    headers: originResponseHeaders,
-    statusText: originResponse.statusText,
-    cf: originResponse.cf,
-  })
+  return [
+    new Response(originResponse.body, {
+      status: originResponse.status,
+      headers: originResponseHeaders,
+      statusText: originResponse.statusText,
+      cf: originResponse.cf,
+    }),
+    ingressResponse.agentData,
+  ]
 }
 
 /**

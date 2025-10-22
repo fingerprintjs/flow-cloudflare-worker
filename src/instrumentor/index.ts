@@ -1,11 +1,11 @@
 import { setupInstrumentor } from './instrumentor'
-import { importFingerprintLoader, routePrefix } from '../shared/fingerprint/import'
+import { importFingerprintLoader, routePrefix } from '../shared-scripts/fingerprint/import'
 import { getProtectedApis } from './protectedApis'
 
 setupInstrumentor({
   protectedApis: getProtectedApis(),
   endpoint: routePrefix,
-  fingerprintLoader: importFingerprintLoader(document.location.href).then((loader) => {
+  fingerprintLoader: importFingerprintLoader().then((loader) => {
     console.debug('Fetched FingerprintJS loader:', loader)
 
     return loader

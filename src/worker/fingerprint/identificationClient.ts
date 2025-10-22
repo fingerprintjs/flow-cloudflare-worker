@@ -146,6 +146,8 @@ export class IdentificationClient {
       body: JSON.stringify(sendBody),
     })
 
+    console.debug(`Sending identification request to ${requestUrl}`, identificationRequest)
+
     const identificationResponse = await fetch(identificationRequest)
     console.debug(
       `Received identification response for ${requestUrl} request with status:`,

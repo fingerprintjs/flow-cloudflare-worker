@@ -2,6 +2,7 @@ import { TypedEnv } from '../types'
 import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
 import { fetchOrigin } from '../utils/origin'
+import { getRoutePrefix } from '../env'
 
 type HandleScriptsInjectionParams = {
   request: Request
@@ -33,9 +34,12 @@ export async function handleScriptsInjection({ request, env }: HandleScriptsInje
           element(element) {
             console.info('Injecting instrumentation into <head> element.')
 
-            element.append(`<script defer src="${getScriptUrl('instrumentor.iife.js', env)}"></script>\n`, {
-              html: true,
-            })
+            element.append(
+              `<script defer src="${getScriptUrl('instrumentor.iife.js', getRoutePrefix(env))}"></script>\n`,
+              {
+                html: true,
+              }
+            )
           },
         })
         .transform(response)
