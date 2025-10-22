@@ -34,7 +34,6 @@ export class MockServer {
     return this._requests
   }
 
-
   listen(): Promise<void> {
     return new Promise<void>((resolve) => {
       this.server.listen(3000, () => {
@@ -62,12 +61,6 @@ export class MockServer {
   use(middleware: RequestHandler) {
     this.middlewares.push(middleware)
     return this
-  }
-
-  cleanup() {
-    this._requests = []
-    this.middlewares = []
-    this.requestHandler = undefined
   }
 
   private static readBody(req: IncomingMessage) {
