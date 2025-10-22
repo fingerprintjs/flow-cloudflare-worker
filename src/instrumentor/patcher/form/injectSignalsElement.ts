@@ -1,5 +1,5 @@
 import { PatcherContext } from '../context'
-import { FP_FIELD_NAME } from './const'
+import { SIGNALS_KEY } from '../../../shared/const'
 
 /**
  * Patches a given HTML form to include additional fingerprinting signals during submission.
@@ -31,14 +31,14 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
       }
 
       // If signals are already present, we don't need to add them again
-      if (form.querySelector(`input[name="${FP_FIELD_NAME}"]`)) {
+      if (form.querySelector(`input[name="${SIGNALS_KEY}"]`)) {
         return
       }
 
       const field = document.createElement('input')
       field.hidden = true
       field.value = signals
-      field.name = FP_FIELD_NAME
+      field.name = SIGNALS_KEY
 
       form.appendChild(field)
     } catch (e) {
