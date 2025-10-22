@@ -5,12 +5,20 @@ import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
 import { patchXHR } from '../../../src/instrumentor/patcher/xhr/xhr'
 import { MockServer } from '../../utils/mockServer'
 
-async function awaitResponse(request: XMLHttpRequest) {
+async function awaitEvent(request: XMLHttpRequest, event: keyof XMLHttpRequestEventTargetEventMap) {
   return new Promise<void>((resolve) => {
-    request.addEventListener('load', () => {
-      resolve()
-    })
+    request.addEventListener(
+      event,
+      () => {
+        resolve()
+      },
+      { once: true }
+    )
   })
+}
+
+async function awaitResponse(request: XMLHttpRequest) {
+  await awaitEvent(request, 'load')
 }
 
 /**
@@ -32,6 +40,7 @@ describe('XMLHttpRequest Patcher', () => {
   let mockProtectedApis: ProtectedApi[]
 
   const mockProcessAgentData = vi.fn()
+  const mockSignalsProvider = vi.fn()
 
   beforeEach(async () => {
     server = new MockServer()
@@ -49,12 +58,14 @@ describe('XMLHttpRequest Patcher', () => {
     location.href = server.getUrl('/')
 
     const writableContext = new WritablePatcherContext(mockProtectedApis)
-    writableContext.setSignalsProvider(async () => 'test-signals-data')
+    writableContext.setSignalsProvider(mockSignalsProvider)
     writableContext.setAgentDataProcessor(mockProcessAgentData)
     mockContext = writableContext
     vi.spyOn(mockContext, 'isProtectedUrl')
     vi.spyOn(mockContext, 'getSignals')
     vi.spyOn(mockContext, 'processAgentData')
+
+    mockSignalsProvider.mockResolvedValue('test-signals-data')
   })
 
   afterEach(async () => {
@@ -248,6 +259,141 @@ describe('XMLHttpRequest Patcher', () => {
 
       expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
       expect(mockProcessAgentData).not.toHaveBeenCalledWith('agent-data')
+    })
+
+    it('ignores sync requests correctly', () => {
+      vi.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(() => {
+        // No-op to handle sync request in this test. We can't use MockServer for this one, since sync requests block the main thread ;)
+      })
+
+      withAgentData()
+      patchXHR(mockContext)
+
+      const xhr = new XMLHttpRequest()
+      const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
+
+      xhr.open('POST', '/protected/endpoint', false) // sync request
+      xhr.send()
+
+      // No signals injection and no agent data processing for sync requests
+      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(mockProcessAgentData).not.toHaveBeenCalled()
+    })
+
+    it('preserves existing headers correctly', async () => {
+      withAgentData()
+      patchXHR(mockContext)
+
+      const xhr = new XMLHttpRequest()
+      const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
+
+      xhr.open('POST', '/protected/endpoint')
+      xhr.setRequestHeader('X-Custom', 'abc')
+      xhr.send('payload')
+
+      await awaitResponse(xhr)
+
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+
+      const [request] = server.requests
+      expect(request.headers['x-custom']).toBe('abc')
+      expect(request.headers['fp-data']).toBe('test-signals-data')
+    })
+
+    it('handles aborted requests correctly', async () => {
+      withAgentData()
+      // Delay the server response so we can abort
+      server.requestHandler = (_req, res) => {
+        setTimeout(() => {
+          res.statusCode = 200
+          res.end('OK')
+        }, 100)
+      }
+
+      patchXHR(mockContext)
+
+      const xhr = new XMLHttpRequest()
+
+      const loadendPromise = awaitEvent(xhr, 'loadend')
+      const abortPromise = awaitEvent(xhr, 'abort')
+
+      xhr.open('POST', '/protected/endpoint')
+      xhr.send()
+      setTimeout(() => xhr.abort(), 10)
+
+      await Promise.all([loadendPromise, abortPromise])
+
+      // No agent data processing on aborted requests
+      expect(mockProcessAgentData).not.toHaveBeenCalled()
+    })
+
+    // TODO: This doesn't seem to pass. Possible limitation in happy-dom? We could test it in E2E tests instead.
+    it.skip('handles timeouts', async () => {
+      withAgentData()
+      // Delay the server response longer than timeout
+      server.requestHandler = (_req, res) => {
+        setTimeout(() => {
+          res.statusCode = 200
+          res.end('OK')
+        }, 100)
+      }
+
+      patchXHR(mockContext)
+
+      const xhr = new XMLHttpRequest()
+      const timeoutPromise = awaitEvent(xhr, 'timeout')
+      const loadendPromise = awaitEvent(xhr, 'loadend')
+
+      xhr.open('POST', '/protected/endpoint')
+      xhr.timeout = 10
+      xhr.ontimeout = () => {
+        // This is never triggered.
+        console.log('timeout')
+      }
+      xhr.send()
+
+      await Promise.all([timeoutPromise, loadendPromise])
+
+      // Request should have been sent and included signals despite timing out
+      expect(server.requests.length).toBe(1)
+      const [request] = server.requests
+      expect(request.headers['fp-data']).toBe('test-signals-data')
+
+      // No agent data processing on timeout
+      expect(mockProcessAgentData).not.toHaveBeenCalled()
+    })
+
+    it('handles two requests reusing the same xhr object correctly', async () => {
+      withAgentData()
+      patchXHR(mockContext)
+
+      const xhr = new XMLHttpRequest()
+      const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
+
+      // First request
+      xhr.open('POST', '/protected/one')
+      xhr.send()
+      await awaitResponse(xhr)
+
+      // Second request reusing same XHR instance
+      xhr.open('POST', '/protected/two')
+      xhr.send()
+      await awaitResponse(xhr)
+
+      // Signals header should be set for both requests separately
+      const calls = setHeaderSpy.mock.calls.filter((c) => c[0] === SIGNALS_HEADER)
+      expect(calls.length).toBeGreaterThanOrEqual(2)
+
+      // Agent data processed for both responses
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(2)
+
+      // Signals provider should be called only once. On the second request it should use cached signals data
+      expect(mockSignalsProvider).toHaveBeenCalledTimes(1)
+
+      // Server received two separate requests with signals header
+      expect(server.requests.length).toBe(2)
+      expect(server.requests[0].headers['fp-data']).toBe('test-signals-data')
+      expect(server.requests[1].headers['fp-data']).toBe('test-signals-data')
     })
   })
 })
