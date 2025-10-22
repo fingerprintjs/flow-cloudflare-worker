@@ -34,15 +34,24 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
       if (form.querySelector(`input[name="${SIGNALS_KEY}"]`)) {
         return
       }
-
-      const field = document.createElement('input')
-      field.hidden = true
-      field.value = signals
-      field.name = SIGNALS_KEY
-
+      const field = createSignalsField(signals)
       form.appendChild(field)
     } catch (e) {
       console.error('Error getting signals during form submission:', e)
     }
   })
+}
+
+/**
+ * Creates a hidden input field with the specified signal value.
+ *
+ * @param {string} signals - The value to be assigned to the hidden input field.
+ * @return {HTMLInputElement} The created hidden input field with the specified signal value.
+ */
+function createSignalsField(signals: string): HTMLInputElement {
+  const field = document.createElement('input')
+  field.hidden = true
+  field.value = signals
+  field.name = SIGNALS_KEY
+  return field
 }
