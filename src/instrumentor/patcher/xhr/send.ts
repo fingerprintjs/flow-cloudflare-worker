@@ -56,7 +56,7 @@ function prepareResponseHandling(request: XMLHttpRequest, ctx: PatcherContext, d
       request.removeEventListener?.('loadend', processAgentData)
 
       if (didInjectSignals()) {
-        const agentData = request.getResponseHeader?.(AGENT_DATA_HEADER)
+        const agentData = request.getResponseHeader(AGENT_DATA_HEADER)
 
         if (agentData) {
           ctx.processAgentData(agentData)
