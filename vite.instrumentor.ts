@@ -10,7 +10,7 @@ export default defineConfig({
     }),
   ],
   build: {
-    outDir: 'public',
+    outDir: 'dist/instrumentor',
     lib: {
       entry: 'src/instrumentor/index.ts',
       formats: ['iife'],

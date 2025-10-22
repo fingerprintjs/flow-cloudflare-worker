@@ -1,6 +1,6 @@
 import { resolveTemplates } from '../scripts'
 // This bundles the instrumentor code with the worker: https://vite.dev/guide/assets.html#importing-asset-as-string
-import instrumentorCode from '../../../public/instrumentor.iife.js?raw'
+import instrumentorCode from '../../../dist/instrumentor/instrumentor.iife.js?raw'
 import { ProtectedApi } from '../../shared/types'
 import { getAgentLoader } from '../fingerprint/agent'
 import { Script } from '../../shared/scripts'
