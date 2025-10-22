@@ -54,7 +54,7 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
         })
 
         const fingerprintContext: XHRRequestContext = {
-          signalsPromise,
+          handleSignalsInjectionPromise: signalsPromise,
           ...metadata,
         }
         Object.assign(this, {

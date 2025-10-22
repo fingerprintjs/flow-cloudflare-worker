@@ -21,15 +21,15 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
       return sendRequest()
     }
 
-    const { signalsPromise } = fingerprintContext
+    const { handleSignalsInjectionPromise } = fingerprintContext
 
-    if (signalsPromise) {
+    if (handleSignalsInjectionPromise) {
       let didInjectSignals = false
 
       prepareResponseHandling(this, ctx, () => didInjectSignals)
 
       // Signals' promise is present only in async requests. In that case, we can await the signal promise before sending the request
-      signalsPromise
+      handleSignalsInjectionPromise
         .then((didInject) => {
           didInjectSignals = didInject
         })

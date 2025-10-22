@@ -1,7 +1,8 @@
 export type XHRFingerprintMetadata = { method: string; url: string }
 
 export type XHRRequestContext = XHRFingerprintMetadata & {
-  signalsPromise?: Promise<boolean>
+  // Stores Promise returned by handleSignalsInjection function
+  handleSignalsInjectionPromise?: Promise<boolean>
 }
 
 /**
