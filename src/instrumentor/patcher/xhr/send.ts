@@ -53,6 +53,8 @@ function prepareResponseHandling(request: XMLHttpRequest, ctx: PatcherContext, d
   // Helper to process agent data after response, only once
   const processAgentData = () => {
     try {
+      request.removeEventListener?.('loadend', processAgentData)
+
       if (didInjectSignals()) {
         const agentData = request.getResponseHeader?.(AGENT_DATA_HEADER)
 
@@ -60,8 +62,6 @@ function prepareResponseHandling(request: XMLHttpRequest, ctx: PatcherContext, d
           ctx.processAgentData(agentData)
         }
       }
-
-      request.removeEventListener?.('loadend', processAgentData)
     } catch (e) {
       console.error('Error processing XHR agent data:', e)
     }
