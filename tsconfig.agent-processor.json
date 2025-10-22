@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "moduleResolution": "bundler",
+    "module": "ES2020",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.agent-processor.tsbuildinfo",
+    "lib": [
+      "DOM",
+      "ES2020"
+    ],
+    "types": [
+      "vite/client"
+    ],
+    "isolatedModules": true
+  },
+  "include": [
+    "./src/agent-processor/**/*",
+    "./src/shared/**/*",
+  ]
+}

@@ -44,8 +44,6 @@ The worker is configured using a `wrangler.jsonc` file. An example file `wrangle
 
 ## Architecture
 
-The project consists of two main parts: the **Worker** and the **Instrumentor**.
-
 ### Worker
 
 The Worker is a Cloudflare Worker that acts as a reverse proxy. Its main responsibilities are:
@@ -60,3 +58,8 @@ The entry point for the worker is `src/worker/index.ts`.
 The Instrumentor is a script that is injected into the page by the worker. It patches the `fetch` function to automatically add Fingerprint headers to protected API requests. The entry point for the instrumentor is `src/instrumentor/index.ts`.
 
 The Instrumentor code is bundled and included in the Worker binary during the build process.
+
+### Agent data processor
+
+Located in `src/agent-data-processor/index.ts`, the Agent data processor is responsible for processing the data returned by the Fingerprint Identification API.
+It is used for the HTML forms that are not sent via `fetch` or `XMLHttpRequest`. After the form is submitted, if it's `action` is listed in protected APIs, the agent processor script will be injected into the response to process agent data received from the initial identification request.
