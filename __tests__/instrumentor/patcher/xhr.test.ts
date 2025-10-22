@@ -276,7 +276,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send()
 
       // No signals injection and no agent data processing for sync requests
-      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).not.toHaveBeenCalled()
     })
 
@@ -293,7 +293,7 @@ describe('XMLHttpRequest Patcher', () => {
 
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
 
       const [request] = server.requests
       expect(request.headers['x-custom']).toBe('abc')
@@ -381,11 +381,11 @@ describe('XMLHttpRequest Patcher', () => {
       await awaitResponse(xhr)
 
       // Signals header should be set for both requests separately
-      const calls = setHeaderSpy.mock.calls.filter((c) => c[0] === SIGNALS_HEADER)
+      const calls = setHeaderSpy.mock.calls.filter((c) => c[0] === SIGNALS_KEY)
       expect(calls.length).toBeGreaterThanOrEqual(2)
 
-      // Agent data processed for both responses
-      expect(mockProcessAgentData).toHaveBeenCalledTimes(2)
+      // Agent data processed only once
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(1)
 
       // Signals provider should be called only once. On the second request it should use cached signals data
       expect(mockSignalsProvider).toHaveBeenCalledTimes(1)

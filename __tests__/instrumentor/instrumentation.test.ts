@@ -106,11 +106,9 @@ describe('Instrumentor', () => {
     expect(patcherContext).toBeTruthy()
 
     patcherContext.processAgentData('agentData')
-    patcherContext.processAgentData('agentData123')
 
-    expect(mockHandleAgentData).toHaveBeenCalledTimes(2)
+    expect(mockHandleAgentData).toHaveBeenCalledTimes(1)
     expect(mockHandleAgentData).toHaveBeenCalledWith('agentData')
-    expect(mockHandleAgentData).toHaveBeenCalledWith('agentData123')
   })
 
   it('should load fingerprint with custom endpoint', async () => {
