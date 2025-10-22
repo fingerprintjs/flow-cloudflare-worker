@@ -92,6 +92,24 @@ describe('Form patcher', () => {
     expect(inputs).toHaveLength(1)
   })
 
+  it('should not inject signals element into form if it changes to not protected', async () => {
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    // Modify from action. It should be picked up by the mutation observer.
+    form!.action = '/public/'
+    // Wait for mutation observer to process the change
+    await wait(10)
+
+    await submitForm(form!)
+
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
+    expect(input).toBeNull()
+  })
+
   it('should not inject signals element into forms on submission if the action is not protected', async () => {
     document.querySelector<HTMLFormElement>('#loginForm')!.action = '/public/login'
 
