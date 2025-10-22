@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { patchForms } from '../../../src/instrumentor/patcher/form/form'
-import { FP_FIELD_NAME } from '../../../src/instrumentor/patcher/form/const'
 import { wait } from '../../utils/wait'
 import { MockServer } from '../../utils/mockServer'
+import { SIGNALS_KEY } from '../../../src/shared/const'
 
 const formHtml = `
   <form id="loginForm" action="/login" method="POST">
@@ -75,7 +75,7 @@ describe('Form patcher', () => {
 
     await submitForm(form!)
 
-    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
     expect(input).toBeTruthy()
     expect(input!.hidden).toEqual(true)
     expect(input!.value).toEqual('test-signals-data')
@@ -92,7 +92,7 @@ describe('Form patcher', () => {
 
     await submitForm(form!)
 
-    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
     expect(input).toBeFalsy()
   })
 
@@ -107,7 +107,7 @@ describe('Form patcher', () => {
 
     await submitForm(form!)
 
-    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
     expect(input).toBeFalsy()
   })
 
@@ -127,7 +127,7 @@ describe('Form patcher', () => {
 
     await submitForm(form!)
 
-    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
     expect(input).toBeTruthy()
   })
 
@@ -147,7 +147,7 @@ describe('Form patcher', () => {
 
     await submitForm(form!)
 
-    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
     expect(input).toBeTruthy()
   })
 
@@ -167,7 +167,7 @@ describe('Form patcher', () => {
 
     await submitForm(form!)
 
-    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
     expect(input).toBeTruthy()
   })
 
@@ -190,7 +190,7 @@ describe('Form patcher', () => {
 
     await submitForm(form!)
 
-    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
     expect(input).toBeTruthy()
   })
 
@@ -214,7 +214,7 @@ describe('Form patcher', () => {
 
     await submitForm(form!)
 
-    const input = form!.querySelector<HTMLInputElement>(`input[name="${FP_FIELD_NAME}"]`)
+    const input = form!.querySelector<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
     expect(input).toBeFalsy()
   })
 })

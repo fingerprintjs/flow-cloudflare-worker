@@ -124,6 +124,35 @@ describe('Copy request', () => {
   })
 
   describe('Request Bodies', () => {
+    it('should copy request with a modified FormData body', async () => {
+      const formData = new FormData()
+      formData.append('name', 'test')
+      formData.append('email', 'test@example.com')
+
+      const request = new Request('https://example.com/submit', {
+        method: 'POST',
+        body: formData,
+      })
+      const requestHeaders = new Headers(request.headers)
+      // When modifying FormData, we also need to remove the old Content-Type header. Otherwise, the boundary will be different and the request will fail.
+      requestHeaders.delete('Content-Type')
+
+      const modifiedFormData = await request.clone().formData()
+      modifiedFormData.delete('email')
+
+      const requestClone = copyRequest({
+        request,
+        init: {
+          body: modifiedFormData,
+          headers: requestHeaders,
+        },
+      })
+
+      const requestCloneFormData = await requestClone.formData()
+      expect(requestCloneFormData.has('email')).toBeFalsy()
+      expect(requestCloneFormData.get('name')).toEqual('test')
+    })
+
     it('should copy request with FormData body', async () => {
       const formData = new FormData()
       formData.append('name', 'test')

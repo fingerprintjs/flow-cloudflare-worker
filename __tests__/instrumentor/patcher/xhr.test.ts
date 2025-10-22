@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
-import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
+import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../src/shared/const'
 import { patchXHR } from '../../../src/instrumentor/patcher/xhr/xhr'
 import { MockServer } from '../../utils/mockServer'
 
@@ -91,7 +91,7 @@ describe('XMLHttpRequest Patcher', () => {
 
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
     })
 
@@ -106,7 +106,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send()
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
     })
 
@@ -121,7 +121,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send('test')
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
 
       const [request] = server.requests
@@ -142,7 +142,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send(data)
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).toHaveBeenCalledWith('agent-data')
 
       const [request] = server.requests
@@ -163,7 +163,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send()
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
     })
 
     it('should do nothing when no signals data available', async () => {
@@ -182,7 +182,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send()
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).not.toHaveBeenCalled()
     })
 
@@ -196,7 +196,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send()
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).not.toHaveBeenCalled()
     })
 
@@ -230,7 +230,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send()
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).not.toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).not.toHaveBeenCalledWith('agent-data')
     })
 
@@ -246,7 +246,7 @@ describe('XMLHttpRequest Patcher', () => {
       xhr.send()
       await awaitResponse(xhr)
 
-      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_HEADER, 'test-signals-data')
+      expect(setHeaderSpy).toHaveBeenCalledWith(SIGNALS_KEY, 'test-signals-data')
       expect(mockProcessAgentData).not.toHaveBeenCalledWith('agent-data')
     })
   })

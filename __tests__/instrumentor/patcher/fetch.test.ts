@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { patchFetch } from '../../../src/instrumentor/patcher/fetch/fetch'
 import { PatcherContext, WritablePatcherContext } from '../../../src/instrumentor/patcher/context'
 import { ProtectedApi } from '../../../src/shared/types'
-import { AGENT_DATA_HEADER, SIGNALS_HEADER } from '../../../src/shared/const'
+import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../src/shared/const'
 import { mockUrl, mockWorkerBaseUrl } from '../../utils/mockEnv'
 
 describe('Fetch Patcher', () => {
@@ -72,7 +72,7 @@ describe('Fetch Patcher', () => {
       // Check that signals header was added
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = (callArgs[1] as RequestInit).headers as Headers
-      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should add signals header for protected URLs with string input and relative path', async () => {
@@ -96,7 +96,7 @@ describe('Fetch Patcher', () => {
       // Check that signals header was added
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = (callArgs[1] as RequestInit).headers as Headers
-      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should add signals header for protected URLs with string input without requestInit', async () => {
@@ -116,7 +116,7 @@ describe('Fetch Patcher', () => {
       // Check that signals header was added
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
-      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should add signals header for protected URLs with URL input', async () => {
@@ -140,7 +140,7 @@ describe('Fetch Patcher', () => {
 
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
-      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should add signals header for protected URLs with Request input', async () => {
@@ -158,7 +158,7 @@ describe('Fetch Patcher', () => {
       expect(mockContext.isProtectedUrl).toHaveBeenCalledWith(request.url, 'POST')
 
       // Request headers should be modified directly
-      expect(request.headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(request.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
       expect(fetch).toHaveBeenCalledWith(request)
     })
 
@@ -253,7 +253,7 @@ describe('Fetch Patcher', () => {
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
       expect(headers.get('Content-Type')).toBe('application/json')
-      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should handle existing Headers object in RequestInit', async () => {
@@ -273,7 +273,7 @@ describe('Fetch Patcher', () => {
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
       expect(headers.get('Content-Type')).toBe('application/json')
-      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should handle existing Headers tuple in RequestInit', async () => {
@@ -291,7 +291,7 @@ describe('Fetch Patcher', () => {
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const headers = callArgs[1]?.headers as Headers
       expect(headers.get('Content-Type')).toBe('application/json')
-      expect(headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should overwrite existing signals header', async () => {
@@ -300,13 +300,13 @@ describe('Fetch Patcher', () => {
       vi.mocked(fetch).mockResolvedValue(new Response('test'))
 
       const url = mockUrl('/protected/endpoint')
-      const headers = { [SIGNALS_HEADER]: 'old-signals-data' }
+      const headers = { [SIGNALS_KEY]: 'old-signals-data' }
 
       await window.fetch(url, { method: 'POST', headers })
 
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const resultHeaders = callArgs[1]?.headers as Headers
-      expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(resultHeaders.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should handle Request object with existing headers', async () => {
@@ -326,7 +326,7 @@ describe('Fetch Patcher', () => {
 
       expect(request.headers.get('Content-Type')).toBe('application/json')
       expect(request.headers.get('Authorization')).toBe('Bearer token')
-      expect(request.headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(request.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should handle Request object with existing headers instance', async () => {
@@ -346,7 +346,7 @@ describe('Fetch Patcher', () => {
 
       expect(request.headers.get('Content-Type')).toBe('application/json')
       expect(request.headers.get('Authorization')).toBe('Bearer token')
-      expect(request.headers.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(request.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should handle URLs with query parameters', async () => {
@@ -433,7 +433,7 @@ describe('Fetch Patcher', () => {
 
       const callArgs = vi.mocked(fetch).mock.calls[0]
       const resultHeaders = (callArgs[0] as RequestInit)?.headers as Headers
-      expect(resultHeaders.get(SIGNALS_HEADER)).toBe('test-signals-data')
+      expect(resultHeaders.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should process agent data', async () => {

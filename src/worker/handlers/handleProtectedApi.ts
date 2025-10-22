@@ -40,20 +40,29 @@ export async function handleProtectedApiCall({
   fallbackRule,
 }: HandleProtectedApiCallParams): Promise<Response> {
   let ingressResponse: SendResult
+  let originRequest: Request
+  let signals: string
 
   try {
-    ingressResponse = await identificationClient.send(request)
+    ;[signals, originRequest] = await IdentificationClient.parseIncomingRequest(request)
+  } catch (e) {
+    console.error('Failed to parse incoming request:', e)
+    return processRuleset(fallbackRule, request)
+  }
+
+  try {
+    ingressResponse = await identificationClient.send(originRequest, signals)
   } catch (error) {
     console.error('Error sending request to ingress service:', error)
-    return processRuleset(fallbackRule, request)
+    return processRuleset(fallbackRule, originRequest)
   }
 
   let originResponse: Response
   if (ingressResponse.ruleAction) {
-    originResponse = await processRuleset(ingressResponse.ruleAction, request)
+    originResponse = await processRuleset(ingressResponse.ruleAction, originRequest)
   } else {
     console.warn('No ruleset processor found for ingress response, using fallback rule.')
-    originResponse = await processRuleset(fallbackRule, request)
+    originResponse = await processRuleset(fallbackRule, originRequest)
   }
 
   const originResponseHeaders = new Headers(originResponse.headers)
