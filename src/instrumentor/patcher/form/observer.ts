@@ -15,11 +15,7 @@ export function observeForms(ctx: PatcherContext) {
     mutations.forEach((mutation) => {
       // Track changes to "action" attribute in existing forms
       if (mutation.type === 'attributes' && isForm(mutation.target)) {
-        console.debug('Form action changed:', {
-          form: mutation.target,
-          oldValue: mutation.oldValue,
-          newValue: mutation.target.action,
-        })
+        console.debug('Form action changed')
         onFormChange(mutation.target, ctx)
       }
 
