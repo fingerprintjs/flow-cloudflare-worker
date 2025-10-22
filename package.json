@@ -36,8 +36,8 @@
     }
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.13.3",
-    "@cloudflare/vitest-pool-workers": "^0.9.5",
+    "@cloudflare/vite-plugin": "^1.13.14",
+    "@cloudflare/vitest-pool-workers": "^0.9.14",
     "@commitlint/cli": "^19.8.0",
     "@fingerprintjs/commit-lint-dx-team": "^0.1.0",
     "@fingerprintjs/conventional-changelog-dx-team": "^0.1.0",
