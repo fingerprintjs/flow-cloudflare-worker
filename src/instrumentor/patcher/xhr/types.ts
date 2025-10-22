@@ -1,6 +1,6 @@
 export type XHRFingerprintMetadata = { method: string; url: string }
 
-export type XHRRequestContext = XHRFingerprintMetadata & {
+export type XHRContext = XHRFingerprintMetadata & {
   // Stores Promise returned by handleSignalsInjection function
   handleSignalsInjectionPromise?: Promise<boolean>
 }
@@ -10,4 +10,4 @@ export type XHRRequestContext = XHRFingerprintMetadata & {
  */
 export const FingerprintContextSymbol = Symbol('FingerprintMetadata')
 
-export type XHRWithFingerprintContext = XMLHttpRequest & { [FingerprintContextSymbol]?: XHRRequestContext }
+export type XHRWithFingerprintContext = XMLHttpRequest & { [FingerprintContextSymbol]?: XHRContext }

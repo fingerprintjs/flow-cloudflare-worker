@@ -1,5 +1,5 @@
 import { PatcherContext } from '../context'
-import { FingerprintContextSymbol, XHRFingerprintMetadata, XHRRequestContext } from './types'
+import { FingerprintContextSymbol, XHRFingerprintMetadata, XHRContext } from './types'
 import { handleSignalsInjection } from '../signalsInjection'
 import { createPatcherRequest } from './patcherRequest'
 
@@ -59,7 +59,7 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
         return false
       })
 
-      const fingerprintContext: XHRRequestContext = {
+      const fingerprintContext: XHRContext = {
         handleSignalsInjectionPromise: signalsPromise,
         ...metadata,
       }
