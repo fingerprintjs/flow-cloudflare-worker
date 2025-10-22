@@ -68,7 +68,7 @@ function prepareResponseHandling(request: XMLHttpRequest, ctx: PatcherContext, d
   }
 
   try {
-    request.addEventListener?.('loadend', processAgentData)
+    request.addEventListener('loadend', processAgentData)
   } catch {
     console.error('Failed to add event listener for XHR agent data processing')
   }
