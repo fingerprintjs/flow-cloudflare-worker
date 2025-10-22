@@ -48,6 +48,10 @@ describe('Form patcher', () => {
         method: 'POST',
         url: mockUrl('/login'),
       },
+      {
+        method: 'POST',
+        url: mockUrl('/login/*'),
+      },
     ])
 
     mockContext.setSignalsProvider(async () => 'test-signals-data')
@@ -68,6 +72,24 @@ describe('Form patcher', () => {
     expect(input).toBeTruthy()
     expect(input!.hidden).toEqual(true)
     expect(input!.value).toEqual('test-signals-data')
+  })
+
+  it('should not inject signals element into forms on submission multiple times', async () => {
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+
+    // Modify from action. It should be picked up by the mutation observer.
+    form!.action = '/login/123'
+    // Wait for mutation observer to process the change
+    await wait(10)
+
+    await submitForm(form!)
+
+    const inputs = form!.querySelectorAll<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
+    expect(inputs).toHaveLength(1)
   })
 
   it('should not inject signals element into forms on submission if the action is not protected', async () => {
