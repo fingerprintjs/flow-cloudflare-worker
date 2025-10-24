@@ -45,8 +45,9 @@ export async function handleProtectedApiCall({
           console.info('Injecting agent processor script into <head> element.')
 
           // Append script that loads the agent processor. Injects agent data as a data attribute.
+          // Injected as an ` async ` script, since it doesn't depend on DOM structure and can be loaded in the background.
           element.append(
-            `<script data-agent-data="${agentData}" defer src="${getScriptUrl('agent-processor.iife.js', routePrefix)}"></script>\n`,
+            `<script data-agent-data="${agentData}" async src="${getScriptUrl('agent-processor.iife.js', routePrefix)}"></script>\n`,
             {
               html: true,
             }
