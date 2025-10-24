@@ -3,6 +3,7 @@ import { patchFetch } from './patcher/fetch/fetch'
 import { setupPatcherContext } from './fingerprint/patcherContext'
 import { FingerprintLoader } from './types'
 import { ProtectedApi } from '../shared/types'
+import { patchXHR } from './patcher/xhr/xhr'
 
 export type InstrumentationParams = {
   fingerprintLoader: Promise<FingerprintLoader>
@@ -33,4 +34,5 @@ export async function setupInstrumentor({ fingerprintLoader, protectedApis, endp
   })
 
   patchFetch(patcherCtx)
+  patchXHR(patcherCtx)
 }
