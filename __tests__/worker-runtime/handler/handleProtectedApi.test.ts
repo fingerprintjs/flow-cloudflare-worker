@@ -897,7 +897,7 @@ describe('Protected API', () => {
       expect(await response.text()).toEqual('fallback block')
     })
 
-    it('should evaluate fallback rule if request body parse fails', async () => {
+    it('should evaluate fallback rule if request body json parse fails', async () => {
       prepareMockFetch({
         mockIngressHandler: async () => {
           return new Response(
@@ -943,6 +943,70 @@ describe('Protected API', () => {
         headers: requestHeaders,
         // Simulate invalid JSON body
         body: JSON.stringify(data).slice(0, 5),
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(request, {
+        ...mockEnv,
+        FP_FAILURE_FALLBACK_ACTION: {
+          type: 'block',
+          status_code: 403,
+          body: 'fallback block',
+        },
+      } satisfies TypedEnv)
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
+
+      expect(response.status).toEqual(403)
+      expect(await response.text()).toEqual('fallback block')
+    })
+
+    it('should evaluate fallback rule if request body form data parse fails', async () => {
+      prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+              rule_action: {
+                type: 'allow',
+                request_header_modifications: {
+                  set: [
+                    {
+                      name: 'x-allowed',
+                      value: 'true',
+                    },
+                  ],
+                },
+                rule_expression: '',
+                rule_id: '12',
+                ruleset_id: '1',
+              },
+            } satisfies SendResponse)
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = getCompleteHeaders()
+      // By setting the multipart/form-data explicitly here, the request will miss the boundary parameter
+      requestHeaders.append('content-type', 'multipart/form-data')
+      requestHeaders.delete(SIGNALS_KEY)
+
+      const data = new FormData()
+      data.append('login', 'login')
+      data.append('password', '')
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+        // Simulate invalid JSON body
+        body: data,
       })
       const ctx = createExecutionContext()
       const response = await handler.fetch(request, {
