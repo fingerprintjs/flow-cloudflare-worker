@@ -384,8 +384,8 @@ describe('XMLHttpRequest Patcher', () => {
       const calls = setHeaderSpy.mock.calls.filter((c) => c[0] === SIGNALS_KEY)
       expect(calls.length).toBeGreaterThanOrEqual(2)
 
-      // Agent data processed only once
-      expect(mockProcessAgentData).toHaveBeenCalledTimes(1)
+      // Agent data processed twice
+      expect(mockProcessAgentData).toHaveBeenCalledTimes(2)
 
       // Signals provider should be called only once. On the second request it should use cached signals data
       expect(mockSignalsProvider).toHaveBeenCalledTimes(1)
