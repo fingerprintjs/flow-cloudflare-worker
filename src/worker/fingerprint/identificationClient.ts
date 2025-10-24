@@ -86,10 +86,9 @@ export class IdentificationClient {
    * Sends fingerprint data to the identification service and returns the response with agent data.
    *
    * This method:
-   * 1. Extracts fingerprint signals and client information from the request
-   * 2. Processes cookies to extract only the _iidt cookie if present
-   * 3. Sends the data to the POST /send
-   * 4. Returns the agent data along with any Set-Cookie headers received from the identification
+   * 1. Processes cookies to extract only the _iidt cookie if present
+   * 2. Sends the data to the POST /send
+   * 3. Returns the agent data along with any Set-Cookie headers received from the identification
    *
    * @param clientRequest - The incoming client request containing fingerprint data and headers
    * @param signals - Fingerprint signals extracted from the request
