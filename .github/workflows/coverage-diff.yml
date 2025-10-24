@@ -12,4 +12,4 @@ jobs:
       contents: read # for private repos
     uses: fingerprintjs/dx-team-toolkit/.github/workflows/coverage-diff.yml@v1
     with:
-      testScript: pnpm run test:coverage:ci
+      testScript: pnpm test:coverage:diff
