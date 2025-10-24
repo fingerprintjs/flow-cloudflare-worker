@@ -45,7 +45,7 @@ export function observeForms(ctx: PatcherContext) {
 
   observer.observe(document.body, {
     childList: true,
-    subtree: true, // Important: observe all descendants, not just direct children
+    subtree: true,
     attributes: true,
     attributeFilter: ['action', 'method'],
   })
