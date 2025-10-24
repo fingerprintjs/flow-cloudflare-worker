@@ -64,11 +64,6 @@ export class WritablePatcherContext implements PatcherContext {
   private agentDataProcessor?: AgentDataProcessor
 
   /**
-   * Flag indicating whether agent data has been processed for the current page visit.
-   * */
-  private didProcessAgentData = false
-
-  /**
    * Represents an array of route configurations specifically intended for protected
    * endpoints within an API. Each route object in the array defines the route's
    * properties and specifies the HTTP method allowed for the protected resource.
@@ -139,22 +134,10 @@ export class WritablePatcherContext implements PatcherContext {
 
   /**
    * Processes agent data received from the worker for protected API requests.
-   * Can only be called once - subsequent calls will log a warning and return early.
    * @param data - Agent data
    * */
   processAgentData(data: string): void {
-    if (!this.agentDataProcessor) {
-      console.warn('Agent data processor is not set.')
-      return
-    }
-
-    if (this.didProcessAgentData) {
-      console.warn('Agent data has already been processed for this page visit.')
-      return
-    }
-
-    this.agentDataProcessor(data)
-    this.didProcessAgentData = true
+    this.agentDataProcessor?.(data)
   }
 
   /**
