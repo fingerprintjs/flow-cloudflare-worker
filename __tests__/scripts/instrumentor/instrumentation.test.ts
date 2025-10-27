@@ -106,8 +106,9 @@ describe('Instrumentor', () => {
     expect(patcherContext).toBeTruthy()
 
     patcherContext.processAgentData('agentData')
+    patcherContext.processAgentData('agentData123')
 
-    expect(mockHandleAgentData).toHaveBeenCalledTimes(1)
+    expect(mockHandleAgentData).toHaveBeenCalledTimes(2)
     expect(mockHandleAgentData).toHaveBeenCalledWith('agentData')
   })
 
