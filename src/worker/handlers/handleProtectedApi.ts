@@ -81,7 +81,9 @@ async function getResponseForProtectedCall({
   let signals: string
 
   try {
-    ;[signals, originRequest] = await IdentificationClient.parseIncomingRequest(request)
+    const result = await IdentificationClient.parseIncomingRequest(request)
+    signals = result.signals
+    originRequest = result.request
   } catch (e) {
     console.error('Failed to parse incoming request:', e)
     return [await processRuleset(fallbackRule, request), null]

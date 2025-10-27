@@ -227,10 +227,13 @@ export class IdentificationClient {
    * Parses an incoming request to extract signals, while returning a modified iteration of the request with signals removed.
    *
    * @param {Request} request The incoming HTTP request to be processed.
-   * @return {Promise<[string, Request]>} A promise that resolves with a tuple containing the extracted signals and a new request object with the signals removed.
+   * @return {Promise<{signals: string, request: Request}>} A promise that resolves with a object containing the extracted signals and a new request object with the signals removed.
    * @throws {SignalsNotAvailableError} If signals are not found in the request headers or body.
    */
-  static async parseIncomingRequest(request: Request): Promise<[string, Request]> {
+  static async parseIncomingRequest(request: Request): Promise<{
+    signals: string
+    request: Request
+  }> {
     // First, try to find signals in headers
     const signals = request.headers.get(SIGNALS_KEY)
     if (signals) {
@@ -238,15 +241,15 @@ export class IdentificationClient {
       requestHeaders.delete(SIGNALS_KEY)
 
       console.debug('Found signals in headers:', signals)
-      return [
+      return {
         signals,
-        copyRequest({
+        request: copyRequest({
           request,
           init: {
             headers: requestHeaders,
           },
         }),
-      ]
+      }
     }
 
     try {
@@ -260,15 +263,15 @@ export class IdentificationClient {
         if (typeof signals === 'string') {
           delete body[SIGNALS_KEY]
           console.debug('Found signals in request body:', signals)
-          return [
+          return {
             signals,
-            copyRequest({
+            request: copyRequest({
               request,
               init: {
                 body: JSON.stringify(body),
               },
             }),
-          ]
+          }
         }
       }
 
@@ -290,16 +293,16 @@ export class IdentificationClient {
             console.debug('Removed content-type header from request')
           }
 
-          return [
+          return {
             signals,
-            copyRequest({
+            request: copyRequest({
               request,
               init: {
                 body: data,
                 headers: requestHeaders,
               },
             }),
-          ]
+          }
         }
       }
     } catch (error) {
