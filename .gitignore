@@ -5,6 +5,7 @@
 # Coverage report
 /coverage/
 coverage.txt
+report.json
 
 # Random excess stuff
 .DS_Store
