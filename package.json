@@ -22,8 +22,8 @@
     "lint:fix": "pnpm lint --fix",
     "test": "vitest --run",
     "test:watch": "vitest",
-    "test:coverage": "vitest --coverage",
-    "test:coverage:ci": "vitest run --coverage --reporter json --outputFile.json=report.json",
+    "test:coverage": "vitest --coverage --reporter default --reporter json --outputFile.json=coverage/coverage-summary.json",
+    "test:coverage:diff": "vitest run --coverage --reporter json --outputFile.json=report.json",
     "test:attach": "vitest --inspect=9229 --no-file-parallelism",
     "wrangler:deploy": "pnpm build:worker && wrangler deploy",
     "wrangler:types": "wrangler types --strict-vars=false"
