@@ -43,7 +43,7 @@
     "@commitlint/cli": "^19.8.0",
     "@fingerprintjs/commit-lint-dx-team": "^0.1.0",
     "@fingerprintjs/conventional-changelog-dx-team": "^0.1.0",
-    "@fingerprintjs/eslint-config-dx-team": "^0.1.0",
+    "@fingerprintjs/eslint-config-dx-team": "^0.2.0",
     "@fingerprintjs/prettier-config-dx-team": "^0.2.0",
     "@fingerprintjs/tsconfig-dx-team": "^0.0.2",
     "@fingerprintjs/url-matcher": "^0.1.1",
@@ -59,7 +59,7 @@
     "prettier": "^3.6.2",
     "rimraf": "^5.0.5",
     "typescript": "^5.9.2",
-    "vite": "^7.1.7",
+    "vite": "^7.1.11",
     "vite-plugin-checker": "^0.10.3",
     "vitest": "^3.2.4",
     "wrangler": "^4.40.2"
