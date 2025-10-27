@@ -27,6 +27,7 @@ export function resolvePatcherRequest(params: Parameters<typeof fetch>): Patcher
       method: resolveRequestInitMethod(requestInit),
 
       setHeader: (name, value) => {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         setHeaderForRequestInit(name, value, params as FetchParamsWithRequestInit)
       },
     }
@@ -46,6 +47,7 @@ export function resolvePatcherRequest(params: Parameters<typeof fetch>): Patcher
       method: resolveRequestInitMethod(requestInit),
 
       setHeader: (name, value) => {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         setHeaderForRequestInit(name, value, params as FetchParamsWithRequestInit)
       },
     }

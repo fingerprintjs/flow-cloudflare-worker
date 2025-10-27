@@ -42,11 +42,11 @@ export type BlockAction = {
 export type RuleActionUnion = AllowAction | BlockAction
 
 export function isAllowAction(action: object): action is AllowAction {
-  return (action as AllowAction).type === 'allow'
+  return 'type' in action && action.type === 'allow'
 }
 
 export function isBlockAction(action: object): action is BlockAction {
-  return (action as BlockAction).type === 'block'
+  return 'type' in action && action.type === 'block'
 }
 
 export function isRuleActionUnion(action: object): action is RuleActionUnion {

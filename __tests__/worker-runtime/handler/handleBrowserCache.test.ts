@@ -41,6 +41,7 @@ describe('Browser cache', () => {
     const response = await handler.fetch(request, mockEnv)
     await waitOnExecutionContext(ctx)
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const browserCacheRequest = vi.mocked(fetch).mock.calls[0][0] as Request
     expect(browserCacheRequest.headers.get('cookie')).toBeNull()
     // URL shouldn't contain route prefix

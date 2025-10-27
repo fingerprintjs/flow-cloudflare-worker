@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { patchFetch } from '../../../../src/scripts/instrumentor/patcher/fetch/fetch'
 import { PatcherContext, WritablePatcherContext } from '../../../../src/scripts/instrumentor/patcher/context'

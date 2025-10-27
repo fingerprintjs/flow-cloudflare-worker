@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'

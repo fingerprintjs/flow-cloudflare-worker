@@ -168,7 +168,7 @@ describe('XMLHttpRequest Patcher', () => {
       patchXHR(mockContext)
 
       const xhr = new XMLHttpRequest()
-      const setHeaderSpy = vi.spyOn(xhr as any, 'setRequestHeader')
+      const setHeaderSpy = vi.spyOn(xhr, 'setRequestHeader')
 
       xhr.open('GET', '/public')
       xhr.send()

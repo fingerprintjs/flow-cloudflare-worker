@@ -36,6 +36,7 @@ interface CopyRequestParams {
  * ```
  */
 export function copyRequest({ request, init, url }: CopyRequestParams): Request<unknown, IncomingRequestCfProperties> {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return new Request(url ?? request.url, new Request(request, init)) as unknown as Request<
     unknown,
     IncomingRequestCfProperties

@@ -196,6 +196,7 @@ export class IdentificationClient {
     const request = copyRequest({ request: clientRequest, init: { headers }, url: ingressUrl })
     console.debug(`Sending browser cache request to ${ingressUrl}`, request)
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return fetch(request as unknown as Request<unknown, IncomingRequestCfProperties>)
   }
 
@@ -257,6 +258,7 @@ export class IdentificationClient {
       const contentType = request.headers.get('content-type')
 
       if (contentType?.includes('application/json')) {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         const body = (await request.clone().json()) as Record<string, string>
         const signals = body?.[SIGNALS_KEY]
 

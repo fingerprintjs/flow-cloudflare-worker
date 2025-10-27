@@ -16,7 +16,7 @@ export function fetchOrigin(request: Request) {
       headers,
       method: request.method,
       body: request.body,
-    } as unknown as RequestInit)
+    })
   }
 
   return fetch(request)

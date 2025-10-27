@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { processRuleset, RuleAction } from '../../src/worker/fingerprint/ruleset'
 
