@@ -5,6 +5,10 @@ function isForm(element: Node): element is HTMLFormElement {
   return element instanceof HTMLFormElement
 }
 
+function isElement(element: Node): element is HTMLElement {
+  return element instanceof HTMLElement
+}
+
 /**
  * Observes and tracks changes to forms on the document, such as modifications to the "action" attribute or the addition of new form elements.
  *
@@ -22,17 +26,15 @@ export function observeForms(ctx: PatcherContext) {
       // Track new forms added to the page
       if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as HTMLElement
-
+          if (node.nodeType === Node.ELEMENT_NODE && isElement(node)) {
             // Check if the added node itself is a form
-            if (isForm(element)) {
+            if (isForm(node)) {
               console.debug('New form added')
-              onFormChange(element as HTMLFormElement, ctx)
+              onFormChange(node, ctx)
             }
 
             // Check if the added node contains any forms
-            const forms = element.querySelectorAll('form')
+            const forms = node.querySelectorAll('form')
             forms.forEach((form) => {
               console.debug('New form added (nested):')
               onFormChange(form, ctx)
