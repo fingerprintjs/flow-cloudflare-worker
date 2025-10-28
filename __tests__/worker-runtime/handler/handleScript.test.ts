@@ -37,7 +37,7 @@ describe('Handle script', () => {
       const url = getScriptUrl('loader.js')
       const request = new CloudflareRequest(url)
       const ctx = createExecutionContext()
-      const response = await handler.fetch(request, mockEnv)
+      const response = await handler.fetch(request, mockEnv, ctx)
       await waitOnExecutionContext(ctx)
 
       expect(fetch).toHaveBeenCalledTimes(1)
@@ -74,7 +74,7 @@ describe('Handle script', () => {
           },
         })
         const ctx = createExecutionContext()
-        const response = await handler.fetch(request, mockEnv)
+        const response = await handler.fetch(request, mockEnv, ctx)
         await waitOnExecutionContext(ctx)
 
         expect(response.headers.get('cache-control')).toBeNull()
@@ -92,7 +92,7 @@ describe('Handle script', () => {
         const url = getScriptUrl('loader.js')
         const request = new CloudflareRequest(url)
         const ctx = createExecutionContext()
-        const response = await handler.fetch(request, mockEnv)
+        const response = await handler.fetch(request, mockEnv, ctx)
         await waitOnExecutionContext(ctx)
 
         expect(response.headers.get('cache-control')).equals('public, max-age=10, s-maxage=10')
@@ -110,7 +110,7 @@ describe('Handle script', () => {
         const url = getScriptUrl('loader.js')
         const request = new CloudflareRequest(url)
         const ctx = createExecutionContext()
-        const response = await handler.fetch(request, mockEnv)
+        const response = await handler.fetch(request, mockEnv, ctx)
         await waitOnExecutionContext(ctx)
 
         expect(response.headers.get('cache-control')).equals('public, max-age=3600, s-maxage=60')
@@ -123,7 +123,7 @@ describe('Handle script', () => {
       const url = getScriptUrl('instrumentor.iife.js')
       const request = new CloudflareRequest(url)
       const ctx = createExecutionContext()
-      const response = await handler.fetch(request, mockEnv)
+      const response = await handler.fetch(request, mockEnv, ctx)
       await waitOnExecutionContext(ctx)
 
       expect(fetch).toHaveBeenCalledTimes(0)
@@ -154,7 +154,7 @@ describe('Handle script', () => {
       const url = getScriptUrl('agent-processor.iife.js')
       const request = new CloudflareRequest(url)
       const ctx = createExecutionContext()
-      const response = await handler.fetch(request, mockEnv)
+      const response = await handler.fetch(request, mockEnv, ctx)
       await waitOnExecutionContext(ctx)
 
       expect(fetch).toHaveBeenCalledTimes(0)

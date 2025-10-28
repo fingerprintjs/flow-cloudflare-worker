@@ -71,6 +71,14 @@ export function getFallbackRuleAction(env: TypedEnv): RuleActionUnion {
   return defaults.FP_FAILURE_FALLBACK_ACTION
 }
 
+/**
+ * Determines if the current environment is in monitor mode.
+ * If that's the case, the worker will still perform necessary identification requests, but won't perform any ruleset enforcement.
+ */
+export function isMonitorMode(env: TypedEnv) {
+  return !env.FP_RULESET_ID
+}
+
 export function getFpRegion(env: TypedEnv): Region {
   const region = env.FP_REGION
   if (region) {
