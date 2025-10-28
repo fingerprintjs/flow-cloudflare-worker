@@ -49,7 +49,7 @@ export function observeForms(ctx: PatcherContext) {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ['action', 'method'],
+    attributeFilter: ['action', 'method', 'enctype'],
   })
 }
 

@@ -13,7 +13,7 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
   // Always remove the existing listener before adding a new one to prevent duplicates
   removeSubmitListener(form)
 
-  if (!ctx.isProtectedUrl(form.action, form.method)) {
+  if (!ctx.isProtectedUrl(form.action, form.method) || form.enctype === 'text/plain') {
     return
   }
 
