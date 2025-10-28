@@ -2,7 +2,7 @@ import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
 import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
 import { hasContentType } from '../utils/headers'
-import { getScriptUrl } from '../scripts'
+import { injectAgentProcessorScript } from '../scripts'
 
 /**
  * Parameters required for handling a protected API call.
@@ -37,24 +37,14 @@ export async function handleProtectedApiCall({
   /**
    * For HTML responses, inject the agent processor script into the <head> element to process the agent data.
    * */
-  if (agentData && hasContentType(response.headers, 'text/html')) {
+  if (
+    agentData &&
+    hasContentType(response.headers, 'text/html') &&
+    // This check protects against false-positive HTML requests triggered by a "fetch" call. (e.g. by htmx)
+    request.headers.get('Sec-Fetch-Dest') === 'document'
+  ) {
     console.info('Injecting agent processor script into HTML response.')
-    return new HTMLRewriter()
-      .on('head', {
-        element(element) {
-          console.info('Injecting agent processor script into <head> element.')
-
-          // Append script that loads the agent processor. Injects agent data as a data attribute.
-          // Injected as an ` async ` script, since it doesn't depend on DOM structure and can be loaded in the background.
-          element.append(
-            `<script data-agent-data="${agentData}" async src="${getScriptUrl('agent-processor.iife.js', routePrefix)}"></script>\n`,
-            {
-              html: true,
-            }
-          )
-        },
-      })
-      .transform(response)
+    return injectAgentProcessorScript(response, agentData, routePrefix)
   }
 
   return response

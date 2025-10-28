@@ -423,8 +423,7 @@ describe('Protected API', () => {
   })
 
   describe('Agent processor script injection', () => {
-    it('should inject agent processor script if response is HTML', async () => {
-      const sampleHtml = `
+    const sampleHtml = `
     <!DOCTYPE html>
     <html>
     <head></head>
@@ -436,6 +435,7 @@ describe('Protected API', () => {
     </html>
     `
 
+    it('should inject agent processor script if response is HTML', async () => {
       const { getIngressRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
           const headers = new Headers()
@@ -469,6 +469,7 @@ describe('Protected API', () => {
       })
 
       const requestHeaders = getCompleteHeaders()
+      requestHeaders.append('Sec-Fetch-Dest', 'document')
 
       const request = new CloudflareRequest(mockUrl('/api/test'), {
         method: 'POST',
@@ -503,6 +504,90 @@ describe('Protected API', () => {
       expect(ingressBody).toEqual({
         client_headers: {
           'cf-connecting-ip': '1.2.3.4',
+          'sec-fetch-dest': 'document',
+          host: 'example.com',
+          'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+          'x-custom-header': 'custom-value',
+        },
+        client_host: 'example.com',
+        client_ip: '1.2.3.4',
+        client_user_agent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        fingerprint_data: 'signals',
+        ruleset_context: {
+          ruleset_id: 'r_1',
+        },
+      } satisfies SendBody)
+    })
+
+    it('should not inject agent processor script if response is HTML and sec-fetch-dest is not a document', async () => {
+      const { getIngressRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          const headers = new Headers()
+          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
+          headers.append(
+            'Set-Cookie',
+            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
+          )
+
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+              rule_action: {
+                type: 'allow',
+                request_header_modifications: {},
+                rule_id: '1',
+                ruleset_id: '1',
+              },
+            } satisfies SendResponse),
+            {
+              headers,
+            }
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response(sampleHtml, {
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          }),
+      })
+
+      const requestHeaders = getCompleteHeaders()
+      requestHeaders.append('Sec-Fetch-Dest', 'script')
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(request, mockEnv)
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      expect(response.status).toEqual(200)
+      expect(await response.text()).toMatchInlineSnapshot(`
+      "
+          <!DOCTYPE html>
+          <html>
+          <head></head>
+          <body>
+            <main>
+            Hello world
+          </main>
+          </body>
+          </html>
+          "
+    `)
+
+      const ingressRequest = getIngressRequest()
+      checkIngressRequest(ingressRequest)
+
+      const ingressBody = await ingressRequest!.json()
+      expect(ingressBody).toEqual({
+        client_headers: {
+          'cf-connecting-ip': '1.2.3.4',
+          'sec-fetch-dest': 'script',
           host: 'example.com',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
@@ -518,18 +603,6 @@ describe('Protected API', () => {
     })
 
     it('should inject agent processor script if blocked response is HTML', async () => {
-      const sampleHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head></head>
-    <body>
-      <main>
-      Hello world
-    </main>
-    </body>
-    </html>
-    `
-
       const { getIngressRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
           const headers = new Headers()
@@ -565,6 +638,7 @@ describe('Protected API', () => {
       })
 
       const requestHeaders = getCompleteHeaders()
+      requestHeaders.append('Sec-Fetch-Dest', 'document')
 
       const request = new CloudflareRequest(mockUrl('/api/test'), {
         method: 'POST',
@@ -599,6 +673,7 @@ describe('Protected API', () => {
       expect(ingressBody).toEqual({
         client_headers: {
           'cf-connecting-ip': '1.2.3.4',
+          'sec-fetch-dest': 'document',
           host: 'example.com',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
