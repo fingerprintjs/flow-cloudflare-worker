@@ -106,6 +106,20 @@ describe('Form patcher', () => {
     expect(inputs).toHaveLength(0)
   })
 
+  it('should not inject signals element into form with get method', async () => {
+    const form = document.querySelector<HTMLFormElement>('#loginForm')
+    expect(form).toBeTruthy()
+    form!.method = 'get'
+
+    patchForms(mockContext)
+    await emitDomReadyEvent()
+
+    await submitForm(form!)
+
+    const inputs = form!.querySelectorAll<HTMLInputElement>(`input[name="${SIGNALS_KEY}"]`)
+    expect(inputs).toHaveLength(0)
+  })
+
   it('should not inject signals element into form if it changes to not protected', async () => {
     patchForms(mockContext)
     await emitDomReadyEvent()
