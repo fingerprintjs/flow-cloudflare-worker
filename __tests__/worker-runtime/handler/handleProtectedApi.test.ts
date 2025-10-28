@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { SIGNALS_KEY } from '../../../src/shared/const'
+import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../src/shared/const'
 import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import handler from '../../../src/worker'
 import { CloudflareRequest } from '../request'
@@ -214,6 +214,7 @@ describe('Protected API', () => {
 
       expect(response.status).toEqual(200)
       expect(await response.text()).toEqual('origin')
+      expect(response.headers.get(AGENT_DATA_HEADER)).toEqual('agent-data')
 
       const ingressRequest = getIngressRequest()
       checkIngressRequest(ingressRequest)
@@ -247,6 +248,88 @@ describe('Protected API', () => {
           '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
         ])
       )
+    })
+
+    it('should not modify response if the sec-fetch-dest is a document', async () => {
+      const { getIngressRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          const headers = new Headers()
+          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
+          headers.append(
+            'Set-Cookie',
+            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
+          )
+
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+            }),
+            {
+              headers,
+            }
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = getCompleteHeaders()
+      requestHeaders.set('Sec-Fetch-Dest', 'document')
+
+      const cookies = 'client-cookie=value; another-client-cookie=value; _iidt=123456;'
+      requestHeaders.append('cookie', cookies)
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(request, {
+        ...mockEnv,
+        FP_FAILURE_FALLBACK_ACTION: {
+          type: 'allow',
+        },
+      })
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      expect(response.status).toEqual(200)
+      expect(await response.text()).toEqual('origin')
+      expect(response.headers.get(AGENT_DATA_HEADER)).toBeNull()
+
+      const ingressRequest = getIngressRequest()
+      checkIngressRequest(ingressRequest)
+
+      const ingressBody = await ingressRequest!.json()
+      expect(ingressBody).toEqual({
+        // Only _iidt cookie should be sent to ingress
+        client_cookie: '_iidt=123456',
+        client_headers: {
+          'cf-connecting-ip': '1.2.3.4',
+          'sec-fetch-dest': 'document',
+          host: 'example.com',
+          'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+          'x-custom-header': 'custom-value',
+        },
+        client_host: 'example.com',
+        client_ip: '1.2.3.4',
+        client_user_agent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        fingerprint_data: 'signals',
+        ruleset_context: {
+          ruleset_id: 'r_1',
+        },
+      } satisfies SendBody)
+
+      const setCookie = response.headers.getAll('Set-Cookie')
+      expect(setCookie).toHaveLength(1)
+      // Cookies received from ingress and origin
+      expect(setCookie).toEqual(expect.arrayContaining(['origin-cookie=value']))
     })
 
     it('should send request with signals as multipart/form-data to ingress and return modified response', async () => {

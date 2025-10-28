@@ -38,3 +38,7 @@ export async function getIp(headers: Headers): Promise<string> {
 
   throw new HeaderMissingError('cf-connecting-ip')
 }
+
+export function isDocumentDestination(headers: Headers) {
+  return headers.get('Sec-Fetch-Dest')?.includes('document')
+}

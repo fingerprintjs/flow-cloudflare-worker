@@ -1,7 +1,7 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
 import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
-import { hasContentType } from '../utils/headers'
+import { hasContentType, isDocumentDestination } from '../utils/headers'
 import { injectAgentProcessorScript } from '../scripts'
 
 /**
@@ -41,7 +41,7 @@ export async function handleProtectedApiCall({
     agentData &&
     hasContentType(response.headers, 'text/html') &&
     // This check protects against false-positive HTML requests triggered by a "fetch" call. (e.g. by htmx)
-    request.headers.get('Sec-Fetch-Dest') === 'document'
+    isDocumentDestination(request.headers)
   ) {
     console.info('Injecting agent processor script into HTML response.')
     return injectAgentProcessorScript(response, agentData, routePrefix)
@@ -95,7 +95,11 @@ async function getResponseForProtectedCall({
   }
 
   const originResponseHeaders = new Headers(originResponse.headers)
-  setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
+  // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
+  // it doesn't make sense to set headers from ingress, because the browser will discard them anyway
+  if (!isDocumentDestination(request.headers)) {
+    setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
+  }
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
   return [
