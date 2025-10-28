@@ -80,7 +80,7 @@ describe('Handle script', () => {
         expect(response.headers.get('cache-control')).toBeNull()
       })
 
-      it('should not modify cache-control headers if the do not exceed max value', async () => {
+      it('should not modify cache-control headers if they do not exceed max value', async () => {
         vi.mocked(fetch).mockResolvedValue(
           new Response('agent-script', {
             headers: {
