@@ -81,7 +81,7 @@ describe('Form patcher', () => {
     const form = document.querySelector<HTMLFormElement>('#loginForm')
     expect(form).toBeTruthy()
 
-    // Modify from action. It should be picked up by the mutation observer.
+    // Modify form action. It should be picked up by the mutation observer.
     form!.action = '/login/123'
     // Wait for mutation observer to process the change
     await wait(10)
