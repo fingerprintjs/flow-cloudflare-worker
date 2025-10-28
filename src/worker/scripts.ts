@@ -1,4 +1,12 @@
 import { Script } from '../shared/scripts'
+import { CacheOptions } from './utils/cache'
+
+export const workerScriptsCacheOptions: CacheOptions = {
+  // Cache in the browser up to 1 minute. Longer cache might cause unnecessary delay if Flow options are modified in the dashboard.
+  maxAge: 60,
+  // CDN and worker should cache up to 1 minute. Same as above.
+  sMaxAge: 60,
+}
 
 export const scripts: Script[] = ['instrumentor.iife.js', 'loader.js', 'agent-processor.iife.js']
 
