@@ -4,9 +4,7 @@ import agentProcessorCode from '../../../dist/agent-processor/agent-processor.ii
 import { ProtectedApi } from '../../shared/types'
 import { getAgentLoader } from '../fingerprint/agent'
 import { Script } from '../../shared/scripts'
-import { resolveTemplates } from '../utils/string'
-import { createResponseWithMaxAge } from '../utils/cache'
-import { workerScriptsCacheOptions } from '../scripts'
+import { createWorkerScriptResponse } from '../scripts'
 
 type HandleScriptParams = {
   request: Request
@@ -39,39 +37,17 @@ export async function handleScript({
 }: HandleScriptParams): Promise<Response> {
   switch (script) {
     case 'instrumentor.iife.js': {
-      return createResponseWithMaxAge(
-        new Response(
-          resolveTemplates(instrumentorCode, {
-            '<WORKER_ROUTE_PREFIX>': routePrefix,
-            // The " quotes are intentional here to prevent the template from being parsed as a string literal
-            '"<PROTECTED_APIS>"': JSON.stringify(protectedApis),
-          }),
-          {
-            headers: {
-              'Content-Type': 'application/javascript',
-            },
-          }
-        ),
-        workerScriptsCacheOptions,
-        'set'
-      )
+      return createWorkerScriptResponse(instrumentorCode, {
+        '<WORKER_ROUTE_PREFIX>': routePrefix,
+        // The " quotes are intentional here to prevent the template from being parsed as a string literal
+        '"<PROTECTED_APIS>"': JSON.stringify(protectedApis),
+      })
     }
 
     case 'agent-processor.iife.js': {
-      return createResponseWithMaxAge(
-        new Response(
-          resolveTemplates(agentProcessorCode, {
-            '<WORKER_ROUTE_PREFIX>': routePrefix,
-          }),
-          {
-            headers: {
-              'Content-Type': 'application/javascript',
-            },
-          }
-        ),
-        workerScriptsCacheOptions,
-        'set'
-      )
+      return createWorkerScriptResponse(agentProcessorCode, {
+        '<WORKER_ROUTE_PREFIX>': routePrefix,
+      })
     }
 
     case 'loader.js':
