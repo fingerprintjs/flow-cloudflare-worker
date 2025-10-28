@@ -61,7 +61,7 @@ function ensureMaxCacheDirectiveValue(directives: string[], directive: 'max-age'
  * @return {string} - The updated cache-control header value with updated or unchanged directive values.
  */
 function ensureCacheControlMaxAge(cacheControlHeaderValue: string, { sMaxAge, maxAge }: CacheOptions): string {
-  const cacheControlDirectives = cacheControlHeaderValue.split(', ')
+  const cacheControlDirectives = cacheControlHeaderValue.split(/\s*,\s*/)
 
   ensureMaxCacheDirectiveValue(cacheControlDirectives, 'max-age', maxAge)
   ensureMaxCacheDirectiveValue(cacheControlDirectives, 's-maxage', sMaxAge)
