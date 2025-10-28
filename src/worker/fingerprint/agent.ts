@@ -4,7 +4,7 @@ import { copyRequest } from '../utils/request'
 const workerTtl = 60
 
 function copySearchParams(oldURL: URL, newURL: URL): void {
-  newURL.search = new URLSearchParams(oldURL.search).toString()
+  newURL.search = oldURL.search
 }
 
 /**
