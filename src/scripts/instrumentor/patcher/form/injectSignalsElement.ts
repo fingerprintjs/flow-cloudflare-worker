@@ -17,6 +17,11 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
     return
   }
 
+  if (form.method?.toLowerCase() === 'get') {
+    console.warn('Forms with method "get" are currently not supported.')
+    return
+  }
+
   const handleSubmit = async (event: SubmitEvent) => {
     // Ignore form submissions if they were prevented by another handler (since this patcher is only for native submissions)
     if (event.defaultPrevented) {
