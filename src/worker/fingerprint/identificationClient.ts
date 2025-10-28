@@ -256,27 +256,6 @@ export class IdentificationClient {
     try {
       // Otherwise, try to find signals in the request body
       const contentType = request.headers.get('content-type')
-
-      if (contentType?.includes('application/json')) {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const body = (await request.clone().json()) as Record<string, string>
-        const signals = body?.[SIGNALS_KEY]
-
-        if (typeof signals === 'string') {
-          delete body[SIGNALS_KEY]
-          console.debug('Found signals in request body:', signals)
-          return {
-            signals,
-            request: copyRequest({
-              request,
-              init: {
-                body: JSON.stringify(body),
-              },
-            }),
-          }
-        }
-      }
-
       if (contentType?.includes('application/x-www-form-urlencoded') || contentType?.includes('multipart/form-data')) {
         const data = await request.clone().formData()
         const signals = data.get(SIGNALS_KEY)
