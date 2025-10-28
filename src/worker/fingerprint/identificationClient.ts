@@ -1,7 +1,7 @@
 import { Region } from './region'
 import { SIGNALS_KEY } from '../../shared/const'
 import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../errors'
-import { getHeaderOrThrow, getIp } from '../utils/headers'
+import { getHeaderOrThrow, getIp, hasContentType } from '../utils/headers'
 import { findCookie } from '../cookies'
 import { RuleAction } from './ruleset'
 import { copyRequest } from '../utils/request'
@@ -255,8 +255,7 @@ export class IdentificationClient {
 
     try {
       // Otherwise, try to find signals in the request body
-      const contentType = request.headers.get('content-type')
-      if (contentType?.includes('application/x-www-form-urlencoded') || contentType?.includes('multipart/form-data')) {
+      if (hasContentType(request.headers, 'application/x-www-form-urlencoded', 'multipart/form-data')) {
         const data = await request.clone().formData()
         const signals = data.get(SIGNALS_KEY)
 
@@ -266,7 +265,7 @@ export class IdentificationClient {
           data.delete(SIGNALS_KEY)
 
           const requestHeaders = new Headers(request.headers)
-          if (requestHeaders.get('content-type')?.includes('boundary')) {
+          if (hasContentType(request.headers, 'multipart/form-data')) {
             // When modifying FormData for multipart/form-data, we also need to remove the old Content-Type header. Otherwise, the boundary will be different and the request will fail.
             // The new content type will be set automatically when constructing the new request.
             requestHeaders.delete('content-type')
