@@ -92,7 +92,7 @@ describe('Form patcher', () => {
     expect(inputs).toHaveLength(1)
   })
 
-  it('should not inject signals element into form with enctype text/html', async () => {
+  it('should not inject signals element into form with enctype text/plain', async () => {
     const form = document.querySelector<HTMLFormElement>('#loginForm')
     expect(form).toBeTruthy()
     form!.enctype = 'text/plain'
