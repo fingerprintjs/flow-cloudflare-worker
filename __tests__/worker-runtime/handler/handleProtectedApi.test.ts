@@ -1387,7 +1387,7 @@ describe('Protected API', () => {
       expect(await response.text()).toEqual('origin')
     })
 
-    it('should not evaluate fallback rule if response if signals are missing', async () => {
+    it('should not evaluate fallback rule if response signals are missing', async () => {
       prepareMockFetch({
         mockIngressHandler: async () => {
           return new Response(
