@@ -1,10 +1,10 @@
 import { HeaderMissingError } from '../errors'
 
-export function hasContentType(headers: Headers, expectedContentType: string) {
+export function hasContentType(headers: Headers, ...expectedContentTypes: string[]) {
   const contentType = headers.get('Content-Type')?.toLowerCase()
 
   if (contentType) {
-    return contentType.startsWith(expectedContentType)
+    return expectedContentTypes.some((expectedContentType) => contentType.startsWith(expectedContentType))
   }
 
   return false
@@ -37,4 +37,8 @@ export async function getIp(headers: Headers): Promise<string> {
   }
 
   throw new HeaderMissingError('cf-connecting-ip')
+}
+
+export function isDocumentDestination(headers: Headers) {
+  return headers.get('Sec-Fetch-Dest')?.includes('document')
 }

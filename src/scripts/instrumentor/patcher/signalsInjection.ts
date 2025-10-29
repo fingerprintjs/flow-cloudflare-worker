@@ -1,6 +1,6 @@
 import { PatcherRequest } from './types'
 import { PatcherContext } from './context'
-import { SIGNALS_HEADER } from '../../shared/const'
+import { SIGNALS_KEY } from '../../../shared/const'
 
 /**
  * Parameters required for handling signals injection into requests.
@@ -38,7 +38,7 @@ export async function handleSignalsInjection({ request, ctx }: HandleSignalsInje
 
   if (signals) {
     console.debug('Adding signals header for:', request.url)
-    request.setHeader(SIGNALS_HEADER, signals)
+    request.setHeader(SIGNALS_KEY, signals)
     return true
   }
 

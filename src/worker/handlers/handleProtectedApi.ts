@@ -1,6 +1,8 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
 import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
+import { hasContentType, isDocumentDestination } from '../utils/headers'
+import { injectAgentProcessorScript } from '../scripts'
 
 /**
  * Parameters required for handling a protected API call.
@@ -12,6 +14,40 @@ export type HandleProtectedApiCallParams = {
   identificationClient: IdentificationClient
   /** Fallback rule if identification client rule evaluation fails */
   fallbackRule: RuleActionUnion
+  /** Route prefix for the worker requests */
+  routePrefix: string
+}
+
+/**
+ * Handles a protected API call by validating signals and processing the request.
+ * For HTML responses, injects the agent processor script into the <head> element to process the agent data.
+ */
+export async function handleProtectedApiCall({
+  request,
+  identificationClient,
+  fallbackRule,
+  routePrefix,
+}: HandleProtectedApiCallParams): Promise<Response> {
+  const [response, agentData] = await getResponseForProtectedCall({
+    request,
+    identificationClient,
+    fallbackRule,
+  })
+
+  /**
+   * For HTML responses, inject the agent processor script into the <head> element to process the agent data.
+   * */
+  if (
+    agentData &&
+    hasContentType(response.headers, 'text/html') &&
+    // This check protects against false-positive HTML requests triggered by a "fetch" call. (e.g. by htmx)
+    isDocumentDestination(request.headers)
+  ) {
+    console.info('Injecting agent processor script into HTML response.')
+    return injectAgentProcessorScript(response, agentData, routePrefix)
+  }
+
+  return response
 }
 
 /**
@@ -24,48 +60,57 @@ export type HandleProtectedApiCallParams = {
  * 4. Returns the combined response with updated headers
  *
  * @param params - Configuration object containing request, ingress client, and error response
- * @returns Promise resolving to the processed HTTP response
- *
- * @example
- * ```typescript
- * const response = await handleProtectedApiCall({
- *   request: incomingRequest,
- *   identificationClient: new IdentificationClient('<...>'),
- * });
- * ```
  */
-export async function handleProtectedApiCall({
+async function getResponseForProtectedCall({
   request,
   identificationClient,
   fallbackRule,
-}: HandleProtectedApiCallParams): Promise<Response> {
+}: Omit<HandleProtectedApiCallParams, 'routePrefix'>): Promise<[response: Response, agentData: string | null]> {
   let ingressResponse: SendResult
+  let originRequest: Request
+  let signals: string
 
   try {
-    ingressResponse = await identificationClient.send(request)
+    const result = await IdentificationClient.parseIncomingRequest(request)
+    signals = result.signals
+    originRequest = result.request
+  } catch (e) {
+    console.error('Failed to parse incoming request:', e)
+    return [await processRuleset(fallbackRule, request), null]
+  }
+
+  try {
+    ingressResponse = await identificationClient.send(originRequest, signals)
   } catch (error) {
     console.error('Error sending request to ingress service:', error)
-    return processRuleset(fallbackRule, request)
+    return [await processRuleset(fallbackRule, originRequest), null]
   }
 
   let originResponse: Response
   if (ingressResponse.ruleAction) {
-    originResponse = await processRuleset(ingressResponse.ruleAction, request)
+    originResponse = await processRuleset(ingressResponse.ruleAction, originRequest)
   } else {
     console.warn('No ruleset processor found for ingress response, using fallback rule.')
-    originResponse = await processRuleset(fallbackRule, request)
+    originResponse = await processRuleset(fallbackRule, originRequest)
   }
 
   const originResponseHeaders = new Headers(originResponse.headers)
-  setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
+  // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
+  // it doesn't make sense to set headers from ingress, because the browser will discard them anyway
+  if (!isDocumentDestination(request.headers)) {
+    setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
+  }
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
-  return new Response(originResponse.body, {
-    status: originResponse.status,
-    headers: originResponseHeaders,
-    statusText: originResponse.statusText,
-    cf: originResponse.cf,
-  })
+  return [
+    new Response(originResponse.body, {
+      status: originResponse.status,
+      headers: originResponseHeaders,
+      statusText: originResponse.statusText,
+      cf: originResponse.cf,
+    }),
+    ingressResponse.agentData,
+  ]
 }
 
 /**

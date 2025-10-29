@@ -1,5 +1,5 @@
 import { setupInstrumentor } from './instrumentor'
-import { importFingerprintLoader, routePrefix } from './fingerprint/import'
+import { importFingerprintLoader, routePrefix } from '../shared/fingerprint/import'
 import { getProtectedApis } from './protectedApis'
 
 setupInstrumentor({

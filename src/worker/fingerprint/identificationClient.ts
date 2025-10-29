@@ -1,7 +1,7 @@
 import { Region } from './region'
-import { SIGNALS_HEADER } from '../../shared/const'
+import { SIGNALS_KEY } from '../../shared/const'
 import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../errors'
-import { getHeaderOrThrow, getIp } from '../utils/headers'
+import { getHeaderOrThrow, getIp, hasContentType } from '../utils/headers'
 import { findCookie } from '../cookies'
 import { RuleAction } from './ruleset'
 import { copyRequest } from '../utils/request'
@@ -86,22 +86,17 @@ export class IdentificationClient {
    * Sends fingerprint data to the identification service and returns the response with agent data.
    *
    * This method:
-   * 1. Extracts fingerprint signals and client information from the request
-   * 2. Processes cookies to extract only the _iidt cookie if present
-   * 3. Sends the data to the POST /send
-   * 4. Returns the agent data along with any Set-Cookie headers received from the identification
+   * 1. Processes cookies to extract only the _iidt cookie if present
+   * 2. Sends the data to the POST /send
+   * 3. Returns the agent data along with any Set-Cookie headers received from the identification
    *
    * @param clientRequest - The incoming client request containing fingerprint data and headers
+   * @param signals - Fingerprint signals extracted from the request
    * @returns Promise resolving to SendResult containing agent data and cookie headers
    * @throws {SignalsNotAvailableError} When fingerprint signals are missing from the request
    * @throws {IdentificationRequestFailedError} When the identification service request fails or returns invalid data
    */
-  async send(clientRequest: Request): Promise<SendResult> {
-    const signals = clientRequest.headers.get(SIGNALS_HEADER)
-    if (!signals) {
-      throw new SignalsNotAvailableError()
-    }
-
+  async send(clientRequest: Request, signals: string): Promise<SendResult> {
     const clientIP = await getIp(clientRequest.headers)
     const clientHost = getHeaderOrThrow(clientRequest.headers, 'host')
     const clientUserAgent = getHeaderOrThrow(clientRequest.headers, 'user-agent')
@@ -149,6 +144,8 @@ export class IdentificationClient {
       headers: headers,
       body: JSON.stringify(sendBody),
     })
+
+    console.debug(`Sending identification request to ${requestUrl}`, identificationRequest)
 
     const identificationResponse = await fetch(identificationRequest)
     console.debug(
@@ -199,6 +196,7 @@ export class IdentificationClient {
     const request = copyRequest({ request: clientRequest, init: { headers }, url: ingressUrl })
     console.debug(`Sending browser cache request to ${ingressUrl}`, request)
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return fetch(request as unknown as Request<unknown, IncomingRequestCfProperties>)
   }
 
@@ -224,5 +222,73 @@ export class IdentificationClient {
       default:
         return `https://${region}.${host}`
     }
+  }
+
+  /**
+   * Parses an incoming request to extract signals, while returning a modified iteration of the request with signals removed.
+   *
+   * @param {Request} request The incoming HTTP request to be processed.
+   * @return {Promise<{signals: string, request: Request}>} A promise that resolves with a object containing the extracted signals and a new request object with the signals removed.
+   * @throws {SignalsNotAvailableError} If signals are not found in the request headers or body.
+   */
+  static async parseIncomingRequest(request: Request): Promise<{
+    signals: string
+    request: Request
+  }> {
+    // First, try to find signals in headers
+    const signals = request.headers.get(SIGNALS_KEY)
+    if (signals) {
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.delete(SIGNALS_KEY)
+
+      console.debug('Found signals in headers:', signals)
+      return {
+        signals,
+        request: copyRequest({
+          request,
+          init: {
+            headers: requestHeaders,
+          },
+        }),
+      }
+    }
+
+    try {
+      // Otherwise, try to find signals in the request body
+      if (hasContentType(request.headers, 'application/x-www-form-urlencoded', 'multipart/form-data')) {
+        const data = await request.clone().formData()
+        const signals = data.get(SIGNALS_KEY)
+
+        if (typeof signals === 'string') {
+          console.debug('Found signals in request body:', signals)
+
+          data.delete(SIGNALS_KEY)
+
+          const requestHeaders = new Headers(request.headers)
+          if (hasContentType(request.headers, 'multipart/form-data')) {
+            // When modifying FormData for multipart/form-data, we also need to remove the old Content-Type header. Otherwise, the boundary will be different and the request will fail.
+            // The new content type will be set automatically when constructing the new request.
+            requestHeaders.delete('content-type')
+
+            console.debug('Removed content-type header from request')
+          }
+
+          return {
+            signals,
+            request: copyRequest({
+              request,
+              init: {
+                body: data,
+                headers: requestHeaders,
+              },
+            }),
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing incoming request:', error)
+    }
+
+    throw new SignalsNotAvailableError()
   }
 }

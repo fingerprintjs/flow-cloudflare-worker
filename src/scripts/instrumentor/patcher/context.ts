@@ -1,4 +1,4 @@
-import { ProtectedApi, ProtectedApiHttpMethod } from '../../shared/types'
+import { ProtectedApi, ProtectedApiHttpMethod } from '../../../shared/types'
 import { findMatchingRoute, parseRoutes, Route } from '@fingerprintjs/url-matcher'
 
 /**
@@ -71,7 +71,7 @@ export class WritablePatcherContext implements PatcherContext {
   private readonly protectedRoutes: Route<{ method: ProtectedApiHttpMethod }>[]
 
   /**
-   * A set containing the names of HTTP methods that are designated as protected.
+   * A set containing the uppercased names of HTTP methods that are designated as protected.
    *
    * In most cases, protected methods will be a POST, PUT or DELETE request.
    * In instances where multiple GET requests are being made, this set can be used to quickly filter out these requests without
@@ -81,7 +81,7 @@ export class WritablePatcherContext implements PatcherContext {
 
   constructor(protectedApis: ProtectedApi[]) {
     const routeObjects = protectedApis.map((api) => {
-      this.protectedMethods.add(api.method)
+      this.protectedMethods.add(api.method.toUpperCase())
 
       return {
         url: api.url,
@@ -148,12 +148,18 @@ export class WritablePatcherContext implements PatcherContext {
    * @return {boolean} Returns true if the URL and method match a protected route, otherwise false.
    */
   isProtectedUrl(url: string, method: string): boolean {
+    // Normalize method to uppercase
+    method = method.toUpperCase()
+
     // Check method first to avoid unnecessary route matching
     if (!this.protectedMethods.has(method)) {
+      console.debug('Method not protected:', method)
       return false
     }
 
-    const matchedRoute = findMatchingRoute(new URL(url, location.origin), this.protectedRoutes)
+    const urlToMatch = new URL(url, location.origin)
+    console.debug('Matching URL:', urlToMatch.href)
+    const matchedRoute = findMatchingRoute(urlToMatch, this.protectedRoutes)
 
     if (matchedRoute) {
       return matchedRoute.metadata?.method === method

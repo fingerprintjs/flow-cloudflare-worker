@@ -60,6 +60,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           request,
           identificationClient,
           fallbackRule: getFallbackRuleAction(env),
+          routePrefix: getRoutePrefix(env),
         })
 
       default:

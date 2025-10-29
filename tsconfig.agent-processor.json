@@ -4,7 +4,7 @@
     "composite": true,
     "moduleResolution": "bundler",
     "module": "ES2020",
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.instrumentation.tsbuildinfo",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.agent-processor.tsbuildinfo",
     "lib": [
       "DOM",
       "ES2020"
@@ -15,8 +15,8 @@
     "isolatedModules": true
   },
   "include": [
-    "./src/scripts/instrumentor/**/*",
-    "./src/shared/**/*",
-    "./src/scripts/shared/**/*"
+    "./src/scripts/agent-processor/**/*",
+    "./src/scripts/shared/**/*",
+    "./src/shared/**/*"
   ]
 }

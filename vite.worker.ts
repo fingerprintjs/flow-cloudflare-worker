@@ -11,4 +11,7 @@ export default defineConfig({
     }),
     cloudflare(),
   ],
+  build: {
+    outDir: 'dist/worker',
+  },
 })

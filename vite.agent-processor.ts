@@ -5,17 +5,17 @@ export default defineConfig({
   plugins: [
     checker({
       typescript: {
-        tsconfigPath: './tsconfig.instrumentor.json',
+        tsconfigPath: './tsconfig.agent-processor.json',
       },
     }),
   ],
   build: {
-    outDir: 'dist/instrumentor',
+    outDir: 'dist/agent-processor',
     lib: {
-      entry: 'src/scripts/instrumentor/index.ts',
+      entry: 'src/scripts/agent-processor/index.ts',
       formats: ['iife'],
-      name: 'instrumentor',
-      fileName: 'instrumentor',
+      name: 'agentProcessor',
+      fileName: 'agent-processor',
     },
   },
 })
