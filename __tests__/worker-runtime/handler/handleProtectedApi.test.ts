@@ -73,16 +73,16 @@ describe('Protected API', () => {
         const { getIngressRequest, getOriginRequest } = prepareMockFetch({
           mockIngressHandler: async () => {
             const headers = new Headers()
-            headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
-            headers.append(
-              'Set-Cookie',
-              '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-            )
+            headers.append('Set-Cookie', 'ignored-set-cookie=123')
 
             return new Response(
               JSON.stringify({
                 agent_data: 'agent-data',
-              }),
+                set_cookie_headers: [
+                  '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                  'fp-ingress-cookie=12345',
+                ],
+              } satisfies SendResponse),
               {
                 headers,
               }
@@ -172,16 +172,16 @@ describe('Protected API', () => {
       const { getIngressRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
           const headers = new Headers()
-          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
-          headers.append(
-            'Set-Cookie',
-            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-          )
+          headers.append('Set-Cookie', 'ignored-set-cookie=123')
 
           return new Response(
             JSON.stringify({
               agent_data: 'agent-data',
-            }),
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+            } satisfies SendResponse),
             {
               headers,
             }
@@ -348,11 +348,7 @@ describe('Protected API', () => {
       const { getIngressRequest, getOriginRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
           const headers = new Headers()
-          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
-          headers.append(
-            'Set-Cookie',
-            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-          )
+          headers.append('Set-Cookie', 'ignored-set-cookie=123')
 
           return new Response(
             JSON.stringify({
@@ -363,6 +359,10 @@ describe('Protected API', () => {
                 rule_id: '1',
                 ruleset_id: '1',
               },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
             } satisfies SendResponse),
             {
               headers,
@@ -453,19 +453,13 @@ describe('Protected API', () => {
     it('should send request to ingress and return modified response when client request has no cookies', async () => {
       const { getIngressRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
-          const headers = new Headers()
-          headers.append(
-            'Set-Cookie',
-            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-          )
-
           return new Response(
             JSON.stringify({
               agent_data: 'agent-data',
-            }),
-            {
-              headers,
-            }
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+              ],
+            } satisfies SendResponse)
           )
         },
         mockOriginHandler: async () => new Response('origin'),
@@ -541,13 +535,6 @@ describe('Protected API', () => {
     it('should inject agent processor script if response is HTML', async () => {
       const { getIngressRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
-          const headers = new Headers()
-          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
-          headers.append(
-            'Set-Cookie',
-            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-          )
-
           return new Response(
             JSON.stringify({
               agent_data: 'agent-data',
@@ -557,10 +544,11 @@ describe('Protected API', () => {
                 rule_id: '1',
                 ruleset_id: '1',
               },
-            } satisfies SendResponse),
-            {
-              headers,
-            }
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+            } satisfies SendResponse)
           )
         },
         mockOriginHandler: async () =>
@@ -625,13 +613,6 @@ describe('Protected API', () => {
     it('should not inject agent processor script if response is HTML and sec-fetch-dest is not a document', async () => {
       const { getIngressRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
-          const headers = new Headers()
-          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
-          headers.append(
-            'Set-Cookie',
-            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-          )
-
           return new Response(
             JSON.stringify({
               agent_data: 'agent-data',
@@ -641,10 +622,11 @@ describe('Protected API', () => {
                 rule_id: '1',
                 ruleset_id: '1',
               },
-            } satisfies SendResponse),
-            {
-              headers,
-            }
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+            } satisfies SendResponse)
           )
         },
         mockOriginHandler: async () =>
@@ -708,13 +690,6 @@ describe('Protected API', () => {
     it('should inject agent processor script if blocked response is HTML', async () => {
       const { getIngressRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
-          const headers = new Headers()
-          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
-          headers.append(
-            'Set-Cookie',
-            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-          )
-
           return new Response(
             JSON.stringify({
               agent_data: 'agent-data',
@@ -731,10 +706,11 @@ describe('Protected API', () => {
                 rule_id: '1',
                 ruleset_id: '1',
               },
-            } satisfies SendResponse),
-            {
-              headers,
-            }
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+            } satisfies SendResponse)
           )
         },
         mockOriginHandler: async () => new Response('origin', {}),
@@ -796,13 +772,6 @@ describe('Protected API', () => {
     it('should send request to ingress and block request if ruleset says so', async () => {
       prepareMockFetch({
         mockIngressHandler: async () => {
-          const headers = new Headers()
-          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
-          headers.append(
-            'Set-Cookie',
-            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-          )
-
           return new Response(
             JSON.stringify({
               agent_data: 'agent-data',
@@ -820,10 +789,11 @@ describe('Protected API', () => {
                 rule_id: '12',
                 ruleset_id: '1',
               },
-            } satisfies SendResponse),
-            {
-              headers,
-            }
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+            } satisfies SendResponse)
           )
         },
         mockOriginHandler: async () => new Response('origin'),
@@ -857,13 +827,6 @@ describe('Protected API', () => {
       const originResponse = new Response('origin')
       prepareMockFetch({
         mockIngressHandler: async () => {
-          const headers = new Headers()
-          headers.append('Set-Cookie', 'fp-ingress-cookie=12345')
-          headers.append(
-            'Set-Cookie',
-            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None'
-          )
-
           return new Response(
             JSON.stringify({
               agent_data: 'agent-data',
@@ -881,10 +844,11 @@ describe('Protected API', () => {
                 rule_id: '12',
                 ruleset_id: '1',
               },
-            } satisfies SendResponse),
-            {
-              headers,
-            }
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+            } satisfies SendResponse)
           )
         },
         mockOriginHandler: async () => originResponse,
@@ -992,6 +956,10 @@ describe('Protected API', () => {
                 rule_id: '12',
                 ruleset_id: '1',
               },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
             } satisfies SendResponse)
           )
         },
@@ -1060,6 +1028,10 @@ describe('Protected API', () => {
                 rule_id: '12',
                 ruleset_id: '1',
               },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
             } satisfies SendResponse)
           )
         },
@@ -1458,6 +1430,10 @@ describe('Protected API', () => {
                 rule_id: '12',
                 ruleset_id: '1',
               },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
             } satisfies SendResponse)
           )
         },
