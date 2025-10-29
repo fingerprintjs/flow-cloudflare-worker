@@ -41,7 +41,7 @@ export type SendResponse = {
   agent_data: string
   /** Rule action resolved by ingress. */
   rule_action?: RuleAction
-  /** Cookies that needs to be set in the origin response */
+  /** Cookies that need to be set in the origin response */
   set_cookie_headers: string[]
 }
 
