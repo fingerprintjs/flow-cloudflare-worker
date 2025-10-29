@@ -4,6 +4,7 @@ export type Agent = {
 
 type StartOptions = {
   endpoints: string
+  integrationInfo?: string[]
 }
 
 export type FingerprintLoader = {

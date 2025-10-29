@@ -44,6 +44,12 @@ describe('Handle script', () => {
 
       assertRemovedCookieInFetchCall()
 
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const fetchRequest = vi.mocked(fetch).mock.calls[0][0] as Request
+      expect(fetchRequest.url).toEqual(
+        'https://fpcdn.io/v4/FP_PUBLIC_KEY?ii=fingerprint-flow-cloudflare%2F0.0.1-test%2Fprocdn'
+      )
+
       expect(Array.from(response.headers.entries())).toMatchInlineSnapshot(`
         [
           [

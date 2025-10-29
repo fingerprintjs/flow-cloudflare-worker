@@ -1,5 +1,6 @@
 import { createResponseWithMaxAge, fetchCacheable } from '../utils/cache'
 import { copyRequest } from '../utils/request'
+import { addIntegrationInfo } from '../../shared/integrationInfo'
 
 const workerTtl = 60
 
@@ -23,6 +24,7 @@ export async function getAgentLoader(
 ): Promise<Response> {
   const fpScriptUrl = new URL(`https://${cdnHost}/v4/${publicApiKey}`)
   copySearchParams(new URL(incomingRequest.url), fpScriptUrl)
+  addIntegrationInfo(fpScriptUrl, 'procdn')
 
   console.debug('Fetching agent loader from:', fpScriptUrl)
 
