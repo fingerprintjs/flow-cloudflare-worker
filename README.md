@@ -37,6 +37,7 @@ The worker is configured using a `wrangler.jsonc` file. An example file `wrangle
 -   `FP_PUBLIC_KEY`: Your Fingerprint public key.
 -   `FP_SECRET_KEY`: Your Fingerprint secret key.
 -   `FP_RULESET_ID`: Your Fingerprint ruleset ID.
+    -   If not provided, the worker will default to "Monitor mode" where it still identifies the visitor for any request to `PROTECTED_APIS` but does not apply any ruleset to the request.
 -   `PROTECTED_APIS`: An array of APIs to protect with Fingerprint. Each object in the array should have a `method` and `url` property. The `url` pattern cannot be relative but it can contain wildcards.
     - Example: `[ { method: 'POST', url: 'https://example.com/sign-up/*' }]`
 -   `IDENTIFICATION_PAGE_URLS`: An array of url patterns that cannot be relative but can contain wildcards where the Fingerprint identification script should be injected. 
