@@ -5,7 +5,7 @@ import { isMonitorMode } from './env'
 export default {
   async fetch(request, env, ctx) {
     if (isMonitorMode(env)) {
-      console.debug('No ruleset ID provided, worker will work in Monitor Mode.')
+      console.debug('No ruleset ID provided, worker will work in monitor mode.')
       ctx.passThroughOnException()
     }
     return handleRequest(request, env)
