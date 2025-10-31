@@ -2,35 +2,43 @@ import { describe, it, expect } from 'vitest'
 import { createResponseWithMaxAge } from '../../src/worker/utils/cache'
 
 describe('Cache', () => {
+  const directives = ['max-age', 's-maxage'] as const
+
   describe('Response with max age', () => {
-    it('should handle non-numeric values in max-age', () => {
-      const response = new Response('test', {
-        headers: {
-          'cache-control': 'max-age=none',
-        },
+    directives.forEach((directive) => {
+      const otherDirective = directive === 'max-age' ? 's-maxage' : 'max-age'
+
+      describe(`with ${directive} directive`, () => {
+        it(`should handle non-numeric values`, () => {
+          const response = new Response('test', {
+            headers: {
+              'cache-control': `${directive}=none, ${otherDirective}=60`,
+            },
+          })
+
+          const result = createResponseWithMaxAge(response, {
+            maxAge: 60,
+            sMaxAge: 60,
+          })
+
+          expect(result.headers.get('cache-control')).toEqual(`${directive}=none, ${otherDirective}=60`)
+        })
+
+        it('should handle empty values', () => {
+          const response = new Response('test', {
+            headers: {
+              'cache-control': `${directive}=, ${otherDirective}=60`,
+            },
+          })
+
+          const result = createResponseWithMaxAge(response, {
+            maxAge: 60,
+            sMaxAge: 60,
+          })
+
+          expect(result.headers.get('cache-control')).toEqual(`${directive}=0, ${otherDirective}=60`)
+        })
       })
-
-      const result = createResponseWithMaxAge(response, {
-        maxAge: 60,
-        sMaxAge: 60,
-      })
-
-      expect(result.headers.get('cache-control')).toEqual('max-age=none, s-maxage=60')
-    })
-
-    it('should handle non-numeric values in smax-age', () => {
-      const response = new Response('test', {
-        headers: {
-          'cache-control': 'max-age=60, s-maxage=none',
-        },
-      })
-
-      const result = createResponseWithMaxAge(response, {
-        maxAge: 60,
-        sMaxAge: 60,
-      })
-
-      expect(result.headers.get('cache-control')).toEqual('max-age=60, s-maxage=none')
     })
   })
 })
