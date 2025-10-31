@@ -33,12 +33,12 @@ export async function getAgentLoader(
     },
   })
 
-  return await fetchCacheable(request, workerTtl).then((response) =>
-    createResponseWithMaxAge(response, {
-      // Cache in browser for up to 1 hour
-      maxAge: 3600,
-      // Cache in CDN for up to 1 minute
-      sMaxAge: 60,
-    })
-  )
+  const response = await fetchCacheable(request, workerTtl)
+
+  return createResponseWithMaxAge(response, {
+    // Cache in browser for up to 1 hour
+    maxAge: 3600,
+    // Cache in CDN for up to 1 minute
+    sMaxAge: 60,
+  })
 }
