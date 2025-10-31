@@ -140,7 +140,7 @@ function setHeadersFromIngressToOrigin(ingressResponse: SendResult, originRespon
   console.debug('Adding agent data header', agentData)
   originResponseHeaders.set(AGENT_DATA_HEADER, agentData)
 
-  if (setCookieHeaders.length) {
+  if (setCookieHeaders?.length) {
     console.debug('Adding set-cookie headers from ingress response', setCookieHeaders)
     setCookieHeaders.forEach((cookie) => {
       originResponseHeaders.append('Set-Cookie', cookie)
