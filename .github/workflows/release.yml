@@ -6,6 +6,9 @@ on:
       - main
       - test
 
+env: 
+  HUSKY: 0
+
 jobs:  
   release:
     name: 'Build project, run CI checks and publish new release'
