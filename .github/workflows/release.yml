@@ -11,7 +11,6 @@ jobs:
     uses: fingerprintjs/dx-team-toolkit/.github/workflows/release-typescript-project.yml@v1
     with:
       runAfterInstall: cp wrangler.dist.jsonc wrangler.jsonc
+      appId: ${{ vars.APP_ID }}
     secrets:
-      APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
-      NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
