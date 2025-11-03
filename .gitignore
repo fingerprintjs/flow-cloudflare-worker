@@ -23,5 +23,5 @@ wrangler.jsonc
 .env.local
 
 # E2E Tests
-./e2e/test-results/**
-./e2e/.tmp
+/e2e/test-results
+/e2e/.tmp
