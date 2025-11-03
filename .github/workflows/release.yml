@@ -13,8 +13,8 @@ jobs:
     with:
       appId: ${{ vars.APP_ID }}
       runnerAppId: ${{ vars.RUNNER_APP_ID }}
-      version-command: HUSKY=0 pnpm exec changeset version
-      publish-command: HUSKY=0 pnpm exec changeset publish
+      version-command: pnpm changeset:version
+      publish-command: pnpm changeset:publish
       language: node
       language-version: 21
       prepare-command: pnpm build
