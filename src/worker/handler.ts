@@ -39,6 +39,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
 
       case 'script':
         return await handleScript({
+          request,
           script: matchedUrl.script,
           publicApiKey: getPublicKey(env),
           cdnHost: getCDNHost(env),

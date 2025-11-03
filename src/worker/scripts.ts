@@ -1,4 +1,13 @@
 import { Script } from '../shared/scripts'
+import { CacheOptions, createResponseWithMaxAge } from './utils/cache'
+import { resolveTemplates } from './utils/string'
+
+export const workerScriptsCacheOptions: CacheOptions = {
+  // Cache in the browser up to 1 minute. Longer cache might cause unnecessary delay if Flow options are modified in the dashboard.
+  maxAge: 60,
+  // CDN and worker should cache up to 1 minute. Same as above.
+  sMaxAge: 60,
+}
 
 export const scripts: Script[] = ['instrumentor.iife.js', 'loader.js', 'agent-processor.iife.js']
 
@@ -15,7 +24,7 @@ export function getScriptUrl(script: Script, routePrefix: string) {
  * @param {string} routePrefix - The route prefix used to construct the script's source URL.
  * @return {Response} - A transformed HTTP response with the injected agent processor script.
  */
-export function injectAgentProcessorScript(response: Response, agentData: string, routePrefix: string) {
+export function injectAgentProcessorScript(response: Response, agentData: string, routePrefix: string): Response {
   return new HTMLRewriter()
     .on('head', {
       element(element) {
@@ -32,4 +41,23 @@ export function injectAgentProcessorScript(response: Response, agentData: string
       },
     })
     .transform(response)
+}
+
+/**
+ * Creates a response object for a worker script with resolved templates and appropriate headers.
+ *
+ * @param {string} code - The JavaScript code for the worker script, containing templates to resolve.
+ * @param {Record<string, string>} variables - A record of key-value pairs used to resolve templates in the code.
+ * @return {Response} A Response object with the resolved JavaScript code and applicable headers.
+ */
+export function createWorkerScriptResponse(code: string, variables: Record<string, string>): Response {
+  return createResponseWithMaxAge(
+    new Response(resolveTemplates(code, variables), {
+      headers: {
+        'Content-Type': 'application/javascript',
+      },
+    }),
+    workerScriptsCacheOptions,
+    'set'
+  )
 }
