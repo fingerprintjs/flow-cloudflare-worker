@@ -13,11 +13,11 @@ jobs:
     with:
       appId: ${{ vars.APP_ID }}
       runnerAppId: ${{ vars.RUNNER_APP_ID }}
-      version-command: pnpm exec changeset version
-      publish-command: pnpm exec changeset publish
+      version-command: HUSKY=0 pnpm exec changeset version
+      publish-command: HUSKY=0 pnpm exec changeset publish
       language: node
       language-version: 21
       prepare-command: pnpm build
     secrets:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
-      RUNNER_APP_PRIVATE_KEY: ${{ secrets.RUNNER_APP_PRIVATE_KEY }}
+      RUNNER_APP_PRIVATE_KEY: ${{ secrets.RUNNER_APP_PRIVATE_KEY }} 
