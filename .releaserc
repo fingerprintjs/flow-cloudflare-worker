@@ -31,6 +31,16 @@
         ]
       }
     ],
-    "@semantic-release/github"
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": "dist/worker/flow_cloudflare_worker/index.js",
+            "label": "Flow Cloudflare Worker"
+          }
+        ]
+      }
+    ]
   ]
 }
