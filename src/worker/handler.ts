@@ -12,6 +12,7 @@ import {
   getRoutePrefix,
   getRulesetId,
   getSecretKey,
+  isMonitorMode,
 } from './env'
 
 import { handleError } from './handlers/handleError'
@@ -62,6 +63,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           identificationClient,
           fallbackRule: getFallbackRuleAction(env),
           routePrefix: getRoutePrefix(env),
+          isMonitorMode: isMonitorMode(env),
         })
 
       default:

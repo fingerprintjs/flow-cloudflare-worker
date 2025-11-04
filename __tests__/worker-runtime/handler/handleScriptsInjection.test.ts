@@ -40,7 +40,7 @@ describe('Scripts injection', () => {
     const request = new CloudflareRequest(mockWorkerBaseUrl)
     const ctx = createExecutionContext()
 
-    const response = await handler.fetch(request, mockEnv)
+    const response = await handler.fetch(request, mockEnv, ctx)
     await waitOnExecutionContext(ctx)
     const html = await response.text()
 
@@ -67,7 +67,7 @@ describe('Scripts injection', () => {
     const request = new CloudflareRequest('https://example.com/')
     const ctx = createExecutionContext()
 
-    const response = await handler.fetch(request, mockEnv)
+    const response = await handler.fetch(request, mockEnv, ctx)
     await waitOnExecutionContext(ctx)
     const html = await response.text()
 

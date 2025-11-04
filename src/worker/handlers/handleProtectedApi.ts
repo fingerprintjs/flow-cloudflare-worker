@@ -3,6 +3,7 @@ import { IdentificationClient, SendResult } from '../fingerprint/identificationC
 import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
 import { hasContentType, isDocumentDestination } from '../utils/headers'
 import { injectAgentProcessorScript } from '../scripts'
+import { fetchOrigin } from '../utils/origin'
 
 /**
  * Parameters required for handling a protected API call.
@@ -16,6 +17,8 @@ export type HandleProtectedApiCallParams = {
   fallbackRule: RuleActionUnion
   /** Route prefix for the worker requests */
   routePrefix: string
+  /** Flag that determines whether worker is in Monitor Mode */
+  isMonitorMode: boolean
 }
 
 /**
@@ -27,11 +30,13 @@ export async function handleProtectedApiCall({
   identificationClient,
   fallbackRule,
   routePrefix,
+  isMonitorMode,
 }: HandleProtectedApiCallParams): Promise<Response> {
   const [response, agentData] = await getResponseForProtectedCall({
     request,
     identificationClient,
     fallbackRule,
+    isMonitorMode,
   })
 
   /**
@@ -65,6 +70,7 @@ async function getResponseForProtectedCall({
   request,
   identificationClient,
   fallbackRule,
+  isMonitorMode,
 }: Omit<HandleProtectedApiCallParams, 'routePrefix'>): Promise<[response: Response, agentData: string | null]> {
   let ingressResponse: SendResult
   let originRequest: Request
@@ -76,22 +82,27 @@ async function getResponseForProtectedCall({
     originRequest = result.request
   } catch (e) {
     console.error('Failed to parse incoming request:', e)
-    return [await processRuleset(fallbackRule, request), null]
+    return [await handleFallbackRule(request, fallbackRule, isMonitorMode), null]
   }
 
   try {
     ingressResponse = await identificationClient.send(originRequest, signals)
   } catch (error) {
     console.error('Error sending request to ingress service:', error)
-    return [await processRuleset(fallbackRule, originRequest), null]
+    return [await handleFallbackRule(originRequest, fallbackRule, isMonitorMode), null]
   }
 
   let originResponse: Response
-  if (ingressResponse.ruleAction) {
-    originResponse = await processRuleset(ingressResponse.ruleAction, originRequest)
+
+  if (isMonitorMode) {
+    originResponse = await fetchOrigin(originRequest)
   } else {
-    console.warn('No ruleset processor found for ingress response, using fallback rule.')
-    originResponse = await processRuleset(fallbackRule, originRequest)
+    if (ingressResponse.ruleAction) {
+      originResponse = await processRuleset(ingressResponse.ruleAction, originRequest)
+    } else {
+      console.warn('No ruleset processor found for ingress response, using fallback rule.')
+      originResponse = await processRuleset(fallbackRule, originRequest)
+    }
   }
 
   const originResponseHeaders = new Headers(originResponse.headers)
@@ -129,10 +140,32 @@ function setHeadersFromIngressToOrigin(ingressResponse: SendResult, originRespon
   console.debug('Adding agent data header', agentData)
   originResponseHeaders.set(AGENT_DATA_HEADER, agentData)
 
-  if (setCookieHeaders.length) {
+  if (setCookieHeaders?.length) {
     console.debug('Adding set-cookie headers from ingress response', setCookieHeaders)
     setCookieHeaders.forEach((cookie) => {
       originResponseHeaders.append('Set-Cookie', cookie)
     })
   }
+}
+
+/**
+ * Handles the fallback rule for the given request based on the mode.
+ * If `isMonitorMode` is true, the function fetches data from the origin.
+ * Otherwise, it processes the ruleset using the provided fallback rule.
+ *
+ * @param {Request} request - The incoming request object to be processed.
+ * @param {RuleActionUnion} fallbackRule - The fallback rule to be applied to the request.
+ * @param {boolean} [isMonitorMode] - Indicates whether the function operates in monitor mode.
+ * @return {Promise<Response>} A promise that resolves to the response after processing the request.
+ */
+function handleFallbackRule(
+  request: Request,
+  fallbackRule: RuleActionUnion,
+  isMonitorMode: boolean
+): Promise<Response> {
+  if (isMonitorMode) {
+    return fetchOrigin(request)
+  }
+
+  return processRuleset(fallbackRule, request)
 }

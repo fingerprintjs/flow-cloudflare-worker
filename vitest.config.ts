@@ -10,6 +10,7 @@ export default defineConfig({
     projects: [
       {
         test: {
+          setupFiles: ['__tests__/utils/setupTests.ts'],
           environment: 'happy-dom',
           name: {
             label: 'Instrumentor',
@@ -21,6 +22,7 @@ export default defineConfig({
       // Tests in worker-runtime will use a separate worker project for a more accurate runtime
       defineWorkersProject({
         test: {
+          setupFiles: ['__tests__/utils/setupTests.ts'],
           name: {
             label: 'Worker runtime',
             color: 'blue',
@@ -41,6 +43,7 @@ export default defineConfig({
       // Other unit tests for worker can run using node, for easier debugging
       {
         test: {
+          setupFiles: ['__tests__/utils/setupTests.ts'],
           environment: 'node',
           name: {
             label: 'Worker',
