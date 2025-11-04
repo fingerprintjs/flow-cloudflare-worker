@@ -131,6 +131,7 @@ describe('Instrumentor', () => {
     expect(mockStart).toHaveBeenCalledTimes(1)
     expect(mockStart).toHaveBeenCalledWith({
       endpoints: '/custom',
+      integrationInfo: ['fingerprint-flow-cloudflare/0.0.1-test/instrumentor'],
     })
   })
 })
