@@ -41,8 +41,8 @@ export type SendResponse = {
   agent_data: string
   /** Rule action resolved by ingress. */
   rule_action?: RuleAction
-  /** Cookies that needs to be set in the origin response */
-  set_cookie_headers: string[]
+  /** Cookies that need to be set in the origin response */
+  set_cookie_headers?: string[]
 }
 
 /**
@@ -52,7 +52,7 @@ export type SendResult = {
   /** Agent data returned by the identification service */
   agentData: string
   /** Array of Set-Cookie header values to be sent to the client */
-  setCookieHeaders: string[]
+  setCookieHeaders?: string[] | undefined
   /** Optional rule action that was resolved by ingress */
   ruleAction: RuleAction | undefined
 }

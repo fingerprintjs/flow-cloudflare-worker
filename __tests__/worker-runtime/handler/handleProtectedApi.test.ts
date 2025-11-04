@@ -1346,6 +1346,7 @@ describe('Protected API', () => {
       const response = await handler.fetch(
         request,
         {
+          // includes fallback action not executed because worker is in monitor mode
           ...mockEnv,
           FP_RULESET_ID: '',
         } satisfies TypedEnv,

@@ -1,6 +1,6 @@
 {
   "name": "flow-cloudflare-worker",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Cloudflare Worker for Flow",
   "author": "FingerprintJS, Inc (https://fingerprint.com)",
   "license": "MIT",
@@ -27,7 +27,9 @@
     "test:coverage:diff": "vitest run --coverage --reporter json --outputFile.json=report.json",
     "test:attach": "vitest --inspect=9229 --no-file-parallelism",
     "wrangler:deploy": "pnpm build:worker && wrangler deploy",
-    "wrangler:types": "wrangler types --strict-vars=false"
+    "wrangler:types": "wrangler types --strict-vars=false",
+    "changeset:publish": "HUSKY=0 changeset publish",
+    "changeset:version": "changeset version"
   },
   "lint-staged": {
     "*.{js,ts}": "pnpm run lint:fix"
@@ -38,9 +40,11 @@
     }
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@cloudflare/vite-plugin": "^1.13.14",
     "@cloudflare/vitest-pool-workers": "^0.9.14",
     "@commitlint/cli": "^19.8.0",
+    "@fingerprintjs/changesets-changelog-format": "^0.2.0",
     "@fingerprintjs/commit-lint-dx-team": "^0.1.0",
     "@fingerprintjs/conventional-changelog-dx-team": "^0.1.0",
     "@fingerprintjs/eslint-config-dx-team": "^0.2.0",
