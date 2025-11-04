@@ -45,6 +45,11 @@ function ensureMaxCacheDirectiveValue(directives: string[], directive: 'max-age'
     directives.push(`${directive}=${maxMaxAge}`)
   } else {
     const oldValue = Number(directives[directiveIndex].split('=')[1])
+    if (Number.isNaN(oldValue)) {
+      console.warn(`Invalid ${directive} directive value: ${oldValue}`)
+      return
+    }
+
     const newValue = Math.min(maxMaxAge, oldValue)
     directives[directiveIndex] = `${directive}=${newValue}`
   }
