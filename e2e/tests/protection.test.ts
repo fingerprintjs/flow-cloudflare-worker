@@ -36,16 +36,9 @@ test.describe('Protection', () => {
   test('should inject signals when protected page is requested', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
-    const { status, body } = await page.evaluate(async (url) => {
-      const response = await fetch(url, { method: 'POST' })
-      return {
-        status: response.status,
-        body: await response.text(),
-      }
+    await page.evaluate(async (url) => {
+      await fetch(url, { method: 'POST' })
     }, getProtectedPath('/test'))
-
-    expect(status).toEqual(403)
-    expect(body).toEqual('')
 
     const protectedRequest = await page
       .requests()

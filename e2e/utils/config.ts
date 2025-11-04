@@ -2,7 +2,7 @@ import { ProtectedApi } from '../../src/shared/types'
 import { getTestDomain } from './env'
 
 export function getProtectedPath(path: string) {
-  return `${getTestDomain()}/protected${path}`
+  return `${getTestDomain()}/api${path}`
 }
 
 export function getProtectedApis() {
