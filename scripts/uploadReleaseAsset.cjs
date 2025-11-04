@@ -39,5 +39,6 @@ module.exports = async ({ context, github }) => {
     },
     name,
     data,
+    label: 'Flow Cloudflare Worker',
   })
 }
