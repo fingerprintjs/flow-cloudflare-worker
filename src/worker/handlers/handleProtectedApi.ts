@@ -155,13 +155,13 @@ function setHeadersFromIngressToOrigin(ingressResponse: SendResult, originRespon
  *
  * @param {Request} request - The incoming request object to be processed.
  * @param {RuleActionUnion} fallbackRule - The fallback rule to be applied to the request.
- * @param {boolean} [isMonitorMode=false] - Indicates whether the function operates in monitor mode.
+ * @param {boolean} [isMonitorMode] - Indicates whether the function operates in monitor mode.
  * @return {Promise<Response>} A promise that resolves to the response after processing the request.
  */
 function handleFallbackRule(
   request: Request,
   fallbackRule: RuleActionUnion,
-  isMonitorMode: boolean = false
+  isMonitorMode: boolean
 ): Promise<Response> {
   if (isMonitorMode) {
     return fetchOrigin(request)

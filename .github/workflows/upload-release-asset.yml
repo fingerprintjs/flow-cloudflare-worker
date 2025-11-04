@@ -1,0 +1,46 @@
+name: Upload built worker to Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs: 
+  build-and-upload:
+    name: Build project and upload worker bundle to the GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload built worker bundle to the Release assets
+        uses: actions/github-script@v7
+        env:
+          ASSET_PATH: dist/worker/flow_cloudflare_worker/index.js
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const script = require('./scripts/uploadReleaseAsset.cjs')
+            script( { github, context } )
