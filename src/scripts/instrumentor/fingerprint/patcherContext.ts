@@ -1,5 +1,6 @@
 import { WritablePatcherContext } from '../patcher/context'
 import { FingerprintLoader } from '../../shared/fingerprint/types'
+import { getIntegrationInfo } from '../../../shared/integrationInfo'
 
 export type SetupPatcherContextParams = {
   // Writable patcher context to configure with signals' provider
@@ -36,6 +37,7 @@ async function setProviders({ fingerprintLoader, endpoint, patcherCtx }: SetupPa
   const loader = await fingerprintLoader
   const agent = await loader.start({
     endpoints: endpoint,
+    integrationInfo: [getIntegrationInfo('instrumentor')],
   })
 
   console.debug('FingerprintJS agent loaded', agent)
