@@ -1,6 +1,14 @@
 import { spawn } from 'node:child_process'
 
-export function deployWorker(cwd: string): Promise<void> {
+function shouldSkip() {
+  return process.env.SKIP_WRANGLER_COMMANDS === 'true'
+}
+
+export async function deployWorker(cwd: string): Promise<void> {
+  if (shouldSkip()) {
+    return
+  }
+
   return new Promise<void>((resolve, reject) => {
     const process = spawn('npx', ['wrangler', 'deploy', '--config', 'wrangler.jsonc'], { cwd, stdio: 'inherit' })
 
@@ -14,7 +22,11 @@ export function deployWorker(cwd: string): Promise<void> {
   })
 }
 
-export function deleteWorker(cwd: string) {
+export async function deleteWorker(cwd: string) {
+  if (shouldSkip()) {
+    return
+  }
+
   return new Promise<void>((resolve, reject) => {
     const process = spawn('npx', ['wrangler', 'delete', '--config', 'wrangler.jsonc'], { cwd, stdio: 'inherit' })
 

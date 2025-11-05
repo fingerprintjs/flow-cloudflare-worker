@@ -2,14 +2,13 @@
   "name": "e2e",
   "description": "E2E tests for Cloudflare Flow Worker",
   "scripts": {
-    "test": "vitest --run --browser",
+    "test": "playwright test",
     "deploy": "tsx deploy/main.ts",
     "delete-worker": "DELETE_ONLY=true tsx deploy/main.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.5.2",
-    "@vitest/browser-playwright": "^4.0.6",
     "dotenv": "^17.2.3",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",

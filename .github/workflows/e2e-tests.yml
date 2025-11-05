@@ -1,0 +1,124 @@
+name: E2E tests
+on:
+  pull_request:
+
+# TODO E2E tests for release artifact
+jobs:
+  e2e-tests:
+    name: Run e2e tests for Flow Worker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate domain
+        id: generate-domain
+        run: |
+          postfix=$(date +%s)
+          ECHO POSTFIX=$postfix >> $GITHUB_OUTPUT
+          echo SUBDOMAIN=test-$postfix >> $GITHUB_OUTPUT
+      
+      - name: 'Checkout project for pull_request_target trigger'
+        uses: actions/checkout@v4
+
+      - name: 'Install pnpm'
+        uses: pnpm/action-setup@129abb77bf5884e578fcaf1f37628e41622cc371
+        with:
+          version: 9
+
+      - name: 'Install latest node version'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22 
+          cache: pnpm
+      
+      - name: 'Install dependencies'
+        run: pnpm install
+      
+      - name: 'Setup playwright'
+        working-directory: e2e
+        run: pnpm exec playwright install
+      
+      - name: 'Build worker'
+        run: pnpm build
+
+      - name: 'Check wrangler'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          #accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: whoami
+
+      - name: 'Write wrangler config'
+        working-directory: test-apps/react-spa
+        run: |
+          cp wrangler.example.jsonc wrangler.jsonc
+          jq '.name = "${{ steps.generate-domain.outputs.POSTFIX }}-react-spa" | .routes = [{"custom_domain": true, "pattern": "${{ steps.generate-domain.outputs.SUBDOMAIN }}.cfi-fingerprint.com"}]' wrangler.jsonc > wrangler.jsonc.tmp
+          mv wrangler.jsonc.tmp wrangler.jsonc
+      
+      - name: 'Build test app'
+        working-directory: test-apps/react-spa
+        run: pnpm build
+
+      - name: 'Deploy test app'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+          workingDirectory: test-apps/react-spa
+
+      - name: 'Prepare Flow Worker deployment'
+        working-directory: e2e
+        run: pnpm run deploy
+        env:
+          # Wrangler commands will run in a separate step
+          SKIP_WRANGLER_COMMANDS: true
+          FP_SECRET_KEY: ${{ secrets.FP_SECRET_KEY }}
+          FP_PUBLIC_KEY: ${{ secrets.FP_PUBLIC_KEY }}
+          FP_CDN_URL: ${{ vars.FP_CDN_URL }}
+          FP_INGRESS_BASE_HOST: ${{ vars.FP_INGRESS_BASE_HOST }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TEST_DOMAIN: https://${{ steps.generate-domain.outputs.SUBDOMAIN }}.cfi-fingerprint.com
+          # TODO Figure out how we can configure rulesets for E2E tests
+          FP_RULESET_ID: r_1
+
+      - name: 'Deploy Flow Worker'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config wrangler.jsonc
+          workingDirectory: e2e/.tmp/fingerprint-flow-cloudflare-e2e
+        
+      - name: 'Run e2e tests'
+        working-directory: e2e
+        run: pnpm run test
+        env:
+          TEST_DOMAIN: https://${{ steps.generate-domain.outputs.SUBDOMAIN }}.cfi-fingerprint.com
+          # TODO Figure out how we can configure rulesets for E2E tests
+          FP_RULESET_ID: r_1
+      
+      - name: 'Upload test results'
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v5
+        with:
+          path: 'e2e/test-results'
+      
+      - name: 'Remove Flow Worker'
+        if: ${{ always() }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: delete
+          workingDirectory: e2e/.tmp/fingerprint-flow-cloudflare-e2e
+
+      - name: Cleanup test app
+        if: ${{ always() }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: delete
+          workingDirectory: test-apps/react-spa
+          

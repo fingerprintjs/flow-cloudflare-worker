@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "lint:fix": "pnpm lint --fix",
     "preview": "vite preview",
-    "deploy": "wrangler deploy",
+    "wrangler:deploy": "wrangler deploy",
+    "wrangler:delete": "wrangler delete",
     "wrangler:types": "wrangler types --strict-vars=false"
   },
   "dependencies": {
