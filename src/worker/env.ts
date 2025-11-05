@@ -1,5 +1,5 @@
 import { TypedEnv } from './types'
-import { MissingVariableError } from './errors'
+import { InvalidVariableError, MissingVariableError } from './errors'
 import { isRegion, Region } from './fingerprint/region'
 import { isRuleActionUnion, RuleActionUnion } from './fingerprint/ruleset'
 
@@ -56,6 +56,10 @@ export function getRulesetId(env: TypedEnv) {
 
 export function getRoutePrefix(env: TypedEnv) {
   assertVariableIsSet(env, 'WORKER_ROUTE_PREFIX')
+
+  if (env.WORKER_ROUTE_PREFIX.startsWith('/')) {
+    throw new InvalidVariableError('WORKER_ROUTE_PREFIX', 'must not start with slash')
+  }
 
   return env.WORKER_ROUTE_PREFIX
 }

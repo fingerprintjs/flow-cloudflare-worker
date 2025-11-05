@@ -32,6 +32,15 @@ export class MissingVariableError extends FlowError {
   }
 }
 
+export class InvalidVariableError extends FlowError {
+  constructor(variable: keyof TypedEnv, message: string) {
+    super({
+      message: `${variable} is invalid: ${message}`,
+      isPrivate: false,
+    })
+  }
+}
+
 export class AssetsNotAvailableError extends FlowError {
   constructor() {
     super({
