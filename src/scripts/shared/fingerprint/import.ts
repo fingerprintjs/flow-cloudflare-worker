@@ -17,5 +17,7 @@ export async function importFingerprintLoader(): Promise<FingerprintLoader> {
 export function getEndpoint(): string {
   const url = new URL(document.location.href)
   url.pathname = routePrefix
+  url.search = ''
+  url.hash = ''
   return url.toString()
 }
