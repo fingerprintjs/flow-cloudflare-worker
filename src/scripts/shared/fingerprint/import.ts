@@ -13,3 +13,9 @@ export async function importFingerprintLoader(): Promise<FingerprintLoader> {
 
   return import(url.toString())
 }
+
+export function getEndpoint(): string {
+  const url = new URL(document.location.href)
+  url.pathname = routePrefix
+  return url.toString()
+}
