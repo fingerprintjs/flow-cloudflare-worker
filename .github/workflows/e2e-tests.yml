@@ -12,7 +12,7 @@ jobs:
         id: generate-domain
         run: |
           postfix=$(date +%s)
-          ECHO POSTFIX=$postfix >> $GITHUB_OUTPUT
+          echo POSTFIX=$postfix >> $GITHUB_OUTPUT
           echo SUBDOMAIN=test-$postfix >> $GITHUB_OUTPUT
       
       - name: 'Checkout project for pull_request_target trigger'

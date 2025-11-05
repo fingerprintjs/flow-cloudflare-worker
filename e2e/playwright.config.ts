@@ -23,8 +23,13 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'wait for website',
+      testMatch: /global\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      dependencies: ['wait for website'],
     },
   ],
 })
