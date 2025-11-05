@@ -2,11 +2,11 @@
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "react-spa",
   "compatibility_date": "2025-04-03",
-  "main": "./src/index.ts",
+  "main": "./worker/index.ts",
   "routes": [
     {
-      "pattern": "example.org/*",
-      "zone_id": "YOUR_ZONE_ID"
+      "custom_domain": true,
+      "pattern": "test.example.org"
     }
   ],
   "assets": {

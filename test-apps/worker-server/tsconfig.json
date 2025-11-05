@@ -1,7 +1,0 @@
-{
-  "extends": "../../tsconfig.worker.json",
-  "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo"
-  },
-  "include": ["src", "worker-configuration.d.ts", "../../vite-env.d.ts"]
-}
