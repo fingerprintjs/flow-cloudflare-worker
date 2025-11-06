@@ -1,6 +1,5 @@
 import { test as setup } from '@playwright/test'
-import { getTestProjectBaseUrl } from '../utils/env'
-import { getTestProjects } from '../utils/projects'
+import { getTestProjects } from '../projects/projects'
 
 setup('wait for website', async ({}) => {
   for (const project of getTestProjects()) {
@@ -9,7 +8,7 @@ setup('wait for website', async ({}) => {
 
     while (attempts < maxAttempts) {
       try {
-        const response = await fetch(`https://${getTestProjectBaseUrl(project.project)}`)
+        const response = await fetch(project.baseUrl)
         if (response.ok) {
           return
         }

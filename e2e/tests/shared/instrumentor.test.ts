@@ -22,7 +22,7 @@ test.describe('Instrumentor script', () => {
 
     const instrumentorCode = await response!.text()
     expect(instrumentorCode).toContain(WORKER_ROUTE_PREFIX)
-    expect(instrumentorCode).toContain(getProtectedPath('/*', project.project))
+    expect(instrumentorCode).toContain(getProtectedPath('/*', project.projectName))
   })
 
   test('should not be injected into not configured pages', async ({ page }) => {

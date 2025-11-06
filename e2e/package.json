@@ -3,9 +3,9 @@
   "description": "E2E tests for Cloudflare Flow Worker",
   "scripts": {
     "test": "playwright test",
-    "deploy": "tsx deploy/main.ts",
-    "deploy-flow-worker-only": "SKIP_WEBSITE=true tsx deploy/main.ts",
-    "delete-worker": "DELETE_ONLY=true tsx deploy/main.ts"
+    "deploy": "tsx deploy/deploy.ts",
+    "deploy-flow-worker-only": "SKIP_WEBSITE=true tsx deploy/deploy.ts",
+    "delete-deployments": "tsx deploy/delete.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

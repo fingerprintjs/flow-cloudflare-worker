@@ -1,5 +1,5 @@
 import { test as baseTest } from '@playwright/test'
-import { TestWorkerProjectData } from '../utils/types'
+import { TestWorkerProjectData } from '../projects/types'
 
 export const test = baseTest.extend<{
   project: TestWorkerProjectData

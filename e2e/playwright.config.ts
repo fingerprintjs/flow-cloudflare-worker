@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 import { config } from 'dotenv'
-import { getTestDomain, getTestProjectBaseUrl } from './utils/env'
+import { getTestDomain } from './utils/env'
 import * as os from 'node:os'
-import { getTestProjects } from './utils/projects'
+import { getTestProjects } from './projects/projects'
 
 config({
   path: ['.env', '.env.local'],
@@ -32,13 +32,12 @@ export default defineConfig({
     ...browsers.flatMap((browser) => {
       return getTestProjects().flatMap((project) => {
         return {
-          name: `${browser} - ${project.project}`,
-          testMatch: project.testMatch,
+          name: `${browser} - ${project.projectName}`,
+          testMatch: project.testMatch!,
           use: {
             ...devices[browser],
+            baseURL: project.baseUrl,
             project,
-            metadata: project,
-            baseURL: `https://${getTestProjectBaseUrl(project.project)}`,
           },
           dependencies: ['wait for website'],
         }

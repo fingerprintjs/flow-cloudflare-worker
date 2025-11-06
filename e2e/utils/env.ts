@@ -1,14 +1,14 @@
-import { TestWorkerProject } from './types'
+import { TestWorkerProjectName } from '../projects/types'
 
 export function getTestDomain() {
   return getEnv('TEST_DOMAIN')
 }
 
 /**
- * Constructs and returns the base URL for a test project by combining a test ID, the provided project name,
+ * Constructs and returns the host for a test project by combining a test ID, the provided project name,
  * and the test domain.
  *
- * @param {TestWorkerProject} project - The name of the test project to include in the base URL.
+ * @param {TestWorkerProjectName} projectName - The name of the test project to include in the base URL.
  * @return {string} The constructed base URL for the given test project.
  *
  * @example
@@ -20,12 +20,8 @@ export function getTestDomain() {
  * console.log(baseUrl) // Outputs: 'test-id-scripts.test-domain'
  * ```
  */
-export function getTestProjectBaseUrl(project: TestWorkerProject): string {
-  return `${getTestId()}-${project}.${getTestDomain()}`
-}
-
-export function isDeleteOnly() {
-  return process.env.DELETE_ONLY === 'true'
+export function getTestProjectHost(projectName: TestWorkerProjectName): string {
+  return `${getTestId()}-${projectName}.${getTestDomain()}`
 }
 
 export function getPublicKey() {
@@ -36,16 +32,8 @@ export function getSecretKey() {
   return getEnv('FP_SECRET_KEY')
 }
 
-export function getRulesetId(project?: TestWorkerProject) {
-  return getProjectEnv('FP_RULESET_ID', project)
-}
-
-export function getCloudflareToken() {
-  return getEnv('CLOUDFLARE_TOKEN')
-}
-
-export function getCloudflareAccountId() {
-  return getEnv('CLOUDFLARE_ACCOUNT_ID')
+export function getRulesetId(projectName?: TestWorkerProjectName) {
+  return getProjectEnv('FP_RULESET_ID', projectName)
 }
 
 export function getTestId() {
@@ -81,15 +69,15 @@ export function getEnv(name: string): string {
  * If a project-specific variable is not found, or if no project is provided, it defaults to the general key.
  *
  * @param {string} key - The base key for the environment variable.
- * @param {TestWorkerProject | undefined} project - The name of the project in context, used to construct the project-specific key.
+ * @param {TestWorkerProjectName | undefined} projectName - The name of the project in context, used to construct the project-specific key.
  * @return {string} - The value of the environment variable associated with the project-specific key or the general key.
  */
-export function getProjectEnv(key: string, project?: TestWorkerProject) {
-  if (!project) {
+export function getProjectEnv(key: string, projectName?: TestWorkerProjectName): string {
+  if (!projectName) {
     return getEnv(key)
   }
 
-  const fullKey = `${project.toUpperCase()}_${key}`
+  const fullKey = `${projectName.toUpperCase()}_${key}`
 
   try {
     return getEnv(fullKey)

@@ -7,7 +7,7 @@ test.describe('Protection', () => {
   test('should inject signals when protected page is requested', async ({ page, project }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
-    const protectedPath = getProtectedPath('/test', project.project)
+    const protectedPath = getProtectedPath('/test', project.projectName)
     await page.evaluate(async (url) => {
       await fetch(url, { method: 'POST' })
     }, protectedPath)
