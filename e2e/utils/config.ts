@@ -1,14 +1,15 @@
 import { ProtectedApi } from '../../src/shared/types'
-import { getTestDomain } from './env'
+import { getTestProjectBaseUrl } from './env'
+import { TestWorkerProject } from './types'
 
-export function getProtectedPath(path: string) {
-  return `${getTestDomain()}/api${path}`
+export function getProtectedPath(path: string, project: TestWorkerProject) {
+  return `https://${getTestProjectBaseUrl(project)}/api${path}`
 }
 
-export function getProtectedApis() {
+export function getProtectedApis(project: TestWorkerProject) {
   return [
     {
-      url: getProtectedPath('/*'),
+      url: getProtectedPath('/*', project),
       method: 'POST',
     },
   ] satisfies ProtectedApi[]

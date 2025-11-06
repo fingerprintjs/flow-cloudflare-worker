@@ -1,11 +1,14 @@
 import { defineConfig, devices } from '@playwright/test'
 import { config } from 'dotenv'
-import { getTestDomain } from './utils/env'
+import { getTestDomain, getTestProjectBaseUrl } from './utils/env'
 import * as os from 'node:os'
+import { getTestProjects } from './utils/projects'
 
 config({
   path: ['.env', '.env.local'],
 })
+
+const browsers = ['Desktop Chrome'] as const
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -26,10 +29,20 @@ export default defineConfig({
       name: 'wait for website',
       testMatch: /global\.setup\.ts/,
     },
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-      dependencies: ['wait for website'],
-    },
+    ...browsers.flatMap((browser) => {
+      return getTestProjects().flatMap((project) => {
+        return {
+          name: `${browser} - ${project.project}`,
+          testMatch: project.testMatch,
+          use: {
+            ...devices[browser],
+            project,
+            metadata: project,
+            baseURL: `https://${getTestProjectBaseUrl(project.project)}`,
+          },
+          dependencies: ['wait for website'],
+        }
+      })
+    }),
   ],
 })

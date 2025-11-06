@@ -1,8 +1,9 @@
-import { expect, test } from '@playwright/test'
-import { getProtectedPath, WORKER_ROUTE_PREFIX } from '../utils/config'
+import { expect } from '@playwright/test'
+import { getProtectedPath, WORKER_ROUTE_PREFIX } from '../../utils/config'
+import { test } from '../playwright'
 
 test.describe('Instrumentor script', () => {
-  test('should be injected into specified pages', async ({ page }) => {
+  test('should be injected into specified pages', async ({ page, project }) => {
     await page.goto('/')
 
     const requests = await page.requests()
@@ -21,7 +22,7 @@ test.describe('Instrumentor script', () => {
 
     const instrumentorCode = await response!.text()
     expect(instrumentorCode).toContain(WORKER_ROUTE_PREFIX)
-    expect(instrumentorCode).toContain(getProtectedPath('/*'))
+    expect(instrumentorCode).toContain(getProtectedPath('/*', project.project))
   })
 
   test('should not be injected into not configured pages', async ({ page }) => {

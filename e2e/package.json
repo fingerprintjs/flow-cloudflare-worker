@@ -4,6 +4,7 @@
   "scripts": {
     "test": "playwright test",
     "deploy": "tsx deploy/main.ts",
+    "deploy-flow-worker-only": "SKIP_WEBSITE=true tsx deploy/main.ts",
     "delete-worker": "DELETE_ONLY=true tsx deploy/main.ts"
   },
   "devDependencies": {
