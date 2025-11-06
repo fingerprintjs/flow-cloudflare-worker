@@ -77,7 +77,7 @@ export function getProjectEnv(key: string, projectName?: TestWorkerProjectName):
     return getEnv(key)
   }
 
-  const fullKey = `${projectName.toUpperCase()}_${key}`
+  const fullKey = `${projectName.toUpperCase().replace(/-/g, '_')}_${key}`
 
   try {
     return getEnv(fullKey)
