@@ -33,6 +33,7 @@ test.describe('Protection', () => {
     expect(await response!.json()).toEqual({
       name: 'Cloudflare',
     })
+    expect(response!.headers()['x-fallback-allowed']).toEqual('true')
 
     const protectedRequest = await page
       .requests()
