@@ -1,5 +1,13 @@
 # flow-cloudflare-worker
 
+## 0.3.0
+
+### Minor Changes
+
+- Add license banner to built code ([ce7ef68](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/ce7ef68839b3ba36fe928af61c4481d00ff96b54))
+- Rename `FP_CDN_URL` to `FP_CDN_HOST` ([ce7ef68](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/ce7ef68839b3ba36fe928af61c4481d00ff96b54))
+- Rename release artifact to `flow_cloudflare_worker.js` ([ce7ef68](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/ce7ef68839b3ba36fe928af61c4481d00ff96b54))
+
 ## 0.2.0
 
 ### Minor Changes
