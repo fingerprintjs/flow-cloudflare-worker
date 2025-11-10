@@ -8,7 +8,7 @@ declare namespace Cloudflare {
   interface Env {
     FP_FAILURE_FALLBACK_ACTION: object
     FP_REGION: string
-    FP_CDN_URL: string
+    FP_CDN_HOST: string
     FP_RULESET_ID: string
     FP_SECRET_KEY: string
     FP_INGRESS_BASE_HOST: string

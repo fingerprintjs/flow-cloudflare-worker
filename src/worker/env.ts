@@ -4,7 +4,7 @@ import { isRegion, Region } from './fingerprint/region'
 import { isRuleActionUnion, RuleActionUnion } from './fingerprint/ruleset'
 
 const defaults = {
-  FP_CDN_URL: 'fpcdn.io',
+  FP_CDN_HOST: 'fpcdn.io',
   FP_INGRESS_BASE_HOST: 'api.fpjs.io',
   PROTECTED_APIS: [],
   IDENTIFICATION_PAGE_URLS: [],
@@ -24,7 +24,7 @@ function assertVariableIsSet(env: TypedEnv, key: keyof TypedEnv) {
 }
 
 export function getCDNHost(env: TypedEnv) {
-  return env.FP_CDN_URL || defaults.FP_CDN_URL
+  return env.FP_CDN_HOST || defaults.FP_CDN_HOST
 }
 
 export function getIngressBaseHost(env: TypedEnv) {

@@ -19,7 +19,7 @@ export function mockUrl(path: string): string {
 }
 
 export const mockEnv: TypedEnv = {
-  FP_CDN_URL: 'fpcdn.io',
+  FP_CDN_HOST: 'fpcdn.io',
   FP_INGRESS_BASE_HOST: 'api.fpjs.io',
   PROTECTED_APIS: [
     {
