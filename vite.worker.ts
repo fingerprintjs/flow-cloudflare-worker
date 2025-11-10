@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import { cloudflare } from '@cloudflare/vite-plugin'
 import checker from 'vite-plugin-checker'
+import { getLicenseBanner } from './build-utils/license'
 
 export default defineConfig({
   plugins: [
@@ -11,7 +12,7 @@ export default defineConfig({
     }),
     cloudflare(),
   ],
-  build: {
-    outDir: 'dist/worker',
+  esbuild: {
+    banner: getLicenseBanner('Flow Worker'),
   },
 })

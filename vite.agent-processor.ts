@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import checker from 'vite-plugin-checker'
+import { getLicenseBanner } from './build-utils/license'
 
 export default defineConfig({
   plugins: [
@@ -17,5 +18,8 @@ export default defineConfig({
       name: 'agentProcessor',
       fileName: 'agent-processor',
     },
+  },
+  esbuild: {
+    banner: getLicenseBanner('Flow Agent Processor'),
   },
 })
