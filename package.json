@@ -1,6 +1,6 @@
 {
   "name": "flow-cloudflare-worker",
-  "version": "0.3.0",
+  "version": "0.2.0",
   "description": "Cloudflare Worker for Flow",
   "author": "FingerprintJS, Inc (https://fingerprint.com)",
   "license": "MIT",
