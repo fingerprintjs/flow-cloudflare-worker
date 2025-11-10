@@ -37,7 +37,7 @@ module.exports = async ({ context, github }) => {
       'content-type': 'application/javascript',
       'content-length': data.length,
     },
-    name,
+    name: `flow_cloudflare_worker.js`,
     data,
     label: 'Flow Cloudflare Worker',
   })
