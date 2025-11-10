@@ -6,23 +6,23 @@
     "target": "es2020",
     "sourceMap": true
   },
-  "exclude": [
-    "dist",
-    "node_modules"
-  ],
+  "exclude": ["dist", "node_modules"],
   "files": [],
   "references": [
     {
       "path": "tsconfig.worker.json"
     },
     {
-      "path": "tsconfig.worker.tests.json"   
+      "path": "tsconfig.worker.tests.json"
     },
     {
       "path": "tsconfig.instrumentor.json"
     },
     {
       "path": "tsconfig.tests.json"
+    },
+    {
+      "path": "tsconfig.vite.json"
     }
   ]
 }

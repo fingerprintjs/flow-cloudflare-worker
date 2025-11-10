@@ -50,7 +50,7 @@ To run the project locally, you need to run these processes in parallel.
 After starting these processes, you can access the application at the address provided by the `pnpm dev` command output.
 
 > Note: You can use the following variables to modify the targets for Fingerprint-related requests:
-> -   `FP_CDN_URL`: The URL of the Fingerprint CDN.
+> -   `FP_CDN_HOST`: The URL of the Fingerprint CDN.
 > -   `FP_INGRESS_BASE_HOST`: The base host for the Fingerprint ingress API.
 
 ## Deployment

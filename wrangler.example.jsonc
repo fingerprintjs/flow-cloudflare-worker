@@ -4,7 +4,7 @@
   "compatibility_date": "2025-09-15",
   "vars": {
     "FP_REGION": "us",
-    "FP_CDN_URL": "",
+    "FP_CDN_HOST": "",
     "FP_INGRESS_BASE_HOST": "",
     "WORKER_ROUTE_PREFIX": "W0cuVtnPs",
     "FP_PUBLIC_KEY": "FINGERPRINT_PUBLIC_KEY",
