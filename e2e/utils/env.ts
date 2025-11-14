@@ -49,7 +49,7 @@ export function getIngressBaseHost() {
 }
 
 export function getCdnHost() {
-  return process.env.FP_CDN_URL
+  return process.env.FP_CDN_HOST
 }
 
 export function getRegion() {

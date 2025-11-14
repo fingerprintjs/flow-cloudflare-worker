@@ -57,7 +57,7 @@ jobs:
         env:
           FP_SECRET_KEY: ${{ secrets.FP_SECRET_KEY }}
           FP_PUBLIC_KEY: ${{ secrets.FP_PUBLIC_KEY }}
-          FP_CDN_URL: ${{ vars.FP_CDN_URL }}
+          FP_CDN_HOST: ${{ vars.FP_CDN_HOST }}
           FP_INGRESS_BASE_HOST: ${{ vars.FP_INGRESS_BASE_HOST }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -88,7 +88,7 @@ jobs:
         env:
           FP_SECRET_KEY: ${{ secrets.FP_SECRET_KEY }}
           FP_PUBLIC_KEY: ${{ secrets.FP_PUBLIC_KEY }}
-          FP_CDN_URL: ${{ vars.FP_CDN_URL }}
+          FP_CDN_HOST: ${{ vars.FP_CDN_HOST }}
           FP_INGRESS_BASE_HOST: ${{ vars.FP_INGRESS_BASE_HOST }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

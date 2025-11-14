@@ -36,7 +36,7 @@ function prepareWranglerConfig({
 
   const vars: TypedEnv = {
     FP_REGION: getRegion(),
-    FP_CDN_URL: getCdnHost(),
+    FP_CDN_HOST: getCdnHost(),
     FP_INGRESS_BASE_HOST: getIngressBaseHost(),
     WORKER_ROUTE_PREFIX: WORKER_ROUTE_PREFIX,
     FP_PUBLIC_KEY: getPublicKey(),
