@@ -14,7 +14,7 @@ jobs:
           postfix=$(date +%s)
           echo POSTFIX=$postfix >> $GITHUB_OUTPUT
           echo SUBDOMAIN=test-$postfix >> $GITHUB_OUTPUT
-      
+
       - name: 'Checkout project for pull_request_target trigger'
         uses: actions/checkout@v4
 
@@ -26,16 +26,16 @@ jobs:
       - name: 'Install latest node version'
         uses: actions/setup-node@v6
         with:
-          node-version: 22 
+          node-version: 22
           cache: pnpm
-      
+
       - name: 'Install dependencies'
         run: pnpm install
-      
+
       - name: 'Setup playwright'
         working-directory: e2e
         run: pnpm exec playwright install
-      
+
       - name: 'Build worker'
         run: pnpm build
 
@@ -66,7 +66,7 @@ jobs:
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
           # TODO Figure out how we can configure rulesets for E2E tests
           FP_RULESET_ID: r_1
-        
+
       - name: 'Run e2e tests'
         working-directory: e2e
         run: pnpm run test
@@ -74,7 +74,7 @@ jobs:
           TEST_DOMAIN: cfi-fingerprint.com
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
           FP_RULESET_ID: r_1
-      
+
       - name: 'Upload test results'
         if: ${{ failure() }}
         uses: actions/upload-artifact@v5
@@ -97,4 +97,3 @@ jobs:
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
           # TODO Figure out how we can configure rulesets for E2E tests
           FP_RULESET_ID: r_1
-          

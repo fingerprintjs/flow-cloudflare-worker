@@ -17,7 +17,7 @@ import fs from 'node:fs/promises'
 import { wranglerDelete, wranglerDeploy } from '../utils/wrangler'
 import { DeploymentContext } from '../types'
 
-export const workerArtifactPath = path.resolve(__dirname, '../../../dist/worker/flow_cloudflare_worker/index.js')
+export const workerArtifactPath = path.resolve(__dirname, '../../../dist/flow_cloudflare_worker/index.js')
 
 if (!existsSync(workerArtifactPath)) {
   throw new Error(`Worker artifact not found at ${workerArtifactPath}. Please build the worker first.`)
