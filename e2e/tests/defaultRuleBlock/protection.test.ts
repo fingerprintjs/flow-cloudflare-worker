@@ -22,15 +22,18 @@ test.describe('Protection', () => {
       await fetch(url, { method: 'POST' })
     }, protectedRequestPath)
 
-    const request = await page
+    let request = await page
       .requests()
       .then((requests) => requests.find((request) => request.url().includes(protectedRequestPath)))
     expect(request).toBeDefined()
+    request = request!
 
-    const response = await request!.response()
+    let response = await request.response()
+    expect(response).toBeDefined()
+    response = response!
 
-    expect(response!.status()).toEqual(403)
-    expect(response!.body()).rejects.toThrow('No data found for resource with given identifier')
+    expect(response.status()).toEqual(403)
+    expect(response.body()).rejects.toThrow('No data found for resource with given identifier')
 
     const protectedRequest = await page
       .requests()

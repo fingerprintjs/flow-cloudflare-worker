@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { getProtectedPath } from '../../utils/config'
 import { SIGNALS_KEY } from '../../../src/shared/const'
+import { getReceivedHeaders } from '../shared/utils'
 
 test.describe('Protection', () => {
   test('should return normal response if signals are missing', async ({ page }) => {
@@ -22,18 +23,23 @@ test.describe('Protection', () => {
       await fetch(url, { method: 'POST' })
     }, protectedRequestPath)
 
-    const request = await page
+    let request = await page
       .requests()
       .then((requests) => requests.find((request) => request.url().includes(protectedRequestPath)))
     expect(request).toBeDefined()
+    request = request!
 
-    const response = await request!.response()
+    let response = await request.response()
+    expect(response).toBeDefined()
+    response = response!
 
-    expect(response!.status()).toEqual(200)
-    expect(await response!.json()).toEqual({
+    expect(response.status()).toEqual(200)
+    expect(await response.json()).toEqual({
       name: 'Cloudflare',
     })
-    expect(response!.headers()['x-fallback-allowed']).toEqual('true')
+
+    const receivedHeaders = getReceivedHeaders(response)
+    expect(receivedHeaders.get('x-fallback-allowed')).toEqual('true')
 
     const protectedRequest = await page
       .requests()
