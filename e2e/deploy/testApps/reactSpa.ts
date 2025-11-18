@@ -3,7 +3,8 @@ import path from 'node:path'
 import { mutateWranglerConfig, wranglerDelete, wranglerDeploy } from '../utils/wrangler'
 import { execSync } from 'node:child_process'
 
-const appPath = path.resolve(__dirname, '../../../test-apps/react-spa')
+const wranglerConfigPath = require.resolve('@test-app/react-spa/wrangler.jsonc')
+const appPath = path.dirname(wranglerConfigPath)
 
 /**
  * Handles deployment and removal of the react-spa app.
@@ -19,7 +20,7 @@ export const spaApp: TestAppFn = (context) => {
        * Since the react-spa uses @cloudflare/vite-plugin and static assets, it's easier to mutate the wrangler config directly rather than making a copy in another directory.
        * The reason is that the `vite build` generates a complete wrangler file with the assets' path.
        * */
-      await mutateWranglerConfig(path.join(appPath, 'wrangler.jsonc'), async (config, { save }) => {
+      await mutateWranglerConfig(wranglerConfigPath, async (config, { save }) => {
         config.name = workerName
         config.routes = [
           {

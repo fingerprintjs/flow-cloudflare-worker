@@ -1,5 +1,5 @@
 {
-  "name": "react-spa",
+  "name": "@test-app/react-spa",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,6 +12,9 @@
     "wrangler:deploy": "wrangler deploy",
     "wrangler:delete": "wrangler delete",
     "wrangler:types": "wrangler types --strict-vars=false"
+  },
+  "exports": {
+    "./wrangler.jsonc": "./wrangler.jsonc"
   },
   "dependencies": {
     "react": "^19.1.1",

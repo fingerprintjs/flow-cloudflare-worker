@@ -10,6 +10,9 @@
     "type": "git",
     "url": "https://github.com/fingerprintjs/flow-cloudflare-worker.git"
   },
+  "exports": {
+    "./worker": "./dist/flow_cloudflare_worker/index.js"
+  },
   "scripts": {
     "preview:react-spa": "cd test-apps/react-spa && pnpm preview",
     "dev": "vite serve --config vite.worker.ts --mode dev",
