@@ -35,6 +35,7 @@ test.describe('Protection', () => {
     expect(response.status()).toEqual(403)
     const text = await response.text()
     expect(text).toEqual('Access Forbidden due to default block rule.')
+    // TODO: Looks like this assertion shouldn't be here, as we have a default block rule.
     // expect(response.body()).rejects.toThrow('No data found for resource with given identifier')
 
     const protectedRequest = await page

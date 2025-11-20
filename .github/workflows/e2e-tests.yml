@@ -65,7 +65,7 @@ jobs:
           TEST_DOMAIN: cfi-fingerprint.com
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
           # Ruleset configured to block proxy traffic (will be false for playwright)
-          FP_RULESET_ID: ${{ secrets.FP_SECRET_KEY }}
+          FP_RULESET_ID: ${{ secrets.FP_RULESET_ID }}
           # Ruleset configured to block bad bots (will be true for playwright)
           RULESET_BASED_BLOCK_FP_RULESET_ID: ${{ secrets.RULESET_BASED_BLOCK_FP_RULESET_ID }}
 
@@ -76,7 +76,7 @@ jobs:
           TEST_DOMAIN: cfi-fingerprint.com
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
           # Ruleset configured to block proxy traffic (will be false for playwright)
-          FP_RULESET_ID: ${{ secrets.FP_SECRET_KEY }}
+          FP_RULESET_ID: ${{ secrets.FP_RULESET_ID }}
           # Ruleset configured to block bad bots (will be true for playwright)
           RULESET_BASED_BLOCK_FP_RULESET_ID: ${{ secrets.RULESET_BASED_BLOCK_FP_RULESET_ID }}
 
@@ -101,6 +101,6 @@ jobs:
           TEST_DOMAIN: cfi-fingerprint.com
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
           # Ruleset configured to block proxy traffic (will be false for playwright)
-          FP_RULESET_ID: ${{ secrets.FP_SECRET_KEY }}
+          FP_RULESET_ID: ${{ secrets.FP_RULESET_ID }}
           # Ruleset configured to block bad bots (will be true for playwright)
           RULESET_BASED_BLOCK_FP_RULESET_ID: ${{ secrets.RULESET_BASED_BLOCK_FP_RULESET_ID }}

@@ -80,7 +80,6 @@ export function getProjectEnv(key: string, projectName?: TestWorkerProjectName):
   const fullKey = `${projectName.toUpperCase().replace(/-/g, '_')}_${key}`
 
   try {
-    console.log('fullKey', fullKey)
     return getEnv(fullKey)
   } catch {
     // Fallback to the original key if the project-specific key is not found.
