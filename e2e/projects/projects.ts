@@ -41,6 +41,24 @@ export function getTestProjects(): TestProject[] {
       host: getTestProjectHost('default-rule-block'),
       testMatch: [sharedTests, /defaultRuleBlock\/.+\.test\.ts/],
       projectName: 'default-rule-block',
+      flowWorker: {
+        variables: {
+          FP_FAILURE_FALLBACK_ACTION: {
+            type: 'block',
+            status_code: 403,
+            body: 'Access Forbidden due to default block rule.',
+            headers: [],
+          },
+        },
+      },
+    }),
+
+    new TestProject({
+      testAppFn: spaApp,
+      displayName: 'Block Based On Ruleset Worker',
+      host: getTestProjectHost('ruleset-based-block'),
+      testMatch: [sharedTests, /rulesetBasedBlock\/.+\.test\.ts/],
+      projectName: 'ruleset-based-block',
     }),
   ] satisfies TestProject[]
 }

@@ -64,8 +64,10 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           TEST_DOMAIN: cfi-fingerprint.com
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
-          # TODO Figure out how we can configure rulesets for E2E tests
-          FP_RULESET_ID: r_1
+          # Ruleset configured to block proxy traffic (will be false for playwright)
+          FP_RULESET_ID: ${{ secrets.FP_SECRET_KEY }}
+          # Ruleset configured to block bad bots (will be true for playwright)
+          RULESET_BASED_BLOCK_FP_RULESET_ID: ${{ secrets.RULESET_BASED_BLOCK_FP_RULESET_ID }}
 
       - name: 'Run e2e tests'
         working-directory: e2e
@@ -73,7 +75,10 @@ jobs:
         env:
           TEST_DOMAIN: cfi-fingerprint.com
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
-          FP_RULESET_ID: r_1
+          # Ruleset configured to block proxy traffic (will be false for playwright)
+          FP_RULESET_ID: ${{ secrets.FP_SECRET_KEY }}
+          # Ruleset configured to block bad bots (will be true for playwright)
+          RULESET_BASED_BLOCK_FP_RULESET_ID: ${{ secrets.RULESET_BASED_BLOCK_FP_RULESET_ID }}
 
       - name: 'Upload test results'
         if: ${{ failure() }}
@@ -95,5 +100,7 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           TEST_DOMAIN: cfi-fingerprint.com
           TEST_ID: ${{ steps.generate-domain.outputs.POSTFIX }}
-          # TODO Figure out how we can configure rulesets for E2E tests
-          FP_RULESET_ID: r_1
+          # Ruleset configured to block proxy traffic (will be false for playwright)
+          FP_RULESET_ID: ${{ secrets.FP_SECRET_KEY }}
+          # Ruleset configured to block bad bots (will be true for playwright)
+          RULESET_BASED_BLOCK_FP_RULESET_ID: ${{ secrets.RULESET_BASED_BLOCK_FP_RULESET_ID }}

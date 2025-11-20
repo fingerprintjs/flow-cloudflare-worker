@@ -7,6 +7,8 @@ export type TestWorkerProjectName =
   | 'default-rule-allow'
   // Represents worker which fallback rule blocks request
   | 'default-rule-block'
+  // Represents worker which blocks request based on ruleset
+  | 'ruleset-based-block'
 
 /**
  * Represents the options that can be used to configure a FlowWorker test.
