@@ -1,5 +1,11 @@
 # flow-cloudflare-worker
 
+## 0.3.1
+
+### Patch Changes
+
+- Fix broken route matching for the same route with different HTTP methods ([4b41b82](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/4b41b82dada8c496cefa817b2b433195a1cfd3ac))
+
 ## 0.3.0
 
 ### Minor Changes
