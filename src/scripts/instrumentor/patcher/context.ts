@@ -1,4 +1,4 @@
-import { ProtectedApi, ProtectedApiHttpMethod } from '../../../shared/types'
+import { ProtectedApi } from '../../../shared/types'
 import { findMatchingRoute, parseRoutes, Route } from '@fingerprintjs/url-matcher'
 
 /**
@@ -66,9 +66,9 @@ export class WritablePatcherContext implements PatcherContext {
   /**
    * Represents an array of route configurations specifically intended for protected
    * endpoints within an API. Each route object in the array defines the route's
-   * properties and specifies the HTTP method allowed for the protected resource.
+   * properties and specifies the HTTP methods allowed for the protected resource.
    */
-  private readonly protectedRoutes: Route<{ method: ProtectedApiHttpMethod }>[]
+  private readonly protectedRoutes: Route<{ methods: string[] }>[]
 
   /**
    * A set containing the uppercased names of HTTP methods that are designated as protected.
@@ -80,13 +80,23 @@ export class WritablePatcherContext implements PatcherContext {
   private readonly protectedMethods = new Set<string>()
 
   constructor(protectedApis: ProtectedApi[]) {
-    const routeObjects = protectedApis.map((api) => {
-      this.protectedMethods.add(api.method.toUpperCase())
+    const routeMethodMap: Record<string, string[]> = {}
 
+    protectedApis.forEach((api) => {
+      if (!routeMethodMap[api.url]) {
+        routeMethodMap[api.url] = []
+      }
+
+      const method = api.method.toUpperCase()
+      this.protectedMethods.add(method)
+      routeMethodMap[api.url].push(method)
+    })
+
+    const routeObjects = Object.entries(routeMethodMap).map(([url, methods]) => {
       return {
-        url: api.url,
+        url,
         metadata: {
-          method: api.method,
+          methods,
         },
       }
     })
@@ -162,7 +172,7 @@ export class WritablePatcherContext implements PatcherContext {
     const matchedRoute = findMatchingRoute(urlToMatch, this.protectedRoutes)
 
     if (matchedRoute) {
-      return matchedRoute.metadata?.method === method
+      return Boolean(matchedRoute.metadata?.methods.includes(method))
     }
 
     return false
