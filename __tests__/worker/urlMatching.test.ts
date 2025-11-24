@@ -119,6 +119,33 @@ describe('URL matching', () => {
       })
       expect(matchUrl(new URL('https://api.example.com/api/v3/users'), 'POST', env)).toBeUndefined()
     })
+
+    it('should match same route with different HTTP methods', () => {
+      const env: TypedEnv = {
+        ...mockEnv,
+        PROTECTED_APIS: [
+          {
+            method: 'POST',
+            url: 'https://api.example.com/api/*',
+          },
+          {
+            method: 'PUT',
+            url: 'https://api.example.com/api/*',
+          },
+        ],
+      }
+
+      const url = new URL('https://api.example.com/api/users')
+      expect(matchUrl(url, 'POST', env)).toEqual({
+        type: 'protection',
+        method: 'POST',
+      })
+      expect(matchUrl(url, 'PUT', env)).toEqual({
+        type: 'protection',
+        method: 'PUT',
+      })
+      expect(matchUrl(url, 'DELETE', env)).toBeUndefined()
+    })
   })
 
   describe('Identification page matching', () => {
