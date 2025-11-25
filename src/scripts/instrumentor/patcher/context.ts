@@ -87,15 +87,8 @@ export class WritablePatcherContext implements PatcherContext {
         routeMethodMap[api.url] = []
       }
 
-      const method = api.method.toUpperCase()
-
-      if (!isProtectedApiHttpMethod(method)) {
-        console.debug('Invalid method:', method)
-        return
-      }
-
-      this.protectedMethods.add(method)
-      routeMethodMap[api.url].push(method)
+      this.protectedMethods.add(api.method)
+      routeMethodMap[api.url].push(api.method)
     })
 
     const routeObjects = Object.entries(routeMethodMap).map(([url, methods]) => {
