@@ -1,8 +1,9 @@
-export type Region = 'eu' | 'ap' | 'us'
+import { z } from 'zod/v4'
 
-const regions: Region[] = ['eu', 'ap', 'us']
+export const Region = z.union([z.literal('eu'), z.literal('ap'), z.literal('us')])
+
+export type Region = z.infer<typeof Region>
 
 export function isRegion(value: string): value is Region {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return (regions as string[]).includes(value)
+  return Region.safeParse(value).success
 }

@@ -1,7 +1,7 @@
 import { TypedEnv } from './types'
 import { InvalidVariableError, MissingVariableError } from './errors'
 import { isRegion, Region } from './fingerprint/region'
-import { isRuleActionUnion, RuleActionUnion } from './fingerprint/ruleset'
+import { RuleActionUnion } from './fingerprint/ruleset'
 
 const defaults = {
   FP_CDN_HOST: 'fpcdn.io',
@@ -66,11 +66,15 @@ export function getRoutePrefix(env: TypedEnv) {
 
 export function getFallbackRuleAction(env: TypedEnv): RuleActionUnion {
   const rule = env.FP_FAILURE_FALLBACK_ACTION
-  if (rule && isRuleActionUnion(rule)) {
-    return rule
-  }
+  if (rule) {
+    const result = RuleActionUnion.safeParse(rule)
 
-  console.warn(`Invalid rule provided: ${rule}. Fallback to block action.`)
+    if (result.success) {
+      return result.data
+    }
+
+    console.warn(`Invalid rule action provided`, result.error, 'Fallback to block action.')
+  }
 
   return defaults.FP_FAILURE_FALLBACK_ACTION
 }

@@ -5,6 +5,7 @@ import { getHeaderOrThrow, getIp, hasContentType } from '../utils/headers'
 import { findCookie } from '../cookies'
 import { RuleAction } from './ruleset'
 import { copyRequest } from '../utils/request'
+import { z } from 'zod/v4'
 
 type RulesetContext = {
   ruleset_id: string
@@ -12,7 +13,6 @@ type RulesetContext = {
 /**
  * Request body structure for sending fingerprint data to the identification service.
  *
- * Is in camelCase format until https://fingerprintjs.atlassian.net/browse/PLAT-1437 is resolved
  */
 export type SendBody = {
   /** Fingerprint data with signals */
@@ -31,20 +31,16 @@ export type SendBody = {
   ruleset_context?: RulesetContext
 }
 
-/**
- * Response structure from the identification service.
- *
- * Is in camelCase format until https://fingerprintjs.atlassian.net/browse/PLAT-1437 is resolved. Afterwards we can start using the /v4/send version of the endpoint.
- */
-export type SendResponse = {
-  /** Agent data returned by the identification service */
-  agent_data: string
-  /** Rule action resolved by ingress. */
-  rule_action?: RuleAction
-  /** Cookies that need to be set in the origin response */
-  set_cookie_headers?: string[]
-}
+export const SendResponse = z.object({
+  // Agent data returned by the identification service
+  agent_data: z.string(),
+  // Rule action resolved by the identification service
+  rule_action: RuleAction.optional(),
+  // Cookies that need to be set in the origin response
+  set_cookie_headers: z.array(z.string()).optional(),
+})
 
+export type SendResponse = z.infer<typeof SendResponse>
 /**
  * Extended response structure that includes both agent data and cookie headers.
  */
@@ -160,14 +156,18 @@ export class IdentificationClient {
       throw new IdentificationRequestFailedError(errorText, identificationResponse.status)
     }
 
-    const identificationData = await identificationResponse.json<SendResponse>()
-    console.debug(`Identification response data:`, identificationData)
-    if (!identificationData.agent_data) {
+    const identificationDataValidation = SendResponse.safeParse(await identificationResponse.json())
+    if (!identificationDataValidation.success) {
+      console.error(`Identification response data is invalid:`, identificationDataValidation.error)
+
       throw new IdentificationRequestFailedError(
-        'Identification response does not contain agent data',
+        `Identification response data is invalid: ${identificationDataValidation.error.message}`,
         identificationResponse.status
       )
     }
+
+    const identificationData = identificationDataValidation.data
+    console.debug(`Identification response data:`, identificationData)
 
     return {
       setCookieHeaders: identificationData.set_cookie_headers,
