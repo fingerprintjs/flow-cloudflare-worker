@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      zod:
+        specifier: 4.1.13
+        version: 4.1.13
     devDependencies:
       '@changesets/cli':
         specifier: ^2.29.7
@@ -92,9 +96,6 @@ importers:
       wrangler:
         specifier: ^4.50.0
         version: 4.50.0
-      zod:
-        specifier: 4.1.13
-        version: 4.1.13
 
   test-apps/react-spa:
     dependencies:
