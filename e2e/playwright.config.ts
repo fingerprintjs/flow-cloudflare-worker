@@ -6,7 +6,7 @@ import { getTestProjects } from './projects/projects'
 
 config({
   path: ['.env', '.env.local'],
-  quiet: true
+  quiet: true,
 })
 
 const browsers = ['Desktop Chrome'] as const
