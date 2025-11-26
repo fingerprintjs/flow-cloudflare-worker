@@ -14,7 +14,7 @@ cp .env.dist .env
 
 2. Deploy the infrastructure:
 ```bash
-pnpm deploy 
+pnpm run deploy 
 ```
 
 3. Run tests:
@@ -29,4 +29,4 @@ pnpm delete-deployments
 
 ## How it works
 The E2E tests deploy Cloudflare Workers with a Flow configuration and a TestProjects to a Cloudflare account.
-Test Projects configuration is described in the `projects/projects.ts`. Each project can have a personal set of environment variables. You just need to add a capitalised underscored prefix of the project name to the variable name. For example, if you have a project named `ruleset-based-block` and you want to set `FP_RULESET_ID`, you add an environment variable named `RULESET_BASED_BLOCK_FP_RULESET_ID`.
+Test Projects configuration is described in the `projects/projects.ts`. Each project can have a personal set of environment variables. You just need to add a capitalized underscored prefix of the project name to the variable name. For example, if you have a project named `ruleset-based-block` and you want to set `FP_RULESET_ID`, you add an environment variable named `RULESET_BASED_BLOCK_FP_RULESET_ID`.
