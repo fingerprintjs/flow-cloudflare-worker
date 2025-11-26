@@ -2,6 +2,10 @@ import { expect, test } from '@playwright/test'
 import { getProtectedPath } from '../../utils/config'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 
+/**
+ *
+ * To run this test suite, you need to configure `RULESET_BASED_BLOCK_FP_RULESET_ID` with ID of a ruleset that is set to block bad bots with message 'Bad bot detected'
+ **/
 test.describe('Protection', () => {
   test('should return empty 403 response if signals are missing', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
