@@ -12,6 +12,9 @@
 cp .env.dist .env.local
 ```
 
+> Note: The Cloudflare Token should have sufficient permissions to deploy Workers on your account. 
+> You can use the **Edit Workers** template in your [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens).
+
 2. Deploy the infrastructure:
 ```bash
 pnpm run deploy 
