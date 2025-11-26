@@ -14,7 +14,7 @@ cp .env.dist .env
 
 2. Deploy the infrastructure:
 ```bash
-pnpm deploy 
+pnpm run deploy 
 ```
 
 3. Run tests:
