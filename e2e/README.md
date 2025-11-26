@@ -9,7 +9,7 @@
 
 1. Prepare environment variables:
 ```bash
-cp .env.dist .env
+cp .env.dist .env.local
 ```
 
 2. Deploy the infrastructure:
