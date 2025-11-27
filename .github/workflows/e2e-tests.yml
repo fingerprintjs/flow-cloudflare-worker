@@ -39,13 +39,6 @@ jobs:
       - name: 'Build worker'
         run: pnpm build
 
-      - name: 'Check wrangler'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          #accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: whoami
-
       - name: 'Prepare wrangler config'
         working-directory: test-apps/react-spa
         run: |
