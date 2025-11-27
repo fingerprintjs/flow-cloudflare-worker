@@ -1,4 +1,4 @@
-import { ProtectedApi } from '../../../shared/types'
+import { isProtectedApiHttpMethod, ProtectedApi, ProtectedApiHttpMethod } from '../../../shared/types'
 import { findMatchingRoute, parseRoutes, Route } from '@fingerprintjs/url-matcher'
 
 /**
@@ -68,7 +68,7 @@ export class WritablePatcherContext implements PatcherContext {
    * endpoints within an API. Each route object in the array defines the route's
    * properties and specifies the HTTP methods allowed for the protected resource.
    */
-  private readonly protectedRoutes: Route<{ methods: string[] }>[]
+  private readonly protectedRoutes: Route<{ methods: ProtectedApiHttpMethod[] }>[]
 
   /**
    * A set containing the uppercased names of HTTP methods that are designated as protected.
@@ -77,19 +77,18 @@ export class WritablePatcherContext implements PatcherContext {
    * In instances where multiple GET requests are being made, this set can be used to quickly filter out these requests without
    * unnecessary route matching.
    */
-  private readonly protectedMethods = new Set<string>()
+  private readonly protectedMethods = new Set<ProtectedApiHttpMethod>()
 
   constructor(protectedApis: ProtectedApi[]) {
-    const routeMethodMap: Record<string, string[]> = {}
+    const routeMethodMap: Record<string, ProtectedApiHttpMethod[]> = {}
 
     protectedApis.forEach((api) => {
       if (!routeMethodMap[api.url]) {
         routeMethodMap[api.url] = []
       }
 
-      const method = api.method.toUpperCase()
-      this.protectedMethods.add(method)
-      routeMethodMap[api.url].push(method)
+      this.protectedMethods.add(api.method)
+      routeMethodMap[api.url].push(api.method)
     })
 
     const routeObjects = Object.entries(routeMethodMap).map(([url, methods]) => {
@@ -158,12 +157,16 @@ export class WritablePatcherContext implements PatcherContext {
    * @return {boolean} Returns true if the URL and method match a protected route, otherwise false.
    */
   isProtectedUrl(url: string, method: string): boolean {
-    // Normalize method to uppercase
-    method = method.toUpperCase()
+    const normalizedMethod = method.toUpperCase()
+
+    if (!isProtectedApiHttpMethod(normalizedMethod)) {
+      console.debug('Invalid method:', normalizedMethod)
+      return false
+    }
 
     // Check method first to avoid unnecessary route matching
-    if (!this.protectedMethods.has(method)) {
-      console.debug('Method not protected:', method)
+    if (!this.protectedMethods.has(normalizedMethod)) {
+      console.debug('Method not protected:', normalizedMethod)
       return false
     }
 
@@ -172,7 +175,7 @@ export class WritablePatcherContext implements PatcherContext {
     const matchedRoute = findMatchingRoute(urlToMatch, this.protectedRoutes)
 
     if (matchedRoute) {
-      return Boolean(matchedRoute.metadata?.methods.includes(method))
+      return Boolean(matchedRoute.metadata?.methods.includes(normalizedMethod))
     }
 
     return false
