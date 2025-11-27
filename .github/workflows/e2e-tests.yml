@@ -39,6 +39,14 @@ jobs:
       - name: 'Build worker'
         run: pnpm build
 
+      - name: 'Check wrangler'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          #accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: whoami
+          quiet: 'true'
+
       - name: 'Deploy tests infrastucture'
         working-directory: e2e
         run: pnpm run deploy
