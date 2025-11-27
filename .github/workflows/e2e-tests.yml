@@ -39,11 +39,6 @@ jobs:
       - name: 'Build worker'
         run: pnpm build
 
-      - name: 'Prepare wrangler config'
-        working-directory: test-apps/react-spa
-        run: |
-          cp wrangler.example.jsonc wrangler.jsonc
-
       - name: 'Deploy tests infrastucture'
         working-directory: e2e
         run: pnpm run deploy
