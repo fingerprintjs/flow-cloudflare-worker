@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { getProtectedPath } from '../../utils/config'
 import { SIGNALS_KEY } from '../../../src/shared/const'
-import { getReceivedHeaders } from '../shared/utils'
+import { assertIsDefined, getReceivedHeaders } from '../shared/utils'
 
 test.describe('Protection', () => {
   test('should return normal response if signals are missing', async ({ page }) => {
@@ -45,6 +45,7 @@ test.describe('Protection', () => {
       .requests()
       .then((requests) => requests.find((request) => request.url().includes(protectedRequestPath)))
     expect(protectedRequest).toBeDefined()
-    expect(protectedRequest!.headers()[SIGNALS_KEY]).toBeUndefined()
+    assertIsDefined(protectedRequest)
+    expect(protectedRequest.headers()[SIGNALS_KEY]).toBeUndefined()
   })
 })
