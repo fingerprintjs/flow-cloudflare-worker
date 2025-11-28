@@ -12,7 +12,7 @@
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@test-app/react-spa"],
+  "ignore": ["@test-app/react-spa", "e2e"],
   "privatePackages": {
     "version": true,
     "tag": true
