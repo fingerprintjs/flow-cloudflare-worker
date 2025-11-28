@@ -14,10 +14,10 @@ export function getTestProjects(): TestProject[] {
   return [
     new TestProject({
       testAppFn: spaApp,
-      displayName: 'Default Rule Allow Worker',
-      host: getTestProjectHost('default-rule-allow'),
-      testMatch: [sharedTests, /defaultRuleAllow\/.+\.test\.ts/],
-      projectName: 'default-rule-allow',
+      displayName: 'Fallback Action Allow Worker',
+      host: getTestProjectHost('fallback-action-allow'),
+      testMatch: [sharedTests, /fallbackActionAllow\/.+\.test\.ts/],
+      projectName: 'fallback-action-allow',
       flowWorker: {
         variables: {
           FP_FAILURE_FALLBACK_ACTION: {
@@ -37,10 +37,10 @@ export function getTestProjects(): TestProject[] {
 
     new TestProject({
       testAppFn: spaApp,
-      displayName: 'Default Rule Block Worker',
-      host: getTestProjectHost('default-rule-block'),
-      testMatch: [sharedTests, /defaultRuleBlock\/.+\.test\.ts/],
-      projectName: 'default-rule-block',
+      displayName: 'Fallback Action Block Worker',
+      host: getTestProjectHost('fallback-action-block'),
+      testMatch: [sharedTests, /fallbackActionBlock\/.+\.test\.ts/],
+      projectName: 'fallback-action-block',
       flowWorker: {
         variables: {
           FP_FAILURE_FALLBACK_ACTION: {

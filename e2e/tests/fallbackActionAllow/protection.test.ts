@@ -7,7 +7,7 @@ test.describe('Protection', () => {
   test('should return normal response if signals are missing', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
-    const protectedRequestPath = getProtectedPath('/test', 'default-rule-allow')
+    const protectedRequestPath = getProtectedPath('/test', 'fallback-action-allow')
 
     await page.route(protectedRequestPath, (route, request) => {
       const headers = {

@@ -6,7 +6,7 @@ test.describe('Protection', () => {
   test('should return empty 403 response if signals are missing', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
-    const protectedRequestPath = getProtectedPath('/test', 'default-rule-block')
+    const protectedRequestPath = getProtectedPath('/test', 'fallback-action-block')
 
     await page.route(protectedRequestPath, (route, request) => {
       const headers = {

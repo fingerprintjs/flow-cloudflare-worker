@@ -4,9 +4,9 @@ import { TestAppFn } from '../deploy/types'
 
 export type TestWorkerProjectName =
   // Represents worker which fallback rule allows request
-  | 'default-rule-allow'
+  | 'fallback-action-allow'
   // Represents worker which fallback rule blocks request
-  | 'default-rule-block'
+  | 'fallback-action-block'
   // Represents worker which blocks request based on ruleset
   | 'ruleset-based-block'
 
