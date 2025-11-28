@@ -4,7 +4,7 @@ import { SIGNALS_KEY } from '../../../src/shared/const'
 import { test } from '../playwright'
 
 test.describe('Protection', () => {
-  test('should inject signals when protected page is requested', async ({ page, project }) => {
+  test('should inject signals when protected API is called', async ({ page, project }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
     const protectedPath = getProtectedPath('/test', project.projectName)
