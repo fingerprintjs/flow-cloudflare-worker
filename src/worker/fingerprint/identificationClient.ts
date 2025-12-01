@@ -6,6 +6,7 @@ import { findCookie } from '../cookies'
 import { RuleAction } from './ruleset'
 import { copyRequest } from '../utils/request'
 import { z } from 'zod/v4'
+import { handleTampering } from './tampering'
 
 type RulesetContext = {
   ruleset_id: string
@@ -31,6 +32,15 @@ export type SendBody = {
   ruleset_context?: RulesetContext
 }
 
+export const IdentificationEvent = z.object({
+  replayed: z.boolean(),
+  timestamp: z.coerce.date(),
+  url: z.url(),
+  ip_address: z.ipv4().or(z.ipv6()),
+})
+
+export type IdentificationEvent = z.infer<typeof IdentificationEvent>
+
 export const SendResponse = z.object({
   // Agent data returned by the identification service
   agent_data: z.string(),
@@ -38,6 +48,8 @@ export const SendResponse = z.object({
   rule_action: RuleAction.optional(),
   // Cookies that need to be set in the origin response
   set_cookie_headers: z.array(z.string()).optional(),
+
+  event: IdentificationEvent,
 })
 
 export type SendResponse = z.infer<typeof SendResponse>
@@ -168,6 +180,8 @@ export class IdentificationClient {
 
     const identificationData = identificationDataValidation.data
     console.debug(`Identification response data:`, identificationData)
+
+    await handleTampering(identificationData.event, clientRequest)
 
     return {
       setCookieHeaders: identificationData.set_cookie_headers,
