@@ -10,6 +10,9 @@
     "type": "git",
     "url": "https://github.com/fingerprintjs/flow-cloudflare-worker.git"
   },
+  "exports": {
+    "./worker": "./dist/flow_cloudflare_worker/index.js"
+  },
   "scripts": {
     "preview:react-spa": "cd test-apps/react-spa && pnpm preview",
     "dev": "vite serve --config vite.worker.ts --mode dev",
@@ -60,6 +63,7 @@
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "happy-dom": "^20.0.2",
     "husky": "^9.1.7",

@@ -1,14 +1,21 @@
 {
-  "name": "react-spa",
+  "name": "@test-app/react-spa",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prepare": "bash ../../scripts/setup-wrangler.sh",
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "lint:fix": "pnpm lint --fix",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "wrangler:deploy": "wrangler deploy",
+    "wrangler:delete": "wrangler delete",
+    "wrangler:types": "wrangler types --strict-vars=false"
+  },
+  "exports": {
+    "./wrangler.jsonc": "./wrangler.jsonc"
   },
   "dependencies": {
     "react": "^19.1.1",

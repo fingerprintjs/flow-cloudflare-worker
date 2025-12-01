@@ -1,0 +1,20 @@
+{
+  "name": "e2e",
+  "description": "E2E tests for Cloudflare Flow Worker",
+  "scripts": {
+    "test": "playwright test",
+    "deploy": "tsx deploy/deploy.ts",
+    "deploy-flow-worker-only": "SKIP_WEBSITE=true tsx deploy/deploy.ts",
+    "delete-deployments": "tsx deploy/delete.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.5.2",
+    "dotenv": "^17.2.3",
+    "flow-cloudflare-worker": "workspace:*",
+    "@test-app/react-spa": "workspace:*",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "uuid": "^13.0.0"
+  }
+}

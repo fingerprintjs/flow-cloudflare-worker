@@ -1,5 +1,6 @@
 packages:
   - test-apps/*
+  - e2e
   - ./
 
 onlyBuiltDependencies:
