@@ -1,3 +1,3 @@
-export const SIGNALS_KEY = 'FP-Data'
+export const SIGNALS_KEY = 'fp-data'
 
-export const AGENT_DATA_HEADER = 'FP-Agent-Data'
+export const AGENT_DATA_HEADER = 'fp-agent-data'

@@ -1,0 +1,18 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "react-spa",
+  "compatibility_date": "2025-04-03",
+  "main": "./worker/index.ts",
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "test.example.org"
+    }
+  ],
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  }
+}

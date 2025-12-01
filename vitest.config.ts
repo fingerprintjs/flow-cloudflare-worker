@@ -6,6 +6,7 @@ export default defineConfig({
     coverage: {
       provider: 'istanbul',
       reporter: [['text', { file: 'coverage.txt' }], ['json'], ['lcov']],
+      include: ['**/src/**/*'],
     },
     projects: [
       {
