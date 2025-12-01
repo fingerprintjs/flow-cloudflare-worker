@@ -49,11 +49,21 @@ function checkIngressRequest<CfHostMetadata>(
   expect(ingressRequest!.method).toEqual('POST')
 }
 
+function mockEvent(): SendResponse['event'] {
+  return {
+    url: mockUrl('/'),
+    ip_address: '1.2.3.4',
+    timestamp: new Date(),
+    replayed: false,
+  }
+}
+
 function getCompleteHeaders() {
   return new Headers({
     [SIGNALS_KEY]: 'signals',
     'cf-connecting-ip': '1.2.3.4',
-    host: 'example.com',
+    host: new URL(mockUrl('/')).host,
+    origin: mockUrl('/'),
     'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
     'x-custom-header': 'custom-value',
   })
@@ -82,6 +92,7 @@ describe('Protected API', () => {
                   '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                   'fp-ingress-cookie=12345',
                 ],
+                event: mockEvent(),
               } satisfies SendResponse),
               {
                 headers,
@@ -140,6 +151,7 @@ describe('Protected API', () => {
             'cf-connecting-ip': '1.2.3.4',
             'content-type': contentType,
             host: 'example.com',
+            origin: 'https://example.com/',
             'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
             'x-custom-header': 'custom-value',
           },
@@ -181,6 +193,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse),
             {
               headers,
@@ -234,6 +247,7 @@ describe('Protected API', () => {
         client_headers: {
           'cf-connecting-ip': '1.2.3.4',
           host: 'example.com',
+          origin: 'https://example.com/',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
         },
@@ -326,6 +340,7 @@ describe('Protected API', () => {
           'cf-connecting-ip': '1.2.3.4',
           'sec-fetch-dest': 'document',
           host: 'example.com',
+          origin: 'https://example.com/',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
         },
@@ -363,6 +378,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse),
             {
               headers,
@@ -423,6 +439,7 @@ describe('Protected API', () => {
           'cf-connecting-ip': '1.2.3.4',
           'content-type': expect.stringContaining('multipart/form-data'),
           host: 'example.com',
+          origin: 'https://example.com/',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
         },
@@ -459,6 +476,7 @@ describe('Protected API', () => {
               set_cookie_headers: [
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
@@ -497,6 +515,7 @@ describe('Protected API', () => {
         client_headers: {
           'cf-connecting-ip': '1.2.3.4',
           host: 'example.com',
+          origin: 'https://example.com/',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
         },
@@ -548,6 +567,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
@@ -597,6 +617,7 @@ describe('Protected API', () => {
           'cf-connecting-ip': '1.2.3.4',
           'sec-fetch-dest': 'document',
           host: 'example.com',
+          origin: 'https://example.com/',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
         },
@@ -626,6 +647,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
@@ -674,6 +696,7 @@ describe('Protected API', () => {
           'cf-connecting-ip': '1.2.3.4',
           'sec-fetch-dest': 'script',
           host: 'example.com',
+          origin: 'https://example.com/',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
         },
@@ -710,6 +733,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
@@ -754,6 +778,7 @@ describe('Protected API', () => {
           'cf-connecting-ip': '1.2.3.4',
           'sec-fetch-dest': 'document',
           host: 'example.com',
+          origin: 'https://example.com/',
           'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
           'x-custom-header': 'custom-value',
         },
@@ -793,6 +818,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
@@ -803,6 +829,7 @@ describe('Protected API', () => {
         [SIGNALS_KEY]: 'signals',
         'cf-connecting-ip': '1.2.3.4',
         host: 'example.com',
+        origin: mockUrl('/'),
         'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
         'x-custom-header': 'custom-value',
       })
@@ -848,6 +875,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
@@ -858,6 +886,7 @@ describe('Protected API', () => {
         [SIGNALS_KEY]: 'signals',
         'cf-connecting-ip': '1.2.3.4',
         host: 'example.com',
+        origin: mockUrl('/'),
         'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
         'x-custom-header': 'custom-value',
       })
@@ -960,6 +989,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
@@ -1032,6 +1062,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
@@ -1435,6 +1466,7 @@ describe('Protected API', () => {
                 '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
                 'fp-ingress-cookie=12345',
               ],
+              event: mockEvent(),
             } satisfies SendResponse)
           )
         },
