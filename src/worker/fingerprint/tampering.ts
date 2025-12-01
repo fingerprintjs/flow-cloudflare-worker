@@ -52,7 +52,7 @@ const tamperingHandlers: TamperingHandler[] = [
 export async function handleTampering(event: IdentificationEvent, request: Request) {
   for (const handler of tamperingHandlers) {
     try {
-      handler.verify(event, request)
+      await handler.verify(event, request)
     } catch (error) {
       if (error instanceof TamperingError) {
         console.error('Tampering verification failed:', error.message, event)
