@@ -28,12 +28,12 @@ const tamperingHandlers: TamperingHandler[] = [
   },
   {
     verify: (event, request) => {
-      const originHeader = request.headers.get('origin');
+      const originHeader = request.headers.get('origin')
       if (!originHeader) {
-        throw new TamperingError('Missing origin header, potential tampering or malformed request.');
+        throw new TamperingError('Missing origin header, potential tampering or malformed request.')
       }
-      const origin = new URL(originHeader).origin;
-      const identificationOrigin = new URL(event.url).origin;
+      const origin = new URL(originHeader).origin
+      const identificationOrigin = new URL(event.url).origin
 
       if (origin !== identificationOrigin) {
         throw new TamperingError(
