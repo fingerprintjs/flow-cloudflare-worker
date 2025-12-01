@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      zod:
+        specifier: 4.1.13
+        version: 4.1.13
     devDependencies:
       '@changesets/cli':
         specifier: ^2.29.7
@@ -46,7 +50,7 @@ importers:
         version: 24.5.2
       '@typescript-eslint/eslint-plugin':
         specifier: 6.19.1
-        version: 6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.56.0)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
+        version: 6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
       '@vitest/coverage-istanbul':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4(@types/node@24.5.2)(happy-dom@20.0.10)(jiti@2.4.2)(jsdom@26.1.0)(tsx@4.20.6)(yaml@2.8.1))
@@ -3463,6 +3467,9 @@ packages:
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
+  zod@4.1.13:
+    resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
+
 snapshots:
 
   '@aashutoshrathi/word-wrap@1.2.6': {}
@@ -4550,16 +4557,16 @@ snapshots:
 
   '@types/whatwg-mimetype@3.0.2': {}
 
-  '@typescript-eslint/eslint-plugin@6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.56.0)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)':
+  '@typescript-eslint/eslint-plugin@6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.57.1)(typescript@5.9.2))(eslint@8.56.0)(typescript@5.9.2)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 6.19.1(eslint@8.56.0)(typescript@5.9.2)
+      '@typescript-eslint/parser': 6.19.1(eslint@8.57.1)(typescript@5.9.2)
       '@typescript-eslint/scope-manager': 6.19.1
-      '@typescript-eslint/type-utils': 6.19.1(eslint@8.57.1)(typescript@5.9.2)
-      '@typescript-eslint/utils': 6.19.1(eslint@8.57.1)(typescript@5.9.2)
+      '@typescript-eslint/type-utils': 6.19.1(eslint@8.56.0)(typescript@5.9.2)
+      '@typescript-eslint/utils': 6.19.1(eslint@8.56.0)(typescript@5.9.2)
       '@typescript-eslint/visitor-keys': 6.19.1
       debug: 4.4.3
-      eslint: 8.57.1
+      eslint: 8.56.0
       graphemer: 1.4.0
       ignore: 5.3.1
       natural-compare: 1.4.0
@@ -4570,16 +4577,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/eslint-plugin@6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.57.1)(typescript@5.9.2))(eslint@8.56.0)(typescript@5.9.2)':
+  '@typescript-eslint/eslint-plugin@6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 6.19.1(eslint@8.56.0)(typescript@5.9.2)
+      '@typescript-eslint/parser': 6.19.1(eslint@8.57.1)(typescript@5.9.2)
       '@typescript-eslint/scope-manager': 6.19.1
-      '@typescript-eslint/type-utils': 6.19.1(eslint@8.56.0)(typescript@5.9.2)
-      '@typescript-eslint/utils': 6.19.1(eslint@8.56.0)(typescript@5.9.2)
+      '@typescript-eslint/type-utils': 6.19.1(eslint@8.57.1)(typescript@5.9.2)
+      '@typescript-eslint/utils': 6.19.1(eslint@8.57.1)(typescript@5.9.2)
       '@typescript-eslint/visitor-keys': 6.19.1
       debug: 4.4.3
-      eslint: 8.56.0
+      eslint: 8.57.1
       graphemer: 1.4.0
       ignore: 5.3.1
       natural-compare: 1.4.0
@@ -4598,6 +4605,19 @@ snapshots:
       '@typescript-eslint/visitor-keys': 6.19.1
       debug: 4.4.3
       eslint: 8.56.0
+    optionalDependencies:
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - supports-color
+
+  '@typescript-eslint/parser@6.19.1(eslint@8.57.1)(typescript@5.9.2)':
+    dependencies:
+      '@typescript-eslint/scope-manager': 6.19.1
+      '@typescript-eslint/types': 6.19.1
+      '@typescript-eslint/typescript-estree': 6.19.1(typescript@5.9.2)
+      '@typescript-eslint/visitor-keys': 6.19.1
+      debug: 4.4.3
+      eslint: 8.57.1
     optionalDependencies:
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -6884,3 +6904,5 @@ snapshots:
       youch-core: 0.3.3
 
   zod@3.22.3: {}
+
+  zod@4.1.13: {}

@@ -12,6 +12,12 @@ For proposing changes, use the standard [pull request approach](https://docs.git
 
 Create pull requests for the `main` branch.
 
+> Note about third-party dependencies:
+> 
+> Our goal is to keep the number of dependencies as low as possible. For now we rely only on `zod` for type validation.
+> 
+> One thing to keep in mind is that it should be **avoided** to use any dependencies in **scripts** that are injected by the worker ([instrumentor](src/scripts/instrumentor) and [agent-processor](src/scripts/agent-processor)), in order to keep their size as small as possible.
+
 ### How to build
 After cloning the repo, run `pnpm install` to install packages and prepare the project for local development.
 

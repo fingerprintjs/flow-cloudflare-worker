@@ -1,70 +1,73 @@
 import { fetchOrigin } from '../utils/origin'
 import { copyRequest } from '../utils/request'
+import { z } from 'zod/v4'
+
+const RuleHeader = z.object({
+  name: z.string(),
+  value: z.string(),
+})
 
 /**
  * Represents an HTTP header with name and value.
  */
-type RuleHeader = { name: string; value: string }
+type RuleHeader = z.infer<typeof RuleHeader>
+
+const AllowAction = z.object({
+  type: z.literal('allow'),
+  request_header_modifications: z.optional(
+    z.object({
+      // Headers to remove from the request
+      remove: z.optional(z.array(z.string())),
+      // Headers to set/replace in the request
+      set: z.optional(z.array(RuleHeader)),
+      // Headers to append to the request
+      append: z.optional(z.array(RuleHeader)),
+    })
+  ),
+})
 
 /**
  * Represents an 'allow' rule action that permits a request to proceed
  * with optional header modifications.
  */
-export type AllowAction = {
-  /** Action type identifier */
-  type: 'allow'
-  /** Optional request header modifications to apply */
-  request_header_modifications?: {
-    /** Headers to remove from the request */
-    remove?: string[]
-    /** Headers to set/replace in the request */
-    set?: RuleHeader[]
-    /** Headers to append to the request */
-    append?: RuleHeader[]
-  }
-}
+export type AllowAction = z.infer<typeof AllowAction>
+
+const BlockAction = z.object({
+  type: z.literal('block'),
+  // HTTP status code to return
+  status_code: z.number().min(200).max(599),
+  // Response headers to include
+  headers: z.array(RuleHeader).optional(),
+  // Response body content
+  body: z.string().optional(),
+})
 
 /**
  * Represents a 'block' rule action that blocks a request
  * and returns a custom response.
  */
-export type BlockAction = {
-  /** Action type identifier */
-  type: 'block'
-  /** HTTP status code to return */
-  status_code: number
-  /** Response headers to include */
-  headers?: RuleHeader[]
-  /** Response body content */
-  body?: string
-}
+export type BlockAction = z.infer<typeof BlockAction>
 
-export type RuleActionUnion = AllowAction | BlockAction
+export const RuleActionUnion = z.discriminatedUnion('type', [AllowAction, BlockAction])
 
-export function isAllowAction(action: object): action is AllowAction {
-  return 'type' in action && action.type === 'allow'
-}
+export type RuleActionUnion = z.infer<typeof RuleActionUnion>
 
-export function isBlockAction(action: object): action is BlockAction {
-  return 'type' in action && action.type === 'block'
-}
-
-export function isRuleActionUnion(action: object): action is RuleActionUnion {
-  return isAllowAction(action) || isBlockAction(action)
-}
+export const RuleAction = RuleActionUnion.and(
+  z.object({
+    // The ID of the evaluated ruleset
+    ruleset_id: z.string(),
+    // The ID of the rule that generated the action. Undefined if no rule was matched.
+    rule_id: z.string().optional(),
+    // The expression of the rule that generated the action. Undefined if no rule was matched.
+    rule_expression: z.string().optional(),
+  })
+)
 
 /**
  * Represents a rule action from a ingress response.
  * Contains either an 'allow' or 'block' action along with rule metadata.
  */
-export type RuleAction = RuleActionUnion & {
-  /** The ID of the evaluated ruleset */
-  ruleset_id: string
-  /** The ID of the rule that generated the action. Undefined if no rule was matched. */
-  rule_id?: string
-  /** The expression of the rule that generated the action. Undefined if no rule was matched. */
-  rule_expression?: string
-}
+export type RuleAction = z.infer<typeof RuleAction>
 
 /**
  * A function type that processes HTTP request based on rule actions.
