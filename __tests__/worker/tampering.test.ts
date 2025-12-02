@@ -27,10 +27,11 @@ function buildEvent(
     timestamp: Date
     url: string
     ip_address: string
+    replayed: boolean
   }> = {}
 ) {
   return {
-    replayed: false,
+    replayed: params.replayed ?? false,
     timestamp: params.timestamp ?? new Date(),
     url: params.url ?? 'https://example.com/some/path',
     ip_address: params.ip_address ?? '203.0.113.10',
@@ -85,6 +86,15 @@ describe('tampering verifier', () => {
     const origin = 'https://example.com'
     const request = buildRequest({ ip: '2001:db8::100', origin: origin })
     const event = buildEvent({ url: `${origin}/ok`, ip_address: '2001:db8::200' })
+    await expect(handleTampering(event, request)).rejects.toBeInstanceOf(TamperingError)
+  })
+
+  it('throws TamperingError when event is replayed', async () => {
+    const origin = 'https://example.com'
+    const ip = '203.0.113.10'
+    const request = buildRequest({ ip: ip, origin: origin })
+    const event = buildEvent({ url: `${origin}/foo`, ip_address: ip, replayed: true })
+
     await expect(handleTampering(event, request)).rejects.toBeInstanceOf(TamperingError)
   })
 })

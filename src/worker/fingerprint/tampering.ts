@@ -23,6 +23,13 @@ type TamperingHandler = {
 const tamperingHandlers: TamperingHandler[] = [
   {
     verify: (event) => {
+      if (event.replayed) {
+        throw new TamperingError('Identification request was replayed.')
+      }
+    },
+  },
+  {
+    verify: (event) => {
       if (new Date().valueOf() - event.timestamp.valueOf() > ALLOWED_REQUEST_TIMESTAMP_DIFF_MS) {
         throw new TamperingError('Old identification request, potential replay attack.')
       }
