@@ -4,6 +4,8 @@ import { getIp } from '../utils/headers'
 
 const ALLOWED_REQUEST_TIMESTAMP_DIFF_MS = 3000
 
+const methodsWithoutOrigin = ['GET', 'HEAD']
+
 export class TamperingError extends FlowError {
   constructor(message: string) {
     super({
@@ -28,6 +30,10 @@ const tamperingHandlers: TamperingHandler[] = [
   },
   {
     verify: (event, request) => {
+      if (methodsWithoutOrigin.includes(request.method)) {
+        return
+      }
+
       const originHeader = request.headers.get('origin')
       if (!originHeader) {
         throw new TamperingError('Missing origin header, potential tampering or malformed request.')

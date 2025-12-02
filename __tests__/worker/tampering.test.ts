@@ -1,16 +1,24 @@
 import { describe, it, expect } from 'vitest'
 import { handleTampering, TamperingError } from '../../src/worker/fingerprint/tampering'
 
-function buildRequest(origin: string, ip: string) {
+interface BuildRequestParams {
+  ip: string
+  origin?: string
+  method?: string
+}
+
+function buildRequest({ ip, origin, method = 'POST' }: BuildRequestParams) {
+  const hasBody = !['GET', 'HEAD'].includes(method)
+
   return new Request('https://worker.local/identify', {
-    method: 'POST',
+    method,
     headers: {
       // Origin of the page that initiated the request
-      origin,
+      ...(origin ? { origin } : {}),
       // getIp() reads cf-connecting-ip in non-dev environments
       'cf-connecting-ip': ip,
     },
-    body: '{}',
+    ...(hasBody ? { body: JSON.stringify({}) } : {}),
   })
 }
 
@@ -33,7 +41,16 @@ describe('tampering verifier', () => {
   it('passes for fresh request with matching origin and IP', async () => {
     const origin = 'https://example.com'
     const ip = '203.0.113.10'
-    const request = buildRequest(origin, ip)
+    const request = buildRequest({ ip: ip, origin: origin })
+    const event = buildEvent({ url: `${origin}/foo`, ip_address: ip })
+
+    await expect(handleTampering(event, request)).resolves.toBeUndefined()
+  })
+
+  it.each(['GET', 'HEAD'])('passes for %s request without origin', async (method) => {
+    const origin = 'https://example.com'
+    const ip = '203.0.113.10'
+    const request = buildRequest({ ip, method })
     const event = buildEvent({ url: `${origin}/foo`, ip_address: ip })
 
     await expect(handleTampering(event, request)).resolves.toBeUndefined()
@@ -42,7 +59,7 @@ describe('tampering verifier', () => {
   it('throws TamperingError for old timestamp (potential replay)', async () => {
     const origin = 'https://example.com'
     const ip = '203.0.113.11'
-    const request = buildRequest(origin, ip)
+    const request = buildRequest({ ip: ip, origin: origin })
     const old = new Date(Date.now() - 5000)
     const event = buildEvent({ timestamp: old, url: `${origin}/bar`, ip_address: ip })
 
@@ -50,7 +67,7 @@ describe('tampering verifier', () => {
   })
 
   it('throws TamperingError for origin mismatch', async () => {
-    const request = buildRequest('https://evil.example', '203.0.113.12')
+    const request = buildRequest({ ip: '203.0.113.12', origin: 'https://evil.example' })
     const event = buildEvent({ url: 'https://example.com/ok', ip_address: '203.0.113.12' })
 
     await expect(handleTampering(event, request)).rejects.toBeInstanceOf(TamperingError)
@@ -58,7 +75,7 @@ describe('tampering verifier', () => {
 
   it('throws TamperingError for IP mismatch', async () => {
     const origin = 'https://example.com'
-    const request = buildRequest(origin, '203.0.113.100')
+    const request = buildRequest({ ip: '203.0.113.100', origin: origin })
     const event = buildEvent({ url: `${origin}/ok`, ip_address: '203.0.113.200' })
 
     await expect(handleTampering(event, request)).rejects.toBeInstanceOf(TamperingError)
