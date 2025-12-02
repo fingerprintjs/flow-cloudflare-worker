@@ -80,4 +80,11 @@ describe('tampering verifier', () => {
 
     await expect(handleTampering(event, request)).rejects.toBeInstanceOf(TamperingError)
   })
+
+  it('throws TamperingError for IP v6 mismatch', async () => {
+    const origin = 'https://example.com'
+    const request = buildRequest({ ip: '2001:db8::100', origin: origin })
+    const event = buildEvent({ url: `${origin}/ok`, ip_address: '2001:db8::200' })
+    await expect(handleTampering(event, request)).rejects.toBeInstanceOf(TamperingError)
+  })
 })
