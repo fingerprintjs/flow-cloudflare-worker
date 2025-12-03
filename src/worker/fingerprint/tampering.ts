@@ -37,12 +37,12 @@ const tamperingHandlers: TamperingHandler[] = [
   },
   {
     verify: (event, request) => {
-      if (methodsWithoutOrigin.includes(request.method)) {
-        return
-      }
-
       const originHeader = request.headers.get('origin')
       if (!originHeader) {
+        if (methodsWithoutOrigin.includes(request.method)) {
+          return
+        }
+
         throw new TamperingError('Missing origin header, potential tampering or malformed request.')
       }
       const origin = new URL(originHeader).origin

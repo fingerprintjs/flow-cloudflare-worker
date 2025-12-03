@@ -57,6 +57,15 @@ describe('tampering verifier', () => {
     await expect(handleTampering(event, request)).resolves.toBeUndefined()
   })
 
+  it('throws TamperingError for POST request without origin', async () => {
+    const origin = 'https://example.com'
+    const ip = '203.0.113.10'
+    const request = buildRequest({ ip, method: 'POST' })
+    const event = buildEvent({ url: `${origin}/foo`, ip_address: ip })
+
+    await expect(handleTampering(event, request)).rejects.toBeInstanceOf(TamperingError)
+  })
+
   it('throws TamperingError for old timestamp (potential replay)', async () => {
     const origin = 'https://example.com'
     const ip = '203.0.113.11'
