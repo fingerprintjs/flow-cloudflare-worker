@@ -19,6 +19,7 @@ import { handleError } from './handlers/handleError'
 import { fetchOrigin } from './utils/origin'
 import { handleProtectedApiCall } from './handlers/handleProtectedApi'
 import { IdentificationClient } from './fingerprint/identificationClient'
+import { handleDetectionTokenRequest, storeToken } from './agentsDetection'
 
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
@@ -32,9 +33,16 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
   )
 
   try {
-    const matchedUrl = matchUrl(new URL(request.url), request.method, env)
+    const requestUrl = new URL(request.url)
+    const matchedUrl = matchUrl(requestUrl, request.method, env)
 
     switch (matchedUrl?.type) {
+      case 'storeToken':
+        return storeToken(request, env)
+
+      case 'api':
+        return handleDetectionTokenRequest(requestUrl, request, env)
+
       case 'identification':
         return await handleScriptsInjection({ request, env })
 

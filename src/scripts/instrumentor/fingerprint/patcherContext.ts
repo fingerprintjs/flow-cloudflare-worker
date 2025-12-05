@@ -1,6 +1,7 @@
 import { WritablePatcherContext } from '../patcher/context'
 import { FingerprintLoader } from '../../shared/fingerprint/types'
 import { getIntegrationInfo } from '../../../shared/integrationInfo'
+import { createHiddenLink, storeToken } from '../agentDetection'
 
 export type SetupPatcherContextParams = {
   // Writable patcher context to configure with signals' provider
@@ -19,6 +20,7 @@ export async function setupPatcherContext(params: SetupPatcherContextParams) {
   console.debug('Setting up signals collection...', document.readyState)
 
   const listener = async () => {
+    createHiddenLink()
     await setProviders(params)
     document.removeEventListener('DOMContentLoaded', listener)
   }
@@ -40,7 +42,21 @@ async function setProviders({ fingerprintLoader, endpoint, patcherCtx }: SetupPa
     integrationInfo: [getIntegrationInfo('instrumentor')],
   })
 
-  console.debug('FingerprintJS agent loaded', agent)
+  console.debug('FingerprintJS agent loaded', agent, {
+    'typeof get': typeof agent.get,
+  })
+
+  agent
+    .get()
+    .then((result) => {
+      console.log('Got signals, storing token', result)
+      if (result.event_id) {
+        storeToken(result.event_id)
+      }
+    })
+    .catch((error) => {
+      console.error('Error getting signals:', error)
+    })
 
   patcherCtx.setSignalsProvider(async () => {
     console.debug('Collecting signals...')

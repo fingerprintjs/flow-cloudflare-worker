@@ -1,5 +1,6 @@
 export type Agent = {
   collect: () => Promise<string | undefined>
+  get: () => Promise<{ event_id: string }>
 }
 
 type StartOptions = {

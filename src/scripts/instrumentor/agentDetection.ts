@@ -1,0 +1,42 @@
+import { routePrefix } from '../shared/fingerprint/import'
+
+export const detectionToken = '<DETECTION_TOKEN>'
+
+export function createHiddenLink() {
+  const style = document.createElement('style')
+  style.innerText = `
+    .${routePrefix}-load-more {
+      position: absolute;
+      left: 1px;
+      height: 1px;
+      width: 1px;
+      opacity: 0.1;
+      font-size: 7px;
+      user-select: none;
+    }
+  `
+  document.head.appendChild(style)
+
+  const container = document.createElement('div')
+  container.className = `${routePrefix}-load-more`
+  container.innerHTML = `<a href="/${routePrefix}/api/load-more?sessionId=${detectionToken}">Load more</a>`
+  document.body.appendChild(container)
+}
+
+export function storeToken(requestId: string) {
+  console.info('Storing detection token:', {
+    detectionToken,
+    requestId,
+  })
+
+  fetch(`/${routePrefix}/store-token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      requestId: requestId,
+      token: detectionToken,
+    }),
+  })
+}

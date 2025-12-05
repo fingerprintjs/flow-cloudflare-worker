@@ -2,6 +2,21 @@
   "name": "flow-cloudflare-worker",
   "main": "./src/worker/index.ts",
   "compatibility_date": "2025-09-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["TokenStore"]
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "TokenStore",
+        "class_name": "TokenStore"
+      }
+    ]
+  },
   "vars": {
     "FP_REGION": "us",
     "FP_CDN_HOST": "",

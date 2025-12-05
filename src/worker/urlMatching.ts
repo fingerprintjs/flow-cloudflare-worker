@@ -20,6 +20,10 @@ export type UrlType =
   | {
       type: 'browserCache'
     }
+  | {
+      type: 'storeToken'
+    }
+  | { type: 'api' }
 
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
   console.debug('Matching url', url.toString())
@@ -37,6 +41,18 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
           },
         }
       }),
+      {
+        url: new URL(`/${routePrefix}/store-token`, url.origin).toString(),
+        metadata: {
+          type: 'storeToken' as const,
+        },
+      },
+      {
+        url: new URL(`/${routePrefix}/api/*`, url.origin).toString(),
+        metadata: {
+          type: 'api' as const,
+        },
+      },
       {
         url: new URL(`/${routePrefix}/*`, url.origin).toString(),
         metadata: {

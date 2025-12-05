@@ -1,6 +1,7 @@
 import { handleRequest } from './handler'
 import { TypedEnv } from './types'
 import { isMonitorMode } from './env'
+import { TokenStore } from './tokenStore'
 
 export default {
   async fetch(request, env, ctx) {
@@ -11,3 +12,5 @@ export default {
     return handleRequest(request, env)
   },
 } satisfies ExportedHandler<TypedEnv>
+
+export { TokenStore }

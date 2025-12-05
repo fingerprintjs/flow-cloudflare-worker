@@ -5,6 +5,7 @@ import { ProtectedApi } from '../../shared/types'
 import { getAgentLoader } from '../fingerprint/agent'
 import { Script } from '../../shared/scripts'
 import { createWorkerScriptResponse } from '../scripts'
+import { Buffer } from 'node:buffer'
 
 type HandleScriptParams = {
   request: Request
@@ -13,6 +14,12 @@ type HandleScriptParams = {
   cdnHost: string
   protectedApis: ProtectedApi[]
   routePrefix: string
+}
+
+function generateDetectionToken(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Buffer.from(array).toString('base64url')
 }
 
 /**
@@ -41,6 +48,7 @@ export async function handleScript({
         '<WORKER_ROUTE_PREFIX>': routePrefix,
         // The " quotes are intentional here to prevent the template from being parsed as a string literal
         '"<PROTECTED_APIS>"': JSON.stringify(protectedApis),
+        '<DETECTION_TOKEN>': generateDetectionToken(),
       })
     }
 
