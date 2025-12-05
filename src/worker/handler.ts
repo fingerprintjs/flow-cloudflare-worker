@@ -41,7 +41,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
         return storeToken(request, env)
 
       case 'api':
-        return handleDetectionTokenRequest(requestUrl, request, env)
+        return handleDetectionTokenRequest(requestUrl, request, env, identificationClient)
 
       case 'identification':
         return await handleScriptsInjection({ request, env })
@@ -72,6 +72,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           fallbackRule: getFallbackRuleAction(env),
           routePrefix: getRoutePrefix(env),
           isMonitorMode: isMonitorMode(env),
+          env,
         })
 
       default:

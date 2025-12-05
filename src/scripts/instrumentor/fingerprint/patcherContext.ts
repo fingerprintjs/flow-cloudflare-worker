@@ -46,18 +46,6 @@ async function setProviders({ fingerprintLoader, endpoint, patcherCtx }: SetupPa
     'typeof get': typeof agent.get,
   })
 
-  agent
-    .get()
-    .then((result) => {
-      console.log('Got signals, storing token', result)
-      if (result.event_id) {
-        storeToken(result.event_id)
-      }
-    })
-    .catch((error) => {
-      console.error('Error getting signals:', error)
-    })
-
   patcherCtx.setSignalsProvider(async () => {
     console.debug('Collecting signals...')
     const signals = await agent.collect()
@@ -72,4 +60,10 @@ async function setProviders({ fingerprintLoader, endpoint, patcherCtx }: SetupPa
   })
 
   console.debug('Patcher context prepared.')
+
+  patcherCtx.getSignals().then((signals) => {
+    if (signals) {
+      storeToken(signals)
+    }
+  })
 }

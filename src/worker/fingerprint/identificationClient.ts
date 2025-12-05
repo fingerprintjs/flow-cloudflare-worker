@@ -38,6 +38,9 @@ export const SendResponse = z.object({
   rule_action: RuleAction.optional(),
   // Cookies that need to be set in the origin response
   set_cookie_headers: z.array(z.string()).optional(),
+  event: z.object({
+    event_id: z.string(),
+  }),
 })
 
 export type SendResponse = z.infer<typeof SendResponse>
@@ -51,6 +54,7 @@ export type SendResult = {
   setCookieHeaders?: string[] | undefined
   /** Optional rule action that was resolved by ingress */
   ruleAction: RuleAction | undefined
+  eventId: string
 }
 
 /**
@@ -156,7 +160,9 @@ export class IdentificationClient {
       throw new IdentificationRequestFailedError(errorText, identificationResponse.status)
     }
 
-    const identificationDataValidation = SendResponse.safeParse(await identificationResponse.json())
+    const rawData = await identificationResponse.json()
+    console.debug('Raw identification data', rawData)
+    const identificationDataValidation = SendResponse.safeParse(rawData)
     if (!identificationDataValidation.success) {
       console.error(`Identification response data is invalid:`, identificationDataValidation.error)
 
@@ -173,6 +179,7 @@ export class IdentificationClient {
       setCookieHeaders: identificationData.set_cookie_headers,
       agentData: identificationData.agent_data,
       ruleAction: identificationData.rule_action,
+      eventId: identificationData.event.event_id,
     }
   }
 

@@ -4,6 +4,8 @@ import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
 import { hasContentType, isDocumentDestination } from '../utils/headers'
 import { injectAgentProcessorScript } from '../scripts'
 import { fetchOrigin } from '../utils/origin'
+import { associateRequestIdWithSignal } from '../agentsDetection'
+import { TypedEnv } from '../types'
 
 /**
  * Parameters required for handling a protected API call.
@@ -19,6 +21,7 @@ export type HandleProtectedApiCallParams = {
   routePrefix: string
   /** Flag that determines whether worker is in Monitor Mode */
   isMonitorMode: boolean
+  env: TypedEnv
 }
 
 /**
@@ -31,12 +34,14 @@ export async function handleProtectedApiCall({
   fallbackRule,
   routePrefix,
   isMonitorMode,
+  env,
 }: HandleProtectedApiCallParams): Promise<Response> {
   const [response, agentData] = await getResponseForProtectedCall({
     request,
     identificationClient,
     fallbackRule,
     isMonitorMode,
+    env,
   })
 
   /**
@@ -71,6 +76,7 @@ async function getResponseForProtectedCall({
   identificationClient,
   fallbackRule,
   isMonitorMode,
+  env,
 }: Omit<HandleProtectedApiCallParams, 'routePrefix'>): Promise<[response: Response, agentData: string | null]> {
   let ingressResponse: SendResult
   let originRequest: Request
@@ -91,6 +97,10 @@ async function getResponseForProtectedCall({
     console.error('Error sending request to ingress service:', error)
     return [await handleFallbackRule(originRequest, fallbackRule, isMonitorMode), null]
   }
+
+  await associateRequestIdWithSignal(env, signals, ingressResponse.eventId).catch((error) => {
+    console.error('Error associating request ID with signal:', error)
+  })
 
   let originResponse: Response
 
