@@ -1,5 +1,6 @@
 {
   "name": "e2e",
+  "private": true,
   "description": "E2E tests for Cloudflare Flow Worker",
   "scripts": {
     "test": "playwright test",
