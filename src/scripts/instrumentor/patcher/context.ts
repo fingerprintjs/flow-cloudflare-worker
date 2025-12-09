@@ -49,11 +49,6 @@ export type PatcherContext = {
  */
 export class WritablePatcherContext implements PatcherContext {
   /**
-   * Stores the signal data returned from the signal provider.
-   * */
-  private signals?: string | undefined
-
-  /**
    * Function that resolves to the signal data.
    * */
   private signalsProvider?: () => Promise<string | undefined>
@@ -104,15 +99,11 @@ export class WritablePatcherContext implements PatcherContext {
   }
 
   /**
-   * Retrieves the current signals' data. If not set, it will attempt to fetch from the signals' provider.
+   * Retrieves the current signals' data using signals' provider.
    * @returns Signals string if set, undefined otherwise
    */
   async getSignals(): Promise<string | undefined> {
-    if (!this.signals) {
-      this.signals = await this.signalsProvider?.()
-    }
-
-    return this.signals
+    return this.signalsProvider?.()
   }
 
   /**

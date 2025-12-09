@@ -80,8 +80,7 @@ describe('Instrumentor', () => {
     expect(await patcherContext.getSignals()).toEqual('signals')
     expect(await patcherContext.getSignals()).toEqual('signals')
 
-    // Assume that the actual signals collection happened only once
-    expect(mockCollect).toHaveBeenCalledTimes(1)
+    expect(mockCollect).toHaveBeenCalledTimes(2)
   })
 
   it('should load fingerprint and prepare agent data processing', async () => {
