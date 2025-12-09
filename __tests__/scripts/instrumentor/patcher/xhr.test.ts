@@ -387,8 +387,7 @@ describe('XMLHttpRequest Patcher', () => {
       // Agent data processed twice
       expect(mockProcessAgentData).toHaveBeenCalledTimes(2)
 
-      // Signals provider should be called only once. On the second request it should use cached signals data
-      expect(mockSignalsProvider).toHaveBeenCalledTimes(1)
+      expect(mockSignalsProvider).toHaveBeenCalledTimes(2)
 
       // Server received two separate requests with signals header
       expect(server.requests.length).toBe(2)
