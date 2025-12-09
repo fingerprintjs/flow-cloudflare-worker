@@ -1,5 +1,15 @@
 # flow-cloudflare-worker
 
+## 0.4.0
+
+### Minor Changes
+
+- Improve validation for the `FP_FAILURE_FALLBACK_ACTION` ([d06818d](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/d06818d388d097057643dc01f7943b74ad8eaf95))
+- Add tampering protection ([1c70f4a](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/1c70f4a9d53c4df71672310bee4411ea321a459a))
+- Add validation for protected HTTP method ([8511ff9](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/8511ff9cb3a4cf997086af733aa1d3d69238396b))
+- Add validation for the response received from the identification service ([d06818d](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/d06818d388d097057643dc01f7943b74ad8eaf95))
+- Don't use cache for signals collected from agent ([78da4ac](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/78da4ac633d4aaf40fb4fd8ccb815fb58122b7af))
+
 ## 0.3.1
 
 ### Patch Changes
