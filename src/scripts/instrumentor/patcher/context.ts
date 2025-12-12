@@ -1,5 +1,6 @@
 import { isProtectedApiHttpMethod, ProtectedApi, ProtectedApiHttpMethod } from '../../../shared/types'
 import { findMatchingRoute, parseRoutes, Route } from '@fingerprintjs/url-matcher'
+import { logger } from '../../shared/logger'
 
 /**
  * Function that processes agent data received from the worker for protected API requests.
@@ -112,7 +113,7 @@ export class WritablePatcherContext implements PatcherContext {
    */
   setSignalsProvider(signalsProvider: () => Promise<string | undefined>) {
     if (this.signalsProvider) {
-      console.warn('Invalid attempt to set signals provider that are already set.')
+      logger.warn('Invalid attempt to set signals provider that are already set.')
       return
     }
 
@@ -125,7 +126,7 @@ export class WritablePatcherContext implements PatcherContext {
    * */
   setAgentDataProcessor(agentDataProcessor: AgentDataProcessor) {
     if (this.agentDataProcessor) {
-      console.warn('Invalid attempt to set agent data processor that is already set.')
+      logger.warn('Invalid attempt to set agent data processor that is already set.')
       return
     }
 
@@ -151,18 +152,18 @@ export class WritablePatcherContext implements PatcherContext {
     const normalizedMethod = method.toUpperCase()
 
     if (!isProtectedApiHttpMethod(normalizedMethod)) {
-      console.debug('Invalid method:', normalizedMethod)
+      logger.debug('Invalid method:', normalizedMethod)
       return false
     }
 
     // Check method first to avoid unnecessary route matching
     if (!this.protectedMethods.has(normalizedMethod)) {
-      console.debug('Method not protected:', normalizedMethod)
+      logger.debug('Method not protected:', normalizedMethod)
       return false
     }
 
     const urlToMatch = new URL(url, location.origin)
-    console.debug('Matching URL:', urlToMatch.href)
+    logger.debug('Matching URL:', urlToMatch.href)
     const matchedRoute = findMatchingRoute(urlToMatch, this.protectedRoutes)
 
     if (matchedRoute) {

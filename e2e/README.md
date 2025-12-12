@@ -40,4 +40,5 @@ Test Projects configuration is described in the `projects/projects.ts`. Each pro
 |-----------------------|---------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
 | fallback-action-allow | Ruleset shouldn't be triggered in test condition  | Return 403 `{"message": "Proxy detected"}` if Proxy = True   | FP_RULESET_ID                     |
 | fallback-action-block | Ruleset shouldn't be triggered in test condition  | Return 403 `{"message": "Proxy detected"}` if Proxy = True   | FP_RULESET_ID                     |
-| ruleset-based-block   | Ruleset shouldn be triggered in test condition    | Return 403 `{"message": "Bad bot detected"}` if Bot is "Bad" | RULESET_BASED_BLOCK_FP_RULESET_ID |
+| ruleset-based-block   | Ruleset should be triggered in test condition     | Return 403 `{"message": "Bad bot detected"}` if Bot is "Bad" | RULESET_BASED_BLOCK_FP_RULESET_ID |
+| log-level-config      | Ruleset shouldn't be triggered in test condition  | N/A                                                          | FP_RULESET_ID                     |

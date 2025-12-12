@@ -22,7 +22,8 @@
     "FP_FAILURE_FALLBACK_ACTION": {
       "type": "block",
       "status_code": 403
-    }
+    },
+    "FP_LOG_LEVEL": "error"
   },
   "observability": {
     "enabled": true,

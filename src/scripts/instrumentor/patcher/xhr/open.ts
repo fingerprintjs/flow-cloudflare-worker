@@ -2,6 +2,7 @@ import { PatcherContext } from '../context'
 import { FingerprintContextSymbol, XHRFingerprintMetadata, XHRContext } from './types'
 import { handleSignalsInjection } from '../signalsInjection'
 import { createPatcherRequest } from './patcherRequest'
+import { logger } from '../../../shared/logger'
 
 /**
  * Creates a patched version of the `XMLHttpRequest.prototype.open` method to capture request metadata,
@@ -40,7 +41,7 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
       }
     } catch (e) {
       // If URL cannot be resolved (very unlikely)
-      console.warn('Failed to resolve XHR URL for patching:', e)
+      logger.warn('Failed to resolve XHR URL for patching:', e)
 
       metadata = {
         method: method?.toUpperCase?.(),
@@ -55,7 +56,7 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
         request,
         ctx,
       }).catch((error) => {
-        console.error('Error injecting signals:', error)
+        logger.error('Error injecting signals:', error)
         return false
       })
 
@@ -67,7 +68,7 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
         [FingerprintContextSymbol]: fingerprintContext,
       })
     } catch (e) {
-      console.error('Error setting XHR fingerprint context:', e)
+      logger.error('Error setting XHR fingerprint context:', e)
     }
 
     return callOpen()

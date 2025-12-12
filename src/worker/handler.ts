@@ -5,6 +5,7 @@ import { handleScript } from './handlers/handleScript'
 import {
   getCDNHost,
   getFallbackRuleAction,
+  getFpLogLevel,
   getFpRegion,
   getIngressBaseHost,
   getProtectedApis,
@@ -46,6 +47,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
           cdnHost: getCDNHost(env),
           protectedApis: getProtectedApis(env),
           routePrefix: getRoutePrefix(env),
+          logLevel: getFpLogLevel(env),
         })
 
       case 'browserCache':

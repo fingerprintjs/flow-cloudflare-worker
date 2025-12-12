@@ -1,5 +1,6 @@
 import { XHRFingerprintMetadata } from './types'
 import { PatcherRequest } from '../types'
+import { logger } from '../../../shared/logger'
 
 /**
  * Creates a PatcherRequest object from an XMLHttpRequest and its metadata.
@@ -16,7 +17,7 @@ export function createPatcherRequest(request: XMLHttpRequest, metadata: XHRFinge
       try {
         request.setRequestHeader(name, value)
       } catch (e) {
-        console.warn('Failed to set XHR request header:', e)
+        logger.warn('Failed to set XHR request header:', e)
       }
     },
   }

@@ -5,6 +5,7 @@ import { FingerprintLoader } from '../shared/fingerprint/types'
 import { ProtectedApi } from '../../shared/types'
 import { patchXHR } from './patcher/xhr/xhr'
 import { patchForms } from './patcher/form/form'
+import { logger } from '../shared/logger'
 
 export type InstrumentationParams = {
   fingerprintLoader: Promise<FingerprintLoader>
@@ -22,7 +23,7 @@ export type InstrumentationParams = {
  */
 export async function setupInstrumentor({ fingerprintLoader, protectedApis, endpoint }: InstrumentationParams) {
   if (!protectedApis.length) {
-    console.info('No protected APIs configured, skipping instrumentation.')
+    logger.info('No protected APIs configured, skipping instrumentation.')
     return
   }
 

@@ -2,6 +2,7 @@ import { TypedEnv } from './types'
 import { InvalidVariableError, MissingVariableError } from './errors'
 import { isRegion, Region } from './fingerprint/region'
 import { RuleActionUnion } from './fingerprint/ruleset'
+import { isLogLevel, LogLevel } from '../shared/types'
 
 const defaults = {
   FP_CDN_HOST: 'fpcdn.io',
@@ -98,4 +99,12 @@ export function getFpRegion(env: TypedEnv): Region {
   }
 
   return 'us'
+}
+
+export function getFpLogLevel(env: TypedEnv): LogLevel {
+  const level = env.FP_LOG_LEVEL
+  if (level && isLogLevel(level)) {
+    return level
+  }
+  return 'error'
 }

@@ -3,12 +3,8 @@ import { getProtectedPath } from '../../utils/config'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { assertIsDefined } from '../shared/utils'
 
-/**
- *
- * To run this test suite, you need to configure `RULESET_BASED_BLOCK_FP_RULESET_ID` with ID of a ruleset that is set to block bad bots with message 'Bad bot detected'
- **/
 test.describe('Protection', () => {
-  test('should return empty 403 response if signals are missing', async ({ page }) => {
+  test('should log messages', async ({ page }) => {
     const instrumentorConsoleMessages: string[] = []
     page.on('console', (msg) => {
       const rawMessageUrl = msg.location().url
@@ -22,7 +18,7 @@ test.describe('Protection', () => {
 
     await page.goto('/', { waitUntil: 'networkidle' })
 
-    const protectedRequestPath = getProtectedPath('/test', 'ruleset-based-block')
+    const protectedRequestPath = getProtectedPath('/test', 'log-level-config')
 
     await page.route(protectedRequestPath, (route, request) => {
       const headers = {
@@ -57,40 +53,7 @@ test.describe('Protection', () => {
     assertIsDefined(protectedRequest)
     expect(protectedRequest.headers()[SIGNALS_KEY]).toBeUndefined()
 
-    // There should be no log messages from the instrumentor by default
-    expect(instrumentorConsoleMessages).toHaveLength(0)
-  })
-
-  test('should return 403 based on ruleset protection', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'networkidle' })
-
-    const protectedRequestPath = getProtectedPath('/test', 'ruleset-based-block')
-
-    await page.route(protectedRequestPath, (route, request) => {
-      const headers = {
-        ...request.headers(),
-      }
-
-      route.continue({ headers })
-    })
-
-    await page.evaluate(async (url) => {
-      await fetch(url, { method: 'POST' })
-    }, protectedRequestPath)
-
-    let request = await page
-      .requests()
-      .then((requests) => requests.find((request) => request.url().includes(protectedRequestPath)))
-    expect(request).toBeDefined()
-    request = request!
-
-    let response = await request.response()
-    expect(response).toBeDefined()
-    response = response!
-
-    expect(response.status()).toEqual(403)
-    const json = await response.json()
-    // Ruleset is set to block bad bots with message 'Bad bot detected'
-    expect(json).toEqual({ message: 'Bad bot detected' })
+    // The instrumentor should have produced debug messages given the Flow worker configuration
+    expect(instrumentorConsoleMessages.length).toBeGreaterThan(0)
   })
 })
