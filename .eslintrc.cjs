@@ -1,7 +1,7 @@
 module.exports = {
   extends: ['@fingerprintjs/eslint-config-dx-team'],
-  // temporarily allow console in the worker
   overrides: [
+    // prevent console usage in instrumentation scripts
     {
       files: ['src/scripts/**/*'],
       rules: {
