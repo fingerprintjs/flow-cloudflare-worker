@@ -19,6 +19,8 @@
 
 Cloudflare Worker for Fingerprint Flow.
 
+> ⚠️ **Work in progress**: This is a beta version of the Flow Cloudflare Worker.
+
 ## Requirements
 
 * [Fingerprint Pro account](https://dashboard.fingerprint.com/signup) with the _Editor_ role assigned (or any role with _Edit configuration_ permission).
