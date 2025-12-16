@@ -19,8 +19,6 @@
 
 Cloudflare Worker for Fingerprint Flow.
 
-> ⚠️ This project is in development.
-
 ## Requirements
 
 * [Fingerprint Pro account](https://dashboard.fingerprint.com/signup) with the _Editor_ role assigned (or any role with _Edit configuration_ permission).
