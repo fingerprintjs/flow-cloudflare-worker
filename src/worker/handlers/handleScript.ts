@@ -1,7 +1,7 @@
 // This bundles the instrumentor code with the worker: https://vite.dev/guide/assets.html#importing-asset-as-string
 import instrumentorCode from '../../../dist/instrumentor/instrumentor.iife.js?raw'
 import agentProcessorCode from '../../../dist/agent-processor/agent-processor.iife.js?raw'
-import { ProtectedApi } from '../../shared/types'
+import { LogLevel, ProtectedApi } from '../../shared/types'
 import { getAgentLoader } from '../fingerprint/agent'
 import { Script } from '../../shared/scripts'
 import { createWorkerScriptResponse } from '../scripts'
@@ -13,6 +13,7 @@ type HandleScriptParams = {
   cdnHost: string
   protectedApis: ProtectedApi[]
   routePrefix: string
+  logLevel: LogLevel
 }
 
 /**
@@ -34,6 +35,7 @@ export async function handleScript({
   cdnHost,
   protectedApis,
   routePrefix,
+  logLevel,
 }: HandleScriptParams): Promise<Response> {
   switch (script) {
     case 'instrumentor.iife.js': {
@@ -41,12 +43,14 @@ export async function handleScript({
         '<WORKER_ROUTE_PREFIX>': routePrefix,
         // The " quotes are intentional here to prevent the template from being parsed as a string literal
         '"<PROTECTED_APIS>"': JSON.stringify(protectedApis),
+        '<LOG_LEVEL>': logLevel,
       })
     }
 
     case 'agent-processor.iife.js': {
       return createWorkerScriptResponse(agentProcessorCode, {
         '<WORKER_ROUTE_PREFIX>': routePrefix,
+        '<LOG_LEVEL>': logLevel,
       })
     }
 

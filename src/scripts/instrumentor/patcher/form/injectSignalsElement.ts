@@ -1,5 +1,6 @@
 import { PatcherContext } from '../context'
 import { SIGNALS_KEY } from '../../../../shared/const'
+import { logger } from '../../../shared/logger'
 
 const REMOVE_LISTENER_SYMBOL = Symbol('removeListener')
 
@@ -18,14 +19,14 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
   }
 
   if (form.method?.toLowerCase() === 'get') {
-    console.warn('Forms with method "get" are currently not supported.')
+    logger.warn('Forms with method "get" are currently not supported.')
     return
   }
 
   const handleSubmit = async (event: SubmitEvent) => {
     // Ignore form submissions if they were prevented by another handler (since this patcher is only for native submissions)
     if (event.defaultPrevented) {
-      console.debug('Form submission prevented by another handler')
+      logger.debug('Form submission prevented by another handler')
       return
     }
 
@@ -33,7 +34,7 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
 
     try {
       if (!signals) {
-        console.debug('No signals found for form submission')
+        logger.debug('No signals found for form submission')
         return
       }
 
@@ -44,7 +45,7 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
       const field = createSignalsField(signals)
       form.appendChild(field)
     } catch (e) {
-      console.error('Error getting signals during form submission:', e)
+      logger.error('Error getting signals during form submission:', e)
     }
   }
 
@@ -66,7 +67,7 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
 function removeSubmitListener(form: HTMLFormElement & { [REMOVE_LISTENER_SYMBOL]?: () => void }) {
   const removeListener = form[REMOVE_LISTENER_SYMBOL]
   if (typeof removeListener === 'function') {
-    console.debug('Removing existing submit listener from form')
+    logger.debug('Removing existing submit listener from form')
     removeListener()
   }
 }

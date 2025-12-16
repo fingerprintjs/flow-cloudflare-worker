@@ -1,3 +1,4 @@
+import { logger } from '../../../shared/logger'
 import { PatcherRequest } from '../types'
 import { FetchParamsWithRequestInit, resolveRequestInitMethod, setHeaderForRequestInit } from './requestInit'
 
@@ -72,7 +73,7 @@ export function resolvePatcherRequest(params: Parameters<typeof fetch>): Patcher
     }
   }
 
-  console.warn('Unsupported fetch request', params)
+  logger.warn('Unsupported fetch request', params)
 
   return undefined
 }

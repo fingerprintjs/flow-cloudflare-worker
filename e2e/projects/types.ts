@@ -9,6 +9,8 @@ export type TestWorkerProjectName =
   | 'fallback-action-block'
   // Represents worker which blocks request based on ruleset
   | 'ruleset-based-block'
+  // Represents worker with debug logging enabled
+  | 'log-level-config'
 
 /**
  * Represents the options that can be used to configure a FlowWorker test.

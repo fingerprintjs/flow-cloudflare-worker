@@ -1,6 +1,7 @@
 import { PatcherRequest } from './types'
 import { PatcherContext } from './context'
 import { SIGNALS_KEY } from '../../../shared/const'
+import { logger } from '../../shared/logger'
 
 /**
  * Parameters required for handling signals injection into requests.
@@ -28,21 +29,21 @@ type HandleSignalsInjectionParams = {
  */
 export async function handleSignalsInjection({ request, ctx }: HandleSignalsInjectionParams): Promise<boolean> {
   if (!ctx.isProtectedUrl(request.url, request.method)) {
-    console.debug('Skipping signals injection:', request.url)
+    logger.debug('Skipping signals injection:', request.url)
     return false
   }
 
-  console.debug('Injecting signals:', request.url)
+  logger.debug('Injecting signals:', request.url)
 
   const signals = await ctx.getSignals()
 
   if (signals) {
-    console.debug('Adding signals header for:', request.url)
+    logger.debug('Adding signals header for:', request.url)
     request.setHeader(SIGNALS_KEY, signals)
     return true
   }
 
-  console.warn('No signals data found.')
+  logger.warn('No signals data found.')
 
   return false
 }

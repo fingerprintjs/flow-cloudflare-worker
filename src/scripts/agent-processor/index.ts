@@ -1,4 +1,5 @@
 import { importFingerprintLoader } from '../shared/fingerprint/import'
+import { logger } from '../shared/logger'
 
 const scriptTag = document.currentScript
 const agentData = scriptTag?.dataset?.agentData
@@ -7,11 +8,11 @@ if (agentData) {
   importFingerprintLoader()
     .then((fp) => {
       fp.handleAgentData(agentData)
-      console.debug('Agent data processed:', agentData)
+      logger.debug('Agent data processed:', agentData)
     })
     .catch((error) => {
-      console.error('Error processing agent data:', error)
+      logger.error('Error processing agent data:', error)
     })
 } else {
-  console.warn('No agent data found in the script tag.')
+  logger.warn('No agent data found in the script tag.')
 }

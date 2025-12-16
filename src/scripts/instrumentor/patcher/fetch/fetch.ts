@@ -3,6 +3,7 @@ import { ProtectedApi } from '../../../../shared/types'
 import { handleSignalsInjection } from '../signalsInjection'
 import { resolvePatcherRequest } from './patcherRequest'
 import { AGENT_DATA_HEADER } from '../../../../shared/const'
+import { logger } from '../../../shared/logger'
 
 /**
  * Parameters required for patching the fetch API.
@@ -25,7 +26,7 @@ export type PatchFetchParams = {
  */
 export function patchFetch(ctx: PatcherContext) {
   if (typeof window.fetch !== 'function') {
-    console.warn('window.fetch is not available.')
+    logger.warn('window.fetch is not available.')
 
     return
   }
@@ -36,16 +37,16 @@ export function patchFetch(ctx: PatcherContext) {
     let didInjectSignals = false
 
     try {
-      console.debug('Incoming fetch request', params)
+      logger.debug('Incoming fetch request', params)
 
       const request = resolvePatcherRequest(params)
 
       if (request) {
-        console.debug('Resolved fetch request:', request)
+        logger.debug('Resolved fetch request:', request)
         didInjectSignals = await handleSignalsInjection({ request, ctx })
       }
     } catch (error) {
-      console.error('Patched fetch error:', error)
+      logger.error('Patched fetch error:', error)
     }
 
     const response = await originalFetch(...params)
@@ -57,15 +58,15 @@ export function patchFetch(ctx: PatcherContext) {
         if (agentData) {
           ctx.processAgentData(agentData)
         } else {
-          console.warn('Agent data not found in response')
+          logger.warn('Agent data not found in response')
         }
       }
     } catch (e) {
-      console.error('Error processing agent data:', e)
+      logger.error('Error processing agent data:', e)
     }
 
     return response
   }
 
-  console.debug('Fetch patched successfully.')
+  logger.debug('Fetch patched successfully.')
 }

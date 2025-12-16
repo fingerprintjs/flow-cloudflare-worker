@@ -60,5 +60,18 @@ export function getTestProjects(): TestProject[] {
       testMatch: [sharedTests, /rulesetBasedBlock\/.+\.test\.ts/],
       projectName: 'ruleset-based-block',
     }),
+
+    new TestProject({
+      testAppFn: spaApp,
+      displayName: 'Log Level Config',
+      host: getTestProjectHost('log-level-config'),
+      testMatch: [/logLevelConfig\/.+\.test\.ts/],
+      projectName: 'log-level-config',
+      flowWorker: {
+        variables: {
+          FP_LOG_LEVEL: 'debug',
+        },
+      },
+    }),
   ] satisfies TestProject[]
 }

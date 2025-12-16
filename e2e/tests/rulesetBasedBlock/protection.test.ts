@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import { getProtectedPath } from '../../utils/config'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { assertIsDefined } from '../shared/utils'
+import { onInstrumentorConsoleMessages } from '../../utils/page'
 
 /**
  *
@@ -9,6 +10,11 @@ import { assertIsDefined } from '../shared/utils'
  **/
 test.describe('Protection', () => {
   test('should return empty 403 response if signals are missing', async ({ page }) => {
+    const instrumentorConsoleMessages: string[] = []
+    onInstrumentorConsoleMessages(page, (msg) => {
+      instrumentorConsoleMessages.push(msg.text())
+    })
+
     await page.goto('/', { waitUntil: 'networkidle' })
 
     const protectedRequestPath = getProtectedPath('/test', 'ruleset-based-block')
@@ -45,6 +51,9 @@ test.describe('Protection', () => {
       .then((requests) => requests.find((request) => request.url().includes(protectedRequestPath)))
     assertIsDefined(protectedRequest)
     expect(protectedRequest.headers()[SIGNALS_KEY]).toBeUndefined()
+
+    // There should be no log messages from the instrumentor by default
+    expect(instrumentorConsoleMessages).toHaveLength(0)
   })
 
   test('should return 403 based on ruleset protection', async ({ page }) => {

@@ -1,6 +1,7 @@
 import { WritablePatcherContext } from '../patcher/context'
 import { FingerprintLoader } from '../../shared/fingerprint/types'
 import { getIntegrationInfo } from '../../../shared/integrationInfo'
+import { logger } from '../../shared/logger'
 
 export type SetupPatcherContextParams = {
   // Writable patcher context to configure with signals' provider
@@ -16,7 +17,7 @@ export type SetupPatcherContextParams = {
  * to be ready and then loading the FingerprintJS agent.
  */
 export async function setupPatcherContext(params: SetupPatcherContextParams) {
-  console.debug('Setting up signals collection...', document.readyState)
+  logger.debug('Setting up signals collection...', document.readyState)
 
   const listener = async () => {
     await setProviders(params)
@@ -40,20 +41,20 @@ async function setProviders({ fingerprintLoader, endpoint, patcherCtx }: SetupPa
     integrationInfo: [getIntegrationInfo('instrumentor')],
   })
 
-  console.debug('FingerprintJS agent loaded', agent)
+  logger.debug('FingerprintJS agent loaded', agent)
 
   patcherCtx.setSignalsProvider(async () => {
-    console.debug('Collecting signals...')
+    logger.debug('Collecting signals...')
     const signals = await agent.collect()
-    console.debug('Signals collected:', signals)
+    logger.debug('Signals collected:', signals)
     return signals
   })
 
   patcherCtx.setAgentDataProcessor((data) => {
-    console.debug('Processing agent data:', data)
+    logger.debug('Processing agent data:', data)
     loader.handleAgentData(data)
-    console.debug('Agent data processed.')
+    logger.debug('Agent data processed.')
   })
 
-  console.debug('Patcher context prepared.')
+  logger.debug('Patcher context prepared.')
 }

@@ -1,5 +1,6 @@
 import { injectSignalsElement } from './injectSignalsElement'
 import { PatcherContext } from '../context'
+import { logger } from '../../../shared/logger'
 
 function isForm(element: Node): element is HTMLFormElement {
   return element instanceof HTMLFormElement
@@ -19,7 +20,7 @@ export function observeForms(ctx: PatcherContext) {
     mutations.forEach((mutation) => {
       // Track changes to the "action" or "method" attributes in existing forms
       if (mutation.type === 'attributes' && isForm(mutation.target)) {
-        console.debug('Form action changed')
+        logger.debug('Form action changed')
         onFormChange(mutation.target, ctx)
       }
 
@@ -29,14 +30,14 @@ export function observeForms(ctx: PatcherContext) {
           if (node.nodeType === Node.ELEMENT_NODE && isElement(node)) {
             // Check if the added node itself is a form
             if (isForm(node)) {
-              console.debug('New form added')
+              logger.debug('New form added')
               onFormChange(node, ctx)
             }
 
             // Check if the added node contains any forms
             const forms = node.querySelectorAll('form')
             forms.forEach((form) => {
-              console.debug('New form added (nested):')
+              logger.debug('New form added (nested):')
               onFormChange(form, ctx)
             })
           }

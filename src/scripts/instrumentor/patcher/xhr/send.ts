@@ -1,6 +1,7 @@
 import { PatcherContext } from '../context'
 import { XHRWithFingerprintContext, FingerprintContextSymbol } from './types'
 import { AGENT_DATA_HEADER } from '../../../../shared/const'
+import { logger } from '../../../shared/logger'
 
 /**
  * Creates a patched version of the `send` method for `XMLHttpRequest` instances.
@@ -63,13 +64,13 @@ function prepareResponseHandling(request: XMLHttpRequest, ctx: PatcherContext, d
         }
       }
     } catch (e) {
-      console.error('Error processing XHR agent data:', e)
+      logger.error('Error processing XHR agent data:', e)
     }
   }
 
   try {
     request.addEventListener('loadend', processAgentData)
   } catch {
-    console.error('Failed to add event listener for XHR agent data processing')
+    logger.error('Failed to add event listener for XHR agent data processing')
   }
 }

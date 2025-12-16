@@ -1,15 +1,16 @@
 import { setupInstrumentor } from './instrumentor'
 import { getEndpoint, importFingerprintLoader } from '../shared/fingerprint/import'
 import { getProtectedApis } from './protectedApis'
+import { logger } from '../shared/logger'
 
 setupInstrumentor({
   protectedApis: getProtectedApis(),
   endpoint: getEndpoint(),
   fingerprintLoader: importFingerprintLoader().then((loader) => {
-    console.debug('Fetched FingerprintJS loader:', loader)
+    logger.debug('Fetched FingerprintJS loader:', loader)
 
     return loader
   }),
 }).catch((error) => {
-  console.error('Error during instrumentation:', error)
+  logger.error('Error during instrumentation:', error)
 })
