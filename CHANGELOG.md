@@ -1,5 +1,11 @@
 # flow-cloudflare-worker
 
+## 0.4.1
+
+### Patch Changes
+
+- add `FP_LOG_LEVEL` environment variable to limit console logging in instrumentation scripts ([00f7ff0](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/00f7ff004a884daa4b1733358521ba687cbf1438))
+
 ## 0.4.0
 
 ### Minor Changes
