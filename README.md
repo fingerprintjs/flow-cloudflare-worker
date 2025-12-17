@@ -25,7 +25,9 @@ Cloudflare Worker for Fingerprint Flow.
 
 * [Fingerprint account](https://dashboard.fingerprint.com/signup) with the _Editor_ role assigned (or any role with _Edit configuration_ permission).
 * A website served by Cloudflare. For maximum accuracy benefits, your website should be [proxied by Cloudflare](https://developers.cloudflare.com/dns/manage-dns-records/reference/proxied-dns-records/) (not DNS-only).
+## Deploying
 
+To use Fingerprint Flow, please deploy an instance of this worker [using the Fingerprint dashboard](https://dev.fingerprint.com/docs/rules-engine-and-flow-deployments-beta).
 ## Configuration
 
 The worker is configured using a `wrangler.jsonc` file. An example file `wrangler.example.jsonc` is provided in the repository.
