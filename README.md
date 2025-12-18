@@ -29,6 +29,7 @@ Cloudflare Worker for Fingerprint Flow.
 ## Deploying
 
 To use Fingerprint Flow, please deploy an instance of this worker [using the Fingerprint dashboard](https://dev.fingerprint.com/docs/rules-engine-and-flow-deployments-beta).
+
 ## Configuration
 
 The worker is configured using a `wrangler.jsonc` file. An example file `wrangler.example.jsonc` is provided in the repository.
