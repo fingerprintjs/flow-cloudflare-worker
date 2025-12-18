@@ -141,3 +141,7 @@ To run all tests, use the following command:
 ```bash
 pnpm test
 ```
+
+### How to publish
+
+We use [changesets](https://github.com/changesets/changesets) for handling release notes. If there are relevant changes, please add them to changeset via `pnpm exec changeset`. You need to run `pnpm install` before doing so.
