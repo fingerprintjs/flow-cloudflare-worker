@@ -4,6 +4,9 @@ import checker from 'vite-plugin-checker'
 import { getLicenseBanner } from './build-utils/license'
 
 export default defineConfig({
+  server: {
+    cors: false,
+  },
   plugins: [
     checker({
       typescript: {
