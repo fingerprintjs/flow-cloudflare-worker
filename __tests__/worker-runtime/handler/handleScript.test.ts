@@ -83,7 +83,7 @@ describe('Handle script', () => {
       const url = `${getScriptUrl('loader.js')}?q=123&version=3`
       const request = new CloudflareRequest(url)
       const ctx = createExecutionContext()
-      const response = await handler.fetch(request, mockEnv)
+      const response = await handler.fetch(request, mockEnv, ctx)
       await waitOnExecutionContext(ctx)
 
       expect(fetch).toHaveBeenCalledTimes(1)

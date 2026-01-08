@@ -1,9 +1,11 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
-import { processRuleset, RuleActionUnion } from '../fingerprint/ruleset'
+import { processRuleset } from '../fingerprint/ruleset'
 import { hasContentType, isDocumentDestination } from '../utils/headers'
 import { injectAgentProcessorScript } from '../scripts'
 import { fetchOrigin } from '../utils/origin'
+import { TypedEnv } from '../types'
+import { getFallbackRuleAction, getRoutePrefix, isMonitorMode } from '../env'
 
 /**
  * Parameters required for handling a protected API call.
@@ -13,12 +15,8 @@ export type HandleProtectedApiCallParams = {
   request: Request
   /** Client for sending fingerprinting data to the ingress service */
   identificationClient: IdentificationClient
-  /** Fallback rule if identification client rule evaluation fails */
-  fallbackRule: RuleActionUnion
-  /** Route prefix for the worker requests */
-  routePrefix: string
-  /** Flag that determines whether worker is in Monitor Mode */
-  isMonitorMode: boolean
+  /** The environment for the request*/
+  env: TypedEnv
 }
 
 /**
@@ -28,15 +26,12 @@ export type HandleProtectedApiCallParams = {
 export async function handleProtectedApiCall({
   request,
   identificationClient,
-  fallbackRule,
-  routePrefix,
-  isMonitorMode,
+  env,
 }: HandleProtectedApiCallParams): Promise<Response> {
   const [response, agentData] = await getResponseForProtectedCall({
     request,
     identificationClient,
-    fallbackRule,
-    isMonitorMode,
+    env,
   })
 
   /**
@@ -49,7 +44,7 @@ export async function handleProtectedApiCall({
     isDocumentDestination(request.headers)
   ) {
     console.info('Injecting agent processor script into HTML response.')
-    return injectAgentProcessorScript(response, agentData, routePrefix)
+    return injectAgentProcessorScript(response, agentData, getRoutePrefix(env))
   }
 
   return response
@@ -69,9 +64,8 @@ export async function handleProtectedApiCall({
 async function getResponseForProtectedCall({
   request,
   identificationClient,
-  fallbackRule,
-  isMonitorMode,
-}: Omit<HandleProtectedApiCallParams, 'routePrefix'>): Promise<[response: Response, agentData: string | null]> {
+  env,
+}: HandleProtectedApiCallParams): Promise<[response: Response, agentData: string | null]> {
   let ingressResponse: SendResult
   let originRequest: Request
   let signals: string
@@ -82,26 +76,26 @@ async function getResponseForProtectedCall({
     originRequest = result.request
   } catch (e) {
     console.error('Failed to parse incoming request:', e)
-    return [await handleFallbackRule(request, fallbackRule, isMonitorMode), null]
+    return [await handleFallbackRule(request, env), null]
   }
 
   try {
     ingressResponse = await identificationClient.send(originRequest, signals)
   } catch (error) {
     console.error('Error sending request to ingress service:', error)
-    return [await handleFallbackRule(originRequest, fallbackRule, isMonitorMode), null]
+    return [await handleFallbackRule(originRequest, env), null]
   }
 
   let originResponse: Response
 
-  if (isMonitorMode) {
+  if (isMonitorMode(env)) {
     originResponse = await fetchOrigin(originRequest)
   } else {
     if (ingressResponse.ruleAction) {
-      originResponse = await processRuleset(ingressResponse.ruleAction, originRequest)
+      originResponse = await processRuleset(ingressResponse.ruleAction, originRequest, env)
     } else {
       console.warn('No ruleset processor found for ingress response, using fallback rule.')
-      originResponse = await processRuleset(fallbackRule, originRequest)
+      originResponse = await processRuleset(getFallbackRuleAction(env), originRequest, env)
     }
   }
 
@@ -154,18 +148,13 @@ function setHeadersFromIngressToOrigin(ingressResponse: SendResult, originRespon
  * Otherwise, it processes the ruleset using the provided fallback rule.
  *
  * @param {Request} request - The incoming request object to be processed.
- * @param {RuleActionUnion} fallbackRule - The fallback rule to be applied to the request.
- * @param {boolean} [isMonitorMode] - Indicates whether the function operates in monitor mode.
+ * @param {TypedEnv} env - The environment for the request
  * @return {Promise<Response>} A promise that resolves to the response after processing the request.
  */
-function handleFallbackRule(
-  request: Request,
-  fallbackRule: RuleActionUnion,
-  isMonitorMode: boolean
-): Promise<Response> {
-  if (isMonitorMode) {
+function handleFallbackRule(request: Request, env: TypedEnv): Promise<Response> {
+  if (isMonitorMode(env)) {
     return fetchOrigin(request)
   }
 
-  return processRuleset(fallbackRule, request)
+  return processRuleset(getFallbackRuleAction(env), request, env)
 }

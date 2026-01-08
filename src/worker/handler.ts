@@ -2,15 +2,7 @@ import { TypedEnv } from './types'
 import { matchUrl } from './urlMatching'
 import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
-import {
-  getCDNHost,
-  getFallbackRuleAction,
-  getFpLogLevel,
-  getProtectedApis,
-  getPublicKey,
-  getRoutePrefix,
-  isMonitorMode,
-} from './env'
+import { getCDNHost, getFpLogLevel, getProtectedApis, getPublicKey, getRoutePrefix } from './env'
 
 import { handleError } from './handlers/handleError'
 import { fetchOrigin } from './utils/origin'
@@ -51,9 +43,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
         return await handleProtectedApiCall({
           request,
           identificationClient: IdentificationClient.fromEnv(env),
-          fallbackRule: getFallbackRuleAction(env),
-          routePrefix: getRoutePrefix(env),
-          isMonitorMode: isMonitorMode(env),
+          env,
         })
 
       default:

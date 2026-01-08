@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { processRuleset, RuleAction } from '../../src/worker/fingerprint/ruleset'
+import { mockEnv } from '../utils/mockEnv'
+import { AGENT_DATA_HEADER } from '../../src/shared/const'
 
 describe('Ruleset evaluation', () => {
   beforeEach(() => {
@@ -41,7 +43,7 @@ describe('Ruleset evaluation', () => {
         method: 'POST',
       })
 
-      const response = await processRuleset(rule, request)
+      const response = await processRuleset(rule, request, mockEnv)
 
       expect(await response.text()).toEqual('Access denied')
       expect(response.status).toEqual(400)
@@ -64,10 +66,60 @@ describe('Ruleset evaluation', () => {
         method: 'POST',
       })
 
-      const response = await processRuleset(rule, request)
+      const response = await processRuleset(rule, request, mockEnv)
 
       expect(await response.text()).toEqual('')
       expect(response.status).toEqual(400)
+      // Request to origin should not be made
+      expect(fetch).toHaveBeenCalledTimes(0)
+    })
+
+    it.each([
+      ['headers', []],
+      [
+        'no headers',
+        [
+          {
+            name: 'x-blocked',
+            value: 'true',
+          },
+          {
+            name: 'set-cookie',
+            value: 'is_blocked=true',
+          },
+          {
+            name: 'set-cookie',
+            value: 'id=123',
+          },
+        ],
+      ],
+    ])('should return custom response with CORS headers set - %s', async (_name, headers) => {
+      const rule: RuleAction = {
+        type: 'block',
+        headers,
+        rule_id: '1',
+        body: 'Access denied',
+        rule_expression: '',
+        ruleset_id: '',
+        status_code: 400,
+      }
+      const request = new Request('https://example.com/api', {
+        method: 'POST',
+        headers: {
+          Origin: 'https://app.example.com:443',
+        },
+      })
+
+      const response = await processRuleset(rule, request, {
+        ...mockEnv,
+        IDENTIFICATION_PAGE_URLS: [...mockEnv.IDENTIFICATION_PAGE_URLS, 'https://app.example.com/page'],
+      })
+
+      expect(await response.text()).toEqual('Access denied')
+      expect(response.status).toEqual(400)
+      expect(response.headers.get('Access-Control-Allow-Origin')).toEqual('https://app.example.com')
+      expect(response.headers.get('Access-Control-Allow-Credentials')).toEqual('true')
+      expect(response.headers.get('Access-Control-Expose-Headers')).toEqual(AGENT_DATA_HEADER)
       // Request to origin should not be made
       expect(fetch).toHaveBeenCalledTimes(0)
     })
@@ -106,7 +158,7 @@ describe('Ruleset evaluation', () => {
           'set-cookie': 'request_cookie=true',
         },
       })
-      const response = await processRuleset(rule, request)
+      const response = await processRuleset(rule, request, mockEnv)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
@@ -157,7 +209,7 @@ describe('Ruleset evaluation', () => {
       const request = new Request('https://example.com/api', {
         method: 'POST',
       })
-      const response = await processRuleset(rule, request)
+      const response = await processRuleset(rule, request, mockEnv)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
@@ -192,7 +244,7 @@ describe('Ruleset evaluation', () => {
           'set-cookie': 'request_cookie=true',
         },
       })
-      const response = await processRuleset(rule, request)
+      const response = await processRuleset(rule, request, mockEnv)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
@@ -232,7 +284,7 @@ describe('Ruleset evaluation', () => {
           'set-cookie': 'request_cookie=true',
         },
       })
-      const response = await processRuleset(rule, request)
+      const response = await processRuleset(rule, request, mockEnv)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
@@ -280,7 +332,7 @@ describe('Ruleset evaluation', () => {
           'set-cookie': 'request_cookie=true',
         },
       })
-      const response = await processRuleset(rule, request)
+      const response = await processRuleset(rule, request, mockEnv)
       expect(response).toBe(mockResponse)
 
       const requestArg = vi.mocked(fetch).mock.calls[0][0] as Request
