@@ -850,6 +850,76 @@ describe('Protected API', () => {
       expect(response.headers.get('x-blocked')).toEqual('true')
     })
 
+    it('should send cross-origin request to ingress and block request with CORS headers', async () => {
+      const identificationPageUrl = new URL('https://app.example.com/page')
+      prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+              rule_action: {
+                type: 'block',
+                headers: [
+                  {
+                    name: 'x-blocked',
+                    value: 'true',
+                  },
+                ],
+                status_code: 403,
+                body: 'Not allowed',
+                rule_expression: '',
+                rule_id: '12',
+                ruleset_id: '1',
+              },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+              event: {
+                ...mockEvent(),
+                url: identificationPageUrl.toString(),
+              },
+            } satisfies SendResponse)
+          )
+        },
+        mockOriginHandler: async () => new Response('origin'),
+      })
+
+      const requestHeaders = new Headers({
+        [SIGNALS_KEY]: 'signals',
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        origin: identificationPageUrl.origin,
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+      })
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          IDENTIFICATION_PAGE_URLS: [...mockEnv.IDENTIFICATION_PAGE_URLS, identificationPageUrl.toString()],
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      // Only one request to ingress should be made
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+
+      expect(response.status).toEqual(403)
+      expect(await response.text()).toEqual('Not allowed')
+      expect(response.headers.get('x-blocked')).toEqual('true')
+      expect(response.headers.get('Access-Control-Allow-Origin')).toEqual('https://app.example.com')
+      expect(response.headers.get('Access-Control-Allow-Credentials')).toEqual('true')
+      expect(response.headers.get('Access-Control-Expose-Headers')).toEqual(AGENT_DATA_HEADER)
+    })
+
     it('should send request to ingress and modify the request if ruleset says so', async () => {
       const originResponse = new Response('origin')
       prepareMockFetch({

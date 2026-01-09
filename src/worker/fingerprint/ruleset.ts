@@ -1,4 +1,3 @@
-import { AGENT_DATA_HEADER } from '../../shared/const'
 import { TypedEnv } from '../types'
 import { getAllowedOrigin } from '../urlMatching'
 import { fetchOrigin } from '../utils/origin'
@@ -139,8 +138,8 @@ function handleBlock(request: Request, action: BlockAction, env: TypedEnv) {
       headers = new Headers()
     }
     headers.set('Access-Control-Allow-Origin', allowedOrigin)
-    headers.set('Access-Control-Allow-Credentials', 'true')
-    headers.set('Access-Control-Expose-Headers', AGENT_DATA_HEADER)
+    // Additional CORS headers will be set by further downstream processing
+    // now that the Access-Control-Allow-Origin header field is set.
   }
 
   console.debug('Blocking request with custom response:', action)

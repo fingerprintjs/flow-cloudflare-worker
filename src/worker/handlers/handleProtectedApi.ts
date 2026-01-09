@@ -6,6 +6,7 @@ import { injectAgentProcessorScript } from '../scripts'
 import { fetchOrigin } from '../utils/origin'
 import { TypedEnv } from '../types'
 import { getFallbackRuleAction, getRoutePrefix, isMonitorMode } from '../env'
+import { setCorsHeadersForInstrumentation } from '../utils/request'
 
 /**
  * Parameters required for handling a protected API call.
@@ -34,6 +35,8 @@ export async function handleProtectedApiCall({
     env,
   })
 
+  setCorsHeadersForInstrumentation(request, response.headers)
+
   /**
    * For HTML responses, inject the agent processor script into the <head> element to process the agent data.
    * */
@@ -60,6 +63,9 @@ export async function handleProtectedApiCall({
  * 4. Returns the combined response with updated headers
  *
  * @param params - Configuration object containing request, ingress client, and error response
+ *
+ * @returns the `Response` and optional data that needs to be sent back to the agent. The `Headers`
+ *          on the `Response` are mutable.
  */
 async function getResponseForProtectedCall({
   request,

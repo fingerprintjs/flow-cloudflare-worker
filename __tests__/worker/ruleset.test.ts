@@ -2,7 +2,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { processRuleset, RuleAction } from '../../src/worker/fingerprint/ruleset'
 import { mockEnv } from '../utils/mockEnv'
-import { AGENT_DATA_HEADER } from '../../src/shared/const'
 
 describe('Ruleset evaluation', () => {
   beforeEach(() => {
@@ -118,8 +117,6 @@ describe('Ruleset evaluation', () => {
       expect(await response.text()).toEqual('Access denied')
       expect(response.status).toEqual(400)
       expect(response.headers.get('Access-Control-Allow-Origin')).toEqual('https://app.example.com')
-      expect(response.headers.get('Access-Control-Allow-Credentials')).toEqual('true')
-      expect(response.headers.get('Access-Control-Expose-Headers')).toEqual(AGENT_DATA_HEADER)
       // Request to origin should not be made
       expect(fetch).toHaveBeenCalledTimes(0)
     })
