@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { getCrossOriginValue, setCorsHeadersForInstrumentation } from '../../src/worker/utils/request'
-import { AGENT_DATA_HEADER } from '../../src/shared/const'
+import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../src/shared/const'
 
 describe('Request', () => {
   describe('getCrossOriginValue', () => {
@@ -69,6 +69,7 @@ describe('Request', () => {
       })
       const headers = new Headers({
         'Access-Control-Allow-Origin': 'https://allowed.example.com',
+        [AGENT_DATA_HEADER]: 'agent-data',
       })
 
       setCorsHeadersForInstrumentation(request, headers)
@@ -90,7 +91,7 @@ describe('Request', () => {
 
       expect(headers.get('Access-Control-Allow-Origin')).toBe('https://origin.example.com')
       expect(headers.get('Access-Control-Allow-Credentials')).toBe('true')
-      expect(headers.get('Access-Control-Expose-Headers')).toBe(AGENT_DATA_HEADER)
+      expect(headers.get('Access-Control-Expose-Headers')).toBeNull()
     })
 
     it('should not modify headers when Access-Control-Allow-Origin is wildcard but Origin header is missing', () => {
@@ -134,7 +135,7 @@ describe('Request', () => {
 
       expect(headers.get('Access-Control-Allow-Origin')).toBe('https://allowed.example.com')
       expect(headers.get('Access-Control-Allow-Credentials')).toBe('true')
-      expect(headers.get('Access-Control-Expose-Headers')).toBe(AGENT_DATA_HEADER)
+      expect(headers.get('Access-Control-Expose-Headers')).toBeNull()
     })
 
     it('should append to existing Access-Control-Expose-Headers', () => {
@@ -144,11 +145,12 @@ describe('Request', () => {
       const headers = new Headers({
         'Access-Control-Allow-Origin': 'https://allowed.example.com',
         'Access-Control-Expose-Headers': 'X-Custom-Header',
+        [AGENT_DATA_HEADER]: 'agent-data',
       })
 
       setCorsHeadersForInstrumentation(request, headers)
 
-      expect(headers.get('Access-Control-Expose-Headers')).toBe(`X-Custom-Header, ${AGENT_DATA_HEADER}`)
+      expect(headers.get('Access-Control-Expose-Headers')).toBe(`X-Custom-Header,${AGENT_DATA_HEADER}`)
     })
 
     it('should append to existing Access-Control-Expose-Headers with multiple values', () => {
@@ -158,13 +160,12 @@ describe('Request', () => {
       const headers = new Headers({
         'Access-Control-Allow-Origin': 'https://allowed.example.com',
         'Access-Control-Expose-Headers': 'X-Custom-Header, X-Another-Header',
+        [AGENT_DATA_HEADER]: 'agent-data',
       })
 
       setCorsHeadersForInstrumentation(request, headers)
 
-      expect(headers.get('Access-Control-Expose-Headers')).toBe(
-        `X-Custom-Header, X-Another-Header, ${AGENT_DATA_HEADER}`
-      )
+      expect(headers.get('Access-Control-Expose-Headers')).toBe(`X-Custom-Header,X-Another-Header,${AGENT_DATA_HEADER}`)
     })
 
     it('should handle Origin with port correctly', () => {
@@ -194,6 +195,24 @@ describe('Request', () => {
       expect(headers.get('Access-Control-Allow-Origin')).toBe('*')
       expect(headers.get('Access-Control-Allow-Credentials')).toBeNull()
       expect(headers.get('Access-Control-Expose-Headers')).toBeNull()
+    })
+
+    it('should handle OPTIONS method', () => {
+      const request = new Request('https://example.com', {
+        method: 'OPTIONS',
+        headers: { Origin: 'https://origin.example.com' },
+      })
+      const headers = new Headers({
+        'Access-Control-Allow-Origin': 'https://allowed.example.com',
+        'Access-Control-Allow-Headers': 'content-type',
+      })
+
+      setCorsHeadersForInstrumentation(request, headers)
+
+      expect(headers.get('Access-Control-Allow-Origin')).toBe('https://allowed.example.com')
+      expect(headers.get('Access-Control-Allow-Credentials')).toBe('true')
+      expect(headers.get('Access-Control-Expose-Headers')).toBeNull()
+      expect(headers.get('Access-Control-Allow-Headers')).toEqual(`content-type,${SIGNALS_KEY}`)
     })
   })
 })

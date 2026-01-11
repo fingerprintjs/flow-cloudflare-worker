@@ -3,7 +3,6 @@ import { TypedEnv } from './types'
 import { getIdentificationPageUrls, getProtectedApis, getRoutePrefix } from './env'
 import { Script } from '../shared/scripts'
 import { findMatchingRoute, parseRoutes } from '@fingerprintjs/url-matcher'
-import { ProtectedApiHttpMethod } from '../shared/types'
 import { getCrossOriginValue } from './utils/request'
 
 export type UrlType =
@@ -12,7 +11,7 @@ export type UrlType =
     }
   | {
       type: 'protection'
-      method: ProtectedApiHttpMethod
+      options: boolean
     }
   | {
       type: 'script'
@@ -46,13 +45,13 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
       },
 
       ...getProtectedApis(env)
-        .filter((protectedApi) => protectedApi.method === method)
+        .filter((protectedApi) => protectedApi.method === method || method === 'OPTIONS')
         .map((protectedApi) => {
           return {
             url: protectedApi.url,
             metadata: {
               type: 'protection' as const,
-              method: protectedApi.method,
+              options: method === 'OPTIONS',
             },
           }
         }),

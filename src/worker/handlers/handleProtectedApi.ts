@@ -7,6 +7,7 @@ import { fetchOrigin } from '../utils/origin'
 import { TypedEnv } from '../types'
 import { getFallbackRuleAction, getRoutePrefix, isMonitorMode } from '../env'
 import { setCorsHeadersForInstrumentation } from '../utils/request'
+import { copyResponseWithNewHeaders } from '../utils/response'
 
 /**
  * Parameters required for handling a protected API call.
@@ -113,15 +114,7 @@ async function getResponseForProtectedCall({
   }
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
-  return [
-    new Response(originResponse.body, {
-      status: originResponse.status,
-      headers: originResponseHeaders,
-      statusText: originResponse.statusText,
-      cf: originResponse.cf,
-    }),
-    ingressResponse.agentData,
-  ]
+  return [copyResponseWithNewHeaders(originResponse, originResponseHeaders), ingressResponse.agentData]
 }
 
 /**

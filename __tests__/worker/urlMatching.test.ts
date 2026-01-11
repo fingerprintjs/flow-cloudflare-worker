@@ -20,7 +20,7 @@ describe('URL matching', () => {
 
       expect(result).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
     })
 
@@ -39,7 +39,7 @@ describe('URL matching', () => {
 
       expect(result).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
     })
 
@@ -58,7 +58,7 @@ describe('URL matching', () => {
 
       expect(result).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
     })
 
@@ -111,11 +111,11 @@ describe('URL matching', () => {
 
       expect(matchUrl(new URL('https://api.example.com/api/v1/users'), 'POST', env)).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
       expect(matchUrl(new URL('https://api.example.com/api/v2/users'), 'POST', env)).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
       expect(matchUrl(new URL('https://api.example.com/api/v3/users'), 'POST', env)).toBeUndefined()
     })
@@ -138,11 +138,11 @@ describe('URL matching', () => {
       const url = new URL('https://api.example.com/api/users')
       expect(matchUrl(url, 'POST', env)).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
       expect(matchUrl(url, 'PUT', env)).toEqual({
         type: 'protection',
-        method: 'PUT',
+        options: false,
       })
       expect(matchUrl(url, 'DELETE', env)).toBeUndefined()
     })
@@ -348,7 +348,7 @@ describe('URL matching', () => {
 
       expect(result).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
     })
 
@@ -381,7 +381,7 @@ describe('URL matching', () => {
 
       expect(result1).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
       expect(result2).toBeUndefined()
     })
@@ -421,7 +421,7 @@ describe('URL matching', () => {
       })
       expect(matchUrl(new URL('https://example.com/blog/like/post/123'), 'POST', env)).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
       expect(matchUrl(new URL('https://example.com/privacy'), 'GET', env)).toBeUndefined()
     })
@@ -443,7 +443,7 @@ describe('URL matching', () => {
       })
       expect(matchUrl(new URL('https://example.com/blog/post/123'), 'POST', env)).toEqual({
         type: 'protection',
-        method: 'POST',
+        options: false,
       })
       expect(matchUrl(new URL('https://example.com/privacy'), 'GET', env)).toBeUndefined()
     })
