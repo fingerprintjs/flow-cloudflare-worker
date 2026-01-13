@@ -13,7 +13,12 @@ export function createPatcherRequest(request: XMLHttpRequest, metadata: XHRFinge
   return {
     url: metadata.url,
     method: metadata.method,
-    setHeader: (name: string, value: string) => {
+    setIncludeCredentials() {
+      const appIncludedCredentials = request.withCredentials
+      request.withCredentials = true
+      return appIncludedCredentials
+    },
+    setHeader(name: string, value: string) {
       try {
         request.setRequestHeader(name, value)
       } catch (e) {

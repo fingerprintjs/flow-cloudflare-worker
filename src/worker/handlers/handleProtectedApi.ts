@@ -76,18 +76,22 @@ async function getResponseForProtectedCall({
   let ingressResponse: SendResult
   let originRequest: Request
   let signals: string
+  let clientCookie: string | undefined
+  let includedCrossOriginCredentials: boolean
 
   try {
     const result = await IdentificationClient.parseIncomingRequest(request)
     signals = result.signals
-    originRequest = result.request
+    originRequest = result.originRequest
+    clientCookie = result.clientCookie
+    includedCrossOriginCredentials = result.includedCrossOriginCredentials
   } catch (e) {
     console.error('Failed to parse incoming request:', e)
     return [await handleFallbackRule(request, env), null]
   }
 
   try {
-    ingressResponse = await identificationClient.send(originRequest, signals)
+    ingressResponse = await identificationClient.send(originRequest, signals, clientCookie)
   } catch (error) {
     console.error('Error sending request to ingress service:', error)
     return [await handleFallbackRule(originRequest, env), null]
@@ -110,7 +114,7 @@ async function getResponseForProtectedCall({
   // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
   // it doesn't make sense to set headers from ingress, because the browser will discard them anyway
   if (!isDocumentDestination(request.headers)) {
-    setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders)
+    setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, includedCrossOriginCredentials)
   }
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
@@ -126,12 +130,23 @@ async function getResponseForProtectedCall({
  *
  * @param ingressResponse - Result from the ingress service containing agent data and cookies
  * @param originResponseHeaders - Mutable headers object from the origin response to be modified
+ * @param includedCrossOriginCredentials - true if the instrumented request is cross-origin and included credentials (i.e., cookies) for identification purposes
  *
  */
-function setHeadersFromIngressToOrigin(ingressResponse: SendResult, originResponseHeaders: Headers) {
+function setHeadersFromIngressToOrigin(
+  ingressResponse: SendResult,
+  originResponseHeaders: Headers,
+  includedCrossOriginCredentials: boolean
+) {
   const { agentData, setCookieHeaders } = ingressResponse
   console.debug('Adding agent data header', agentData)
   originResponseHeaders.set(AGENT_DATA_HEADER, agentData)
+
+  if (includedCrossOriginCredentials) {
+    // Delete any cookies set by the origin, they would have been ignored
+    // by the browser if the request was not instrumented.
+    originResponseHeaders.delete('Set-Cookie')
+  }
 
   if (setCookieHeaders?.length) {
     console.debug('Adding set-cookie headers from ingress response', setCookieHeaders)

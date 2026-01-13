@@ -394,5 +394,49 @@ describe('XMLHttpRequest Patcher', () => {
       expect(server.requests[0].headers['fp-data']).toBe('test-signals-data')
       expect(server.requests[1].headers['fp-data']).toBe('test-signals-data')
     })
+
+    it('preserves the withCredentials property correctly', async () => {
+      withAgentData()
+      patchXHR(mockContext)
+
+      const xhr = new XMLHttpRequest()
+
+      // First instrumented request
+      xhr.open('POST', '/protected/one')
+
+      expect(xhr.withCredentials).toBeFalsy()
+
+      xhr.send()
+      await awaitResponse(xhr)
+
+      expect(xhr.withCredentials).toBeTruthy()
+
+      // Second request
+      xhr.open('POST', '/public')
+
+      // Should restore the original value before signals injection changed
+      // the value
+      expect(xhr.withCredentials).toBeFalsy()
+
+      xhr.withCredentials = true
+      xhr.open('POST', '/public')
+
+      // Another open should not change the value
+      expect(xhr.withCredentials).toBeTruthy()
+
+      xhr.withCredentials = false
+      xhr.send()
+      await awaitResponse(xhr)
+
+      // The value should not have changed
+      expect(xhr.withCredentials).toBeFalsy()
+
+      xhr.open('POST', '/protected/two')
+      xhr.send()
+      await awaitResponse(xhr)
+
+      // The value was set by signals injection
+      expect(xhr.withCredentials).toBeTruthy()
+    })
   })
 })
