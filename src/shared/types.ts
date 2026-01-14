@@ -1,4 +1,4 @@
-const PROTECTED_API_HTTP_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH', 'GET', 'HEAD', 'OPTIONS'] as const
+const PROTECTED_API_HTTP_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH', 'GET', 'HEAD'] as const
 
 export type ProtectedApiHttpMethod = (typeof PROTECTED_API_HTTP_METHODS)[number]
 

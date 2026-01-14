@@ -152,7 +152,7 @@ export class WritablePatcherContext implements PatcherContext {
     const normalizedMethod = method.toUpperCase()
 
     if (!isProtectedApiHttpMethod(normalizedMethod)) {
-      logger.debug('Invalid method:', normalizedMethod)
+      logger.debug('Method is not a protected API method', normalizedMethod)
       return false
     }
 
