@@ -24,9 +24,6 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     baseURL: getTestDomain(),
-    extraHTTPHeaders: {
-      'cache-control': 'no-cache',
-    },
   },
   projects: [
     {
