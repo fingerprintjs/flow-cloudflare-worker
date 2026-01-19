@@ -24,6 +24,10 @@ export function getTestProjectHost(projectName: TestWorkerProjectName): string {
   return `${getTestId()}-${projectName}.${getTestDomain()}`
 }
 
+export function getTestHost(name: string) {
+  return `${getTestId()}-${name}.${getTestDomain()}`
+}
+
 export function getPublicKey() {
   return getEnv('FP_PUBLIC_KEY')
 }
