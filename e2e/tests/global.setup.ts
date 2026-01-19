@@ -19,8 +19,8 @@ setup('wait for website', async () => {
         attempts++
       }
 
-      // Wait for 1 second before trying again
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // Wait for 3 seconds before trying again
+      await new Promise((resolve) => setTimeout(resolve, 3000))
     }
 
     if (attempts >= maxAttempts) {
