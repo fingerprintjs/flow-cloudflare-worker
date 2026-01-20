@@ -74,9 +74,9 @@ describe('Ruleset evaluation', () => {
     })
 
     it.each([
-      ['headers', []],
+      ['no headers', []],
       [
-        'no headers',
+        'headers',
         [
           {
             name: 'x-blocked',
