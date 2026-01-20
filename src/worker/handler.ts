@@ -6,13 +6,9 @@ import {
   getCDNHost,
   getFallbackRuleAction,
   getFpLogLevel,
-  getFpRegion,
-  getIngressBaseHost,
   getProtectedApis,
   getPublicKey,
   getRoutePrefix,
-  getRulesetId,
-  getSecretKey,
   isMonitorMode,
 } from './env'
 
@@ -23,14 +19,6 @@ import { IdentificationClient } from './fingerprint/identificationClient'
 
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
-
-  const identificationClient = new IdentificationClient(
-    getFpRegion(env),
-    getIngressBaseHost(env),
-    getSecretKey(env),
-    getRoutePrefix(env),
-    getRulesetId(env)
-  )
 
   try {
     const matchedUrl = matchUrl(new URL(request.url), request.method, env)
@@ -52,7 +40,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
 
       case 'browserCache':
         if (request.method === 'GET') {
-          return identificationClient.browserCache(request)
+          return IdentificationClient.fromEnv(env).browserCache(request)
         }
 
         console.warn(`Invalid method for browser cache request: ${request.method}. Falling back to origin.`)
@@ -62,7 +50,7 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
       case 'protection':
         return await handleProtectedApiCall({
           request,
-          identificationClient,
+          identificationClient: IdentificationClient.fromEnv(env),
           fallbackRule: getFallbackRuleAction(env),
           routePrefix: getRoutePrefix(env),
           isMonitorMode: isMonitorMode(env),
