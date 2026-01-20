@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { getCrossOriginValue, setCorsHeadersForInstrumentation } from '../../src/worker/utils/request'
+import { getCrossOriginUrl, setCorsHeadersForInstrumentation } from '../../src/worker/utils/request'
 import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../src/shared/const'
 
 describe('Request', () => {
-  describe('getCrossOriginValue', () => {
+  describe('getCrossOriginUrl', () => {
     it.each([
       ['same-origin request', 'GET', 'https://example.com/path', undefined, null],
       [
@@ -30,7 +30,12 @@ describe('Request', () => {
           : {},
         method,
       })
-      expect(getCrossOriginValue(request)).toStrictEqual(expectedOrigin)
+      const crossOriginUrl = getCrossOriginUrl(request)
+      if (crossOriginUrl) {
+        expect(crossOriginUrl.origin).toStrictEqual(expectedOrigin)
+      } else {
+        expect(crossOriginUrl).toStrictEqual(expectedOrigin)
+      }
     })
   })
 

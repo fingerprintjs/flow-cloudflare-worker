@@ -3,7 +3,7 @@ import { TypedEnv } from './types'
 import { getIdentificationPageUrls, getProtectedApis, getRoutePrefix } from './env'
 import { Script } from '../shared/scripts'
 import { findMatchingRoute, parseRoutes } from '@fingerprintjs/url-matcher'
-import { getCrossOriginValue } from './utils/request'
+import { getCrossOriginUrl } from './utils/request'
 
 export type UrlType =
   | {
@@ -82,16 +82,20 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
  * Checks if the request is a cross-origin request and the origin of the request
  * matches the origin of an identification page (i.e., it is an allowed origin)
  *
- * @returns the allowed origin; null otherwise, including when the request is a same-origin request
+ * @returns the allowed origin (protocol://host[:port]); null otherwise, including when the request is a same-origin request
  */
 export function getAllowedOrigin(request: Request, typedEnv: TypedEnv): string | null {
-  const crossOrigin = getCrossOriginValue(request)
-  if (crossOrigin) {
-    for (const identificationPageUrl of getIdentificationPageUrls(typedEnv)) {
-      const url = new URL(identificationPageUrl)
-      if (url.origin == crossOrigin) {
-        return crossOrigin
-      }
+  const crossOriginUrl = getCrossOriginUrl(request)
+  if (crossOriginUrl) {
+    const identificationPageRoutes = parseRoutes(getIdentificationPageUrls(typedEnv)).map((route) => {
+      // Convert the identification page URL into a URL that is equivalent to the page's origin
+      route.path = '/'
+      return route
+    })
+
+    const matchedIdentificationPage = findMatchingRoute(crossOriginUrl, identificationPageRoutes)
+    if (matchedIdentificationPage) {
+      return crossOriginUrl.origin
     }
   }
 

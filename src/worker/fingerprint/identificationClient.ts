@@ -4,7 +4,7 @@ import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../e
 import { getHeaderOrThrow, getIp, hasContentType } from '../utils/headers'
 import { findCookie } from '../cookies'
 import { RuleAction } from './ruleset'
-import { copyRequest, getCrossOriginValue } from '../utils/request'
+import { copyRequest, getCrossOriginUrl } from '../utils/request'
 import { z } from 'zod/v4'
 import { handleTampering } from './tampering'
 import { TypedEnv } from '../types'
@@ -280,7 +280,7 @@ export class IdentificationClient {
       const parsedSignals = appIncludedCredentials ? signals.substring(1) : signals
       console.debug('Found signals in headers:', parsedSignals)
 
-      const isCrossOriginRequest = getCrossOriginValue(request) != null
+      const isCrossOriginRequest = getCrossOriginUrl(request) != null
 
       // Remove cookies when the app did not tell the browser to include them
       // but request instrumentation overrode that preference

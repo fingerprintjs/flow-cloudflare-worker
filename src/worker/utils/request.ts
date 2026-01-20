@@ -49,10 +49,10 @@ export function copyRequest({ request, init, url }: CopyRequestParams): Request<
 /**
  * @param request the `Request` to examine
  *
- * @return if the request is a cross-origin request, the normalized origin value from the `Origin` header
+ * @return if the request is a cross-origin request, the normalized origin value from the `Origin` header, as a URL
  *         if the request is a same-origin request or the origin value is invalid, null is returned
  */
-export function getCrossOriginValue(request: Request): string | null {
+export function getCrossOriginUrl(request: Request): URL | null {
   const originHeader = request.headers.get('Origin')
   if (!originHeader) {
     return null
@@ -72,7 +72,7 @@ export function getCrossOriginValue(request: Request): string | null {
   }
 
   // Validate that the originHeader is only an origin (protocol://host[:port])
-  if (originUrl.pathname !== '/' || originUrl.search || originUrl.hash || originHeader.endsWith('/')) {
+  if (originHeader.endsWith('/') || originUrl.toString() !== `${originUrl.origin}/`) {
     return null
   }
 
@@ -81,7 +81,7 @@ export function getCrossOriginValue(request: Request): string | null {
     return null
   }
 
-  return originUrl.origin
+  return originUrl
 }
 
 /**
@@ -107,9 +107,9 @@ export function setCorsHeadersForInstrumentation(request: Request, originRespons
     // Access-Control-Allow-Credentials is not valid for the wildcard origin
     // but the origin is allowed by the origin server so the Origin can be
     // reflected to the response without security concerns.
-    const crossOriginValue = getCrossOriginValue(request)
-    if (crossOriginValue) {
-      originResponseHeaders.set('Access-Control-Allow-Origin', crossOriginValue)
+    const crossOriginUrl = getCrossOriginUrl(request)
+    if (crossOriginUrl) {
+      originResponseHeaders.set('Access-Control-Allow-Origin', crossOriginUrl.origin)
     } else {
       // Because a wildcard origin may be set universally by some APIs that allow
       // cross-origin access from any origin, only set additional header fields when
