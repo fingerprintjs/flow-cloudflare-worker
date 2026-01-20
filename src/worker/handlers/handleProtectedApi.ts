@@ -77,14 +77,14 @@ async function getResponseForProtectedCall({
   let originRequest: Request
   let signals: string
   let clientCookie: string | undefined
-  let includedCrossOriginCredentials: boolean
+  let removeCookies: boolean
 
   try {
     const result = await IdentificationClient.parseIncomingRequest(request)
     signals = result.signals
     originRequest = result.originRequest
     clientCookie = result.clientCookie
-    includedCrossOriginCredentials = result.includedCrossOriginCredentials
+    removeCookies = result.removeCookies
   } catch (e) {
     console.error('Failed to parse incoming request:', e)
     return [await handleFallbackRule(request, env), null]
@@ -114,7 +114,7 @@ async function getResponseForProtectedCall({
   // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
   // it doesn't make sense to set headers from ingress, because the browser will discard them anyway
   if (!isDocumentDestination(request.headers)) {
-    setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, includedCrossOriginCredentials)
+    setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, removeCookies)
   }
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
@@ -131,18 +131,19 @@ async function getResponseForProtectedCall({
  * @param ingressResponse - Result from the ingress service containing agent data and cookies
  * @param originResponseHeaders - Mutable headers object from the origin response to be modified
  * @param includedCrossOriginCredentials - true if the instrumented request is cross-origin and included credentials (i.e., cookies) for identification purposes
+ * @param removeCookies - true if Set-Cookie header fields need to be removed from the response
  *
  */
 function setHeadersFromIngressToOrigin(
   ingressResponse: SendResult,
   originResponseHeaders: Headers,
-  includedCrossOriginCredentials: boolean
+  removeCookies: boolean
 ) {
   const { agentData, setCookieHeaders } = ingressResponse
   console.debug('Adding agent data header', agentData)
   originResponseHeaders.set(AGENT_DATA_HEADER, agentData)
 
-  if (includedCrossOriginCredentials) {
+  if (removeCookies) {
     // Delete any cookies set by the origin, they would have been ignored
     // by the browser if the request was not instrumented.
     originResponseHeaders.delete('Set-Cookie')

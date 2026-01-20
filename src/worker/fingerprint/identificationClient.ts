@@ -71,8 +71,16 @@ export type ParsedIncomingRequest = {
   /** The signals extracted from a request */
   signals: string
 
-  /** true if the request was cross-origin and credentials (i.e., cookies) were included for identification purposes only */
-  includedCrossOriginCredentials: boolean
+  /**
+   * Identification requires that cookies be sent in cross-origin requests. But
+   * the application may not have requested this behavior.
+   *
+   * This flag will be true when the request is a cross-origin request
+   * and the application did not request that cookies be included in the request,
+   * indicating that both Cookies and Set-Cookie header fields must not be sent between the origin
+   * and the client.
+   */
+  removeCookies: boolean
 
   /** The request with signals and optionally, cookies omitted, suitable for forwarding to the origin */
   originRequest: Request
@@ -269,12 +277,17 @@ export class IdentificationClient {
 
       // Extract the include credentials flag, if present, from the signals value
       const appIncludedCredentials = signals.startsWith(APP_INCLUDED_CREDENTIALS_FLAG)
-      const isCrossOriginRequest = getCrossOriginValue(request) != null
       const parsedSignals = appIncludedCredentials ? signals.substring(1) : signals
       console.debug('Found signals in headers:', parsedSignals)
 
+      const isCrossOriginRequest = getCrossOriginValue(request) != null
+
+      // Remove cookies when the app did not tell the browser to include them
+      // but request instrumentation overrode that preference
+      const removeCookies = !appIncludedCredentials && isCrossOriginRequest
+
       const cookie = request.headers.get('Cookie')
-      if (!appIncludedCredentials && isCrossOriginRequest) {
+      if (removeCookies) {
         // The cookie would not have been sent without instrumentation so
         // don't forward the cookie to the origin
         requestHeaders.delete('Cookie')
@@ -285,7 +298,7 @@ export class IdentificationClient {
       return {
         clientCookie,
         signals: parsedSignals,
-        includedCrossOriginCredentials: appIncludedCredentials && isCrossOriginRequest,
+        removeCookies,
         originRequest: copyRequest({
           request,
           init: {
@@ -318,7 +331,7 @@ export class IdentificationClient {
           return {
             clientCookie: findClientCookie(request.headers.get('Cookie')),
             signals,
-            includedCrossOriginCredentials: false,
+            removeCookies: false,
             originRequest: copyRequest({
               request,
               init: {
