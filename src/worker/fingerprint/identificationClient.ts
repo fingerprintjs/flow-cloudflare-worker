@@ -7,6 +7,8 @@ import { RuleAction } from './ruleset'
 import { copyRequest } from '../utils/request'
 import { z } from 'zod/v4'
 import { handleTampering } from './tampering'
+import { TypedEnv } from '../types'
+import { getFpRegion, getIngressBaseHost, getRoutePrefix, getRulesetId, getSecretKey } from '../env'
 
 type RulesetContext = {
   ruleset_id: string
@@ -90,6 +92,16 @@ export class IdentificationClient {
     const resolvedUrl = IdentificationClient.resolveUrl(region, baseUrl)
     console.debug('Resolved identification URL:', resolvedUrl)
     this.url = new URL(resolvedUrl)
+  }
+
+  static fromEnv(env: TypedEnv) {
+    return new this(
+      getFpRegion(env),
+      getIngressBaseHost(env),
+      getSecretKey(env),
+      getRoutePrefix(env),
+      getRulesetId(env)
+    )
   }
 
   /**
