@@ -51,7 +51,7 @@ export function resolvePatcherRequest(
       return undefined
     }
 
-    const updatedParams: [Request, undefined] = [request, undefined]
+    const updatedParams: [Request] = [request]
     return [
       {
         url: request.url.toString(),

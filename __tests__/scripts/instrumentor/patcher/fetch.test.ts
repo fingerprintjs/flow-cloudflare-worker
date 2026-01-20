@@ -63,22 +63,11 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(url, init)
 
-      expect(mockedFetch).toHaveBeenCalledWith(
-        url,
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.any(Headers),
-        })
-      )
-
-      // Check that signals header was added
-      const callArgs = mockedFetch.mock.calls[0]
-      const actualRequestInit = callArgs[1] as RequestInit
-
-      const headers = actualRequestInit.headers as Headers
-      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
-
-      expect(actualRequestInit.credentials).toEqual('include')
+      expect(mockedFetch).toHaveBeenCalledWith(url, {
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json', [SIGNALS_KEY]: 'test-signals-data' }),
+        credentials: 'include',
+      })
 
       // Check that original parameters were not modified
       expect('credentials' in init).toBeFalsy()
@@ -95,19 +84,11 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(url, init)
 
-      expect(mockedFetch).toHaveBeenCalledWith(
-        url,
-        expect.objectContaining({
-          method: 'POST',
-          credentials: 'include',
-          headers: expect.any(Headers),
-        })
-      )
-
-      // Check that signals header was added
-      const callArgs = mockedFetch.mock.calls[0]
-      const headers = (callArgs[1] as RequestInit).headers as Headers
-      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(mockedFetch).toHaveBeenCalledWith(url, {
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json', [SIGNALS_KEY]: 'test-signals-data' }),
+        credentials: 'include',
+      })
 
       // Check that original parameters were not modified
       expect('credentials' in init).toBeFalsy()
@@ -125,14 +106,9 @@ describe('Fetch Patcher', () => {
       await window.fetch(url)
 
       expect(mockedFetch).toHaveBeenCalledWith(url, {
-        headers: expect.any(Headers),
+        headers: new Headers({ [SIGNALS_KEY]: 'test-signals-data' }),
         credentials: 'include',
       })
-
-      // Check that signals header was added
-      const callArgs = mockedFetch.mock.calls[0]
-      const headers = callArgs[1]?.headers as Headers
-      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
     })
 
     it('should inject signals for protected URLs with URL input', async () => {
@@ -146,17 +122,11 @@ describe('Fetch Patcher', () => {
       await window.fetch(url, init)
 
       expect(mockContext.isProtectedUrl).toHaveBeenCalledWith(url.toString(), 'POST')
-      expect(mockedFetch).toHaveBeenCalledWith(
-        url,
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.any(Headers),
-        })
-      )
-
-      const callArgs = mockedFetch.mock.calls[0]
-      const headers = callArgs[1]?.headers as Headers
-      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(mockedFetch).toHaveBeenCalledWith(url, {
+        method: 'POST',
+        headers: new Headers({ [SIGNALS_KEY]: 'test-signals-data' }),
+        credentials: 'include',
+      })
 
       // Check that original parameters were not modified
       expect('credentials' in init).toBeFalsy()
@@ -177,14 +147,16 @@ describe('Fetch Patcher', () => {
 
       expect(mockContext.isProtectedUrl).toHaveBeenCalledWith(request.url, 'POST')
 
-      const callArgs = mockedFetch.mock.calls[0]
-      const actualHeaders =
-        typeof callArgs[0] === 'object' && 'headers' in callArgs[0] ? callArgs[0].headers : undefined
-
-      expect(actualHeaders).toBeDefined()
-      expect(actualHeaders!.get(SIGNALS_KEY)).toBe('test-signals-data')
-
       expect(mockedFetch).not.toHaveBeenCalledWith(request)
+      expect(request.credentials).toBe('same-origin')
+
+      const expectedRequest = new Request(request.url, {
+        method: 'POST',
+        headers: new Headers({ Authorization: 'Bearer token', [SIGNALS_KEY]: 'test-signals-data' }),
+        credentials: 'include',
+      })
+
+      expect(mockedFetch).toHaveBeenCalledWith(expectedRequest)
     })
 
     it('should skip patching for non-protected URLs', async () => {
@@ -275,10 +247,14 @@ describe('Fetch Patcher', () => {
         headers: existingHeaders,
       })
 
-      const callArgs = mockedFetch.mock.calls[0]
-      const headers = callArgs[1]?.headers as Headers
-      expect(headers.get('Content-Type')).toBe('application/json')
-      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(mockedFetch).toHaveBeenCalledWith(url, {
+        method: 'POST',
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          [SIGNALS_KEY]: 'test-signals-data',
+        }),
+        credentials: 'include',
+      })
     })
 
     it('should handle existing Headers object in RequestInit', async () => {
@@ -295,10 +271,14 @@ describe('Fetch Patcher', () => {
         },
       })
 
-      const callArgs = mockedFetch.mock.calls[0]
-      const headers = callArgs[1]?.headers as Headers
-      expect(headers.get('Content-Type')).toBe('application/json')
-      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(mockedFetch).toHaveBeenCalledWith(url, {
+        method: 'POST',
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          [SIGNALS_KEY]: 'test-signals-data',
+        }),
+        credentials: 'include',
+      })
     })
 
     it('should handle existing Headers tuple in RequestInit', async () => {
@@ -313,10 +293,14 @@ describe('Fetch Patcher', () => {
         headers: [['Content-Type', 'application/json']],
       })
 
-      const callArgs = mockedFetch.mock.calls[0]
-      const headers = callArgs[1]?.headers as Headers
-      expect(headers.get('Content-Type')).toBe('application/json')
-      expect(headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(mockedFetch).toHaveBeenCalledWith(url, {
+        method: 'POST',
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          [SIGNALS_KEY]: 'test-signals-data',
+        }),
+        credentials: 'include',
+      })
     })
 
     it('should overwrite existing signals header', async () => {
@@ -329,9 +313,13 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(url, { method: 'POST', headers })
 
-      const callArgs = mockedFetch.mock.calls[0]
-      const resultHeaders = callArgs[1]?.headers as Headers
-      expect(resultHeaders.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(mockedFetch).toHaveBeenCalledWith(url, {
+        method: 'POST',
+        headers: new Headers({
+          [SIGNALS_KEY]: 'test-signals-data',
+        }),
+        credentials: 'include',
+      })
     })
 
     it('should handle Request object with existing headers', async () => {
@@ -353,13 +341,16 @@ describe('Fetch Patcher', () => {
       expect(request.headers.get(SIGNALS_KEY)).toBeNull()
       expect(request.credentials).toBe('same-origin')
 
-      const callArgs = mockedFetch.mock.calls[0]
-      const modifiedRequest = callArgs[0] as Request
-
-      expect(modifiedRequest.headers.get('Content-Type')).toBe('application/json')
-      expect(modifiedRequest.headers.get('Authorization')).toBe('Bearer token')
-      expect(modifiedRequest.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
-      expect(modifiedRequest.credentials).toBe('include')
+      expect(mockedFetch).toHaveBeenCalledWith(
+        new Request(request, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer token',
+            [SIGNALS_KEY]: 'test-signals-data',
+          },
+          credentials: 'include',
+        })
+      )
     })
 
     it('should handle Request object with existing headers instance', async () => {
@@ -381,13 +372,16 @@ describe('Fetch Patcher', () => {
       expect(request.headers.get(SIGNALS_KEY)).toBeNull()
       expect(request.credentials).toBe('same-origin')
 
-      const callArgs = mockedFetch.mock.calls[0]
-      const modifiedRequest = callArgs[0] as Request
-
-      expect(request.headers.get('Content-Type')).toBe('application/json')
-      expect(request.headers.get('Authorization')).toBe('Bearer token')
-      expect(modifiedRequest.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
-      expect(modifiedRequest.credentials).toBe('include')
+      expect(mockedFetch).toHaveBeenCalledWith(
+        new Request(request, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer token',
+            [SIGNALS_KEY]: 'test-signals-data',
+          },
+          credentials: 'include',
+        })
+      )
     })
 
     it('should handle URLs with query parameters', async () => {
@@ -426,12 +420,13 @@ describe('Fetch Patcher', () => {
       expect(mockContext.isProtectedUrl).toHaveBeenCalledWith(url.toString(), 'POST')
     })
 
-    it('should ignore no-cors request init', async () => {
+    it.each([
+      ['string URL', mockUrl('/protected/endpoint')],
+      ['object URL', new URL(mockUrl('/protected/endpoint'))],
+    ])('should ignore no-cors request init- %s', async (_name, url) => {
       patchFetch(mockContext)
 
       mockedFetch.mockResolvedValue(new Response('test'))
-
-      const url = mockUrl('/protected/endpoint')
 
       await window.fetch(url, {
         mode: 'no-cors',
@@ -456,7 +451,7 @@ describe('Fetch Patcher', () => {
       const request = new Request(url, { method: 'POST', mode: 'no-cors' })
       await window.fetch(request)
 
-      expect(mockedFetch).toHaveBeenCalledWith(request)
+      expect(mockedFetch).toHaveBeenCalledWith(expect.toSatisfy((actualRequest) => actualRequest === request))
 
       const callArgs = mockedFetch.mock.calls[0]
       const resultHeaders = (callArgs[0] as RequestInit)?.headers
@@ -472,9 +467,16 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(new Request(url, { method: 'POST', mode: 'cors' }))
 
-      const callArgs = mockedFetch.mock.calls[0]
-      const resultHeaders = (callArgs[0] as RequestInit)?.headers as Headers
-      expect(resultHeaders.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(mockedFetch).toHaveBeenCalledWith(
+        new Request(url, {
+          method: 'POST',
+          mode: 'cors',
+          headers: new Headers({
+            [SIGNALS_KEY]: 'test-signals-data',
+          }),
+          credentials: 'include',
+        })
+      )
     })
 
     it('should process agent data', async () => {
