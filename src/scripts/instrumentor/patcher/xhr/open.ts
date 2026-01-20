@@ -77,7 +77,7 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
     // Restore the original withCredentials setting. This can only be changed before the initial send
     // or after the XHR instance is reinitialized by calling open after a send.
     const fingerprintContext = this[FingerprintContextSymbol]
-    if (fingerprintContext && fingerprintContext.preservedWithCredentials !== undefined) {
+    if (fingerprintContext?.preservedWithCredentials !== undefined) {
       this.withCredentials = fingerprintContext.preservedWithCredentials
       fingerprintContext.preservedWithCredentials = undefined
     }
