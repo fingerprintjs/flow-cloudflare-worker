@@ -328,10 +328,15 @@ export class IdentificationClient {
             console.debug('Removed content-type header from request')
           }
 
+          // Native form submissions cannot have instrumentation-forced cookies in the request
+          // that override the applications preferences and as a result, cookies don't need
+          // to be removed.
+          const removeCookies = false
+
           return {
             clientCookie: findClientCookie(request.headers.get('Cookie')),
             signals,
-            removeCookies: false,
+            removeCookies,
             originRequest: copyRequest({
               request,
               init: {
