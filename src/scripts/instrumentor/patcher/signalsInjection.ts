@@ -47,20 +47,25 @@ export async function collectSignalsForProtectedUrl({
   return signals
 }
 
+export type SignalInjectionResult = {
+  /** true if the application configured the request to include credentials in a cross-origin request */
+  appIncludedCredentials: boolean
+}
+
 /**
  * Inject the fingerprinting signals into the request
  *
  * @param request the `PatcherRequest` to modify
  * @param signals the signals to inject
  *
- * @returns true if the application configured the request to include credentials in a cross-origin request
+ * @returns the results of signal injection as a `SignalInjectionResult`
  */
-export function injectSignalsIntoRequest(request: PatcherRequest, signals: string): boolean {
+export function injectSignalsIntoRequest(request: PatcherRequest, signals: string): SignalInjectionResult {
   const appIncludedCredentials = request.setIncludeCredentials()
   if (appIncludedCredentials) {
     request.setHeader(SIGNALS_KEY, `${APP_INCLUDED_CREDENTIALS_FLAG}${signals}`)
   } else {
     request.setHeader(SIGNALS_KEY, signals)
   }
-  return appIncludedCredentials
+  return { appIncludedCredentials }
 }

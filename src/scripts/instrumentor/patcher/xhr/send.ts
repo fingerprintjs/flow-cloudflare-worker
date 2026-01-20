@@ -31,7 +31,10 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
           didInjectSignals = !!signals
 
           if (signals) {
-            fingerprintContext.preservedWithCredentials = injectSignalsIntoRequest(fingerprintContext.request, signals)
+            fingerprintContext.preservedWithCredentials = injectSignalsIntoRequest(
+              fingerprintContext.request,
+              signals
+            ).appIncludedCredentials
           }
         })
         .finally(() => {
