@@ -349,9 +349,17 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(request)
 
-      expect(request.headers.get('Content-Type')).toBe('application/json')
-      expect(request.headers.get('Authorization')).toBe('Bearer token')
-      expect(request.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      // The original request was not modified
+      expect(request.headers.get(SIGNALS_KEY)).toBeNull()
+      expect(request.credentials).toBe('same-origin')
+
+      const callArgs = mockedFetch.mock.calls[0]
+      const modifiedRequest = callArgs[0] as Request
+
+      expect(modifiedRequest.headers.get('Content-Type')).toBe('application/json')
+      expect(modifiedRequest.headers.get('Authorization')).toBe('Bearer token')
+      expect(modifiedRequest.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(modifiedRequest.credentials).toBe('include')
     })
 
     it('should handle Request object with existing headers instance', async () => {
@@ -369,9 +377,17 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(request)
 
+      // The original request was not modified
+      expect(request.headers.get(SIGNALS_KEY)).toBeNull()
+      expect(request.credentials).toBe('same-origin')
+
+      const callArgs = mockedFetch.mock.calls[0]
+      const modifiedRequest = callArgs[0] as Request
+
       expect(request.headers.get('Content-Type')).toBe('application/json')
       expect(request.headers.get('Authorization')).toBe('Bearer token')
-      expect(request.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(modifiedRequest.headers.get(SIGNALS_KEY)).toBe('test-signals-data')
+      expect(modifiedRequest.credentials).toBe('include')
     })
 
     it('should handle URLs with query parameters', async () => {

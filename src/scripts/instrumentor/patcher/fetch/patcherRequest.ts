@@ -59,7 +59,7 @@ export function resolvePatcherRequest(
 
         setIncludeCredentials() {
           const appIncludedCredentials = updatedParams[0].credentials === 'include'
-          params[0] = new Request(request, { credentials: 'include' })
+          updatedParams[0] = new Request(request, { credentials: 'include' })
           return appIncludedCredentials
         },
 
