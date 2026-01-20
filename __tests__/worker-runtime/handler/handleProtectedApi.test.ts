@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import assert from 'node:assert/strict'
 import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../src/shared/const'
 import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import handler from '../../../src/worker'
@@ -1714,8 +1715,8 @@ describe('Protected API', () => {
       expect(response.headers.get('Access-Control-Allow-Methods')).toEqual('POST')
 
       const originRequest = getOriginRequest()
-      expect(originRequest).toBeDefined()
-      expect(originRequest!.headers.get('Access-Control-Request-Headers')).toEqual('content-type')
+      assert(originRequest)
+      expect(originRequest.headers.get('Access-Control-Request-Headers')).toEqual('content-type')
     })
 
     it('should forward OPTIONS request to origin if signals preflight but origin not allowed', async () => {
