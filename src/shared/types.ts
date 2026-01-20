@@ -1,10 +1,18 @@
-const PROTECTED_API_HTTP_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH', 'GET', 'HEAD'] as const
+const PROTECTED_API_HTTP_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH', 'GET'] as const
 
 export type ProtectedApiHttpMethod = (typeof PROTECTED_API_HTTP_METHODS)[number]
 
 export function isProtectedApiHttpMethod(method: string): method is ProtectedApiHttpMethod {
   // @ts-expect-error - We need to check if the method is a protected API HTTP method
   return PROTECTED_API_HTTP_METHODS.includes(method)
+}
+
+/**
+ * @param method the HTTP method as a string
+ * @returns true if the method is "simple" method, as defined by the CORS spec
+ */
+export function isSimpleMethod(method: string) {
+  return method === 'GET' || method === 'POST' || method === 'HEAD'
 }
 
 export type ProtectedApi = {

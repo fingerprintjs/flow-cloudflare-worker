@@ -1,4 +1,5 @@
 import { SIGNALS_KEY } from '../../shared/const'
+import { isSimpleMethod } from '../../shared/types'
 import { TypedEnv } from '../types'
 import { getAllowedOrigin } from '../urlMatching'
 import { removeHeaderValue } from '../utils/headers'
@@ -21,7 +22,8 @@ export async function handleProtectedApiOptionsCall({
   const accessControlRequestMethod = request.headers.get('Access-Control-Request-Method')
   if (
     accessControlRequestHeaders === SIGNALS_KEY &&
-    (accessControlRequestMethod === 'GET' || accessControlRequestMethod === 'POST')
+    accessControlRequestMethod &&
+    isSimpleMethod(accessControlRequestMethod)
   ) {
     const allowedOrigin = getAllowedOrigin(request, env)
     if (allowedOrigin) {
