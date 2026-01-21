@@ -2,20 +2,13 @@ import { TypedEnv } from './types'
 import { matchUrl } from './urlMatching'
 import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
-import {
-  getCDNHost,
-  getFallbackRuleAction,
-  getFpLogLevel,
-  getProtectedApis,
-  getPublicKey,
-  getRoutePrefix,
-  isMonitorMode,
-} from './env'
+import { getCDNHost, getFpLogLevel, getProtectedApis, getPublicKey, getRoutePrefix } from './env'
 
 import { handleError } from './handlers/handleError'
 import { fetchOrigin } from './utils/origin'
 import { handleProtectedApiCall } from './handlers/handleProtectedApi'
 import { IdentificationClient } from './fingerprint/identificationClient'
+import { handleProtectedApiOptionsCall } from './handlers/handleProtectedApiOptions'
 
 export async function handleRequest(request: Request, env: TypedEnv): Promise<Response> {
   console.info('Handling request', request)
@@ -25,10 +18,10 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
 
     switch (matchedUrl?.type) {
       case 'identification':
-        return await handleScriptsInjection({ request, env })
+        return handleScriptsInjection({ request, env })
 
       case 'script':
-        return await handleScript({
+        return handleScript({
           request,
           script: matchedUrl.script,
           publicApiKey: getPublicKey(env),
@@ -48,12 +41,14 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
         return fetchOrigin(request)
 
       case 'protection':
-        return await handleProtectedApiCall({
+        if (matchedUrl.options) {
+          return handleProtectedApiOptionsCall({ request, env })
+        }
+
+        return handleProtectedApiCall({
           request,
           identificationClient: IdentificationClient.fromEnv(env),
-          fallbackRule: getFallbackRuleAction(env),
-          routePrefix: getRoutePrefix(env),
-          isMonitorMode: isMonitorMode(env),
+          env,
         })
 
       default:

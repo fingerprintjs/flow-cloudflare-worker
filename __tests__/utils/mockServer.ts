@@ -35,8 +35,10 @@ export class MockServer {
   }
 
   listen(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      this.server.listen(3000, () => {
+    return new Promise<void>((resolve, reject) => {
+      this.server.on('error', reject)
+      this.server.listen(3000, '127.0.0.1', () => {
+        this.server.off('error', reject)
         resolve()
       })
     })

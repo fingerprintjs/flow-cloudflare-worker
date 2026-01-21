@@ -2,6 +2,7 @@ import { PatcherContext } from '../context'
 import { XHRWithFingerprintContext, FingerprintContextSymbol } from './types'
 import { AGENT_DATA_HEADER } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
+import { injectSignalsIntoRequest } from '../signalsInjection'
 
 /**
  * Creates a patched version of the `send` method for `XMLHttpRequest` instances.
@@ -17,7 +18,7 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
     const sendRequest = () => originalSend.call(this, body)
 
     const fingerprintContext = this[FingerprintContextSymbol]
-    const handleSignalsInjectionPromise = fingerprintContext?.handleSignalsInjectionPromise
+    const handleSignalsInjectionPromise = fingerprintContext?.signalsCollectionPromise
 
     if (handleSignalsInjectionPromise) {
       let didInjectSignals = false
@@ -26,8 +27,15 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
 
       // Signals' promise is present only in async requests. In that case, we can await the signal promise before sending the request
       handleSignalsInjectionPromise
-        .then((didInject) => {
-          didInjectSignals = didInject
+        .then((signals) => {
+          didInjectSignals = !!signals
+
+          if (signals) {
+            fingerprintContext.preservedWithCredentials = injectSignalsIntoRequest(
+              fingerprintContext.request,
+              signals
+            ).appIncludedCredentials
+          }
         })
         .finally(() => {
           sendRequest()

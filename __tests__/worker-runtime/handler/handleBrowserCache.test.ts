@@ -38,7 +38,7 @@ describe('Browser cache', () => {
     request.headers.set('cookie', '_iidt=12345')
 
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, mockEnv)
+    const response = await handler.fetch(request, mockEnv, ctx)
     await waitOnExecutionContext(ctx)
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -64,7 +64,7 @@ describe('Browser cache', () => {
     request.headers.set('cookie', '_iidt=12345')
 
     const ctx = createExecutionContext()
-    const response = await handler.fetch(request, mockEnv)
+    const response = await handler.fetch(request, mockEnv, ctx)
     await waitOnExecutionContext(ctx)
 
     expect(await response.text()).toEqual('origin')

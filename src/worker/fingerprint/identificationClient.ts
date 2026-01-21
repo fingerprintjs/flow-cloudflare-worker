@@ -1,10 +1,10 @@
 import { Region } from './region'
-import { SIGNALS_KEY } from '../../shared/const'
+import { APP_INCLUDED_CREDENTIALS_FLAG, SIGNALS_KEY } from '../../shared/const'
 import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../errors'
 import { getHeaderOrThrow, getIp, hasContentType } from '../utils/headers'
 import { findCookie } from '../cookies'
 import { RuleAction } from './ruleset'
-import { copyRequest } from '../utils/request'
+import { copyRequest, getCrossOriginUrl } from '../utils/request'
 import { z } from 'zod/v4'
 import { handleTampering } from './tampering'
 import { TypedEnv } from '../types'
@@ -67,6 +67,28 @@ export type SendResult = {
   ruleAction: RuleAction | undefined
 }
 
+export type ParsedIncomingRequest = {
+  /** The signals extracted from a request */
+  signals: string
+
+  /**
+   * Identification requires that cookies be sent in cross-origin requests. But
+   * the application may not have requested this behavior.
+   *
+   * This flag will be true when the request is a cross-origin request
+   * and the application did not request that cookies be included in the request,
+   * indicating that both Cookies and Set-Cookie header fields must not be sent between the origin
+   * and the client.
+   */
+  removeCookies: boolean
+
+  /** The request with signals and optionally, cookies omitted, suitable for forwarding to the origin */
+  originRequest: Request
+
+  /** The cookie from the request that needs to be included in the identification request */
+  clientCookie: string | undefined
+}
+
 /**
  * Client for communicating with the identification service.
  * Handles region-based URL resolution, request formatting, and response processing.
@@ -108,21 +130,20 @@ export class IdentificationClient {
    * Sends fingerprint data to the identification service and returns the response with agent data.
    *
    * This method:
-   * 1. Processes cookies to extract only the _iidt cookie if present
-   * 2. Sends the data to the POST /send
-   * 3. Returns the agent data along with any Set-Cookie headers received from the identification
+   * 1. Sends the data to the POST /send
+   * 2. Returns the agent data along with any Set-Cookie headers received from the identification
    *
    * @param clientRequest - The incoming client request containing fingerprint data and headers
    * @param signals - Fingerprint signals extracted from the request
+   * @param clientCookie - The optional client cookie to send along with the fingerprint data
    * @returns Promise resolving to SendResult containing agent data and cookie headers
    * @throws {SignalsNotAvailableError} When fingerprint signals are missing from the request
    * @throws {IdentificationRequestFailedError} When the identification service request fails or returns invalid data
    */
-  async send(clientRequest: Request, signals: string): Promise<SendResult> {
+  async send(clientRequest: Request, signals: string, clientCookie?: string): Promise<SendResult> {
     const clientIP = await getIp(clientRequest.headers)
     const clientHost = getHeaderOrThrow(clientRequest.headers, 'host')
     const clientUserAgent = getHeaderOrThrow(clientRequest.headers, 'user-agent')
-    const clientCookie = clientRequest.headers.get('cookie')
 
     const headers = new Headers()
     headers.set('Content-Type', 'application/json')
@@ -130,16 +151,6 @@ export class IdentificationClient {
 
     const clientHeaders = new Headers(clientRequest.headers)
     clientHeaders.delete('cookie')
-
-    let cookieToSend: string | undefined
-    if (clientCookie) {
-      // Try to find _iidt cookie
-      const iidtMatch = findCookie(clientCookie, '_iidt')
-      if (iidtMatch) {
-        console.debug('Found _iidt cookie', iidtMatch)
-        cookieToSend = iidtMatch
-      }
-    }
 
     const sendBody: SendBody = {
       client_ip: clientIP,
@@ -149,8 +160,8 @@ export class IdentificationClient {
       ...(this.rulesetId ? { ruleset_context: { ruleset_id: this.rulesetId } } : {}),
     }
 
-    if (cookieToSend) {
-      sendBody.client_cookie = cookieToSend
+    if (clientCookie) {
+      sendBody.client_cookie = clientCookie
     }
 
     const clientHeadersEntries = Array.from(clientHeaders.entries())
@@ -254,23 +265,41 @@ export class IdentificationClient {
    * Parses an incoming request to extract signals, while returning a modified iteration of the request with signals removed.
    *
    * @param {Request} request The incoming HTTP request to be processed.
-   * @return {Promise<{signals: string, request: Request}>} A promise that resolves with a object containing the extracted signals and a new request object with the signals removed.
+   * @return {Promise<{ParsedIncomingRequest}>} A promise that resolves with data parsed from the incoming request
    * @throws {SignalsNotAvailableError} If signals are not found in the request headers or body.
    */
-  static async parseIncomingRequest(request: Request): Promise<{
-    signals: string
-    request: Request
-  }> {
+  static async parseIncomingRequest(request: Request): Promise<ParsedIncomingRequest> {
     // First, try to find signals in headers
     const signals = request.headers.get(SIGNALS_KEY)
     if (signals) {
       const requestHeaders = new Headers(request.headers)
       requestHeaders.delete(SIGNALS_KEY)
 
-      console.debug('Found signals in headers:', signals)
+      // Extract the include credentials flag, if present, from the signals value
+      const appIncludedCredentials = signals.startsWith(APP_INCLUDED_CREDENTIALS_FLAG)
+      const parsedSignals = appIncludedCredentials ? signals.substring(1) : signals
+      console.debug('Found signals in headers:', parsedSignals)
+
+      const isCrossOriginRequest = getCrossOriginUrl(request) != null
+
+      // Remove cookies when the app did not tell the browser to include them
+      // but request instrumentation overrode that preference
+      const removeCookies = !appIncludedCredentials && isCrossOriginRequest
+
+      const cookie = request.headers.get('Cookie')
+      if (removeCookies) {
+        // The cookie would not have been sent without instrumentation so
+        // don't forward the cookie to the origin
+        requestHeaders.delete('Cookie')
+      }
+
+      const clientCookie = findClientCookie(cookie)
+
       return {
-        signals,
-        request: copyRequest({
+        clientCookie,
+        signals: parsedSignals,
+        removeCookies,
+        originRequest: copyRequest({
           request,
           init: {
             headers: requestHeaders,
@@ -299,9 +328,16 @@ export class IdentificationClient {
             console.debug('Removed content-type header from request')
           }
 
+          // Native form submissions cannot have instrumentation-forced cookies in the request
+          // that override the applications preferences and as a result, cookies don't need
+          // to be removed.
+          const removeCookies = false
+
           return {
+            clientCookie: findClientCookie(request.headers.get('Cookie')),
             signals,
-            request: copyRequest({
+            removeCookies,
+            originRequest: copyRequest({
               request,
               init: {
                 body: data,
@@ -317,4 +353,17 @@ export class IdentificationClient {
 
     throw new SignalsNotAvailableError()
   }
+}
+
+function findClientCookie(cookie: string | null): string | undefined {
+  if (cookie) {
+    // Try to find _iidt cookie
+    const iidtMatch = findCookie(cookie, '_iidt')
+    if (iidtMatch) {
+      console.debug('Found _iidt cookie', iidtMatch)
+      return iidtMatch
+    }
+  }
+
+  return undefined
 }

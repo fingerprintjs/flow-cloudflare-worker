@@ -1,3 +1,5 @@
+import { TypedEnv } from '../types'
+import { getAllowedOrigin } from '../urlMatching'
 import { fetchOrigin } from '../utils/origin'
 import { copyRequest } from '../utils/request'
 import { z } from 'zod/v4'
@@ -79,14 +81,15 @@ export type RuleAction = z.infer<typeof RuleAction>
  *
  * @param ruleAction - The rule action configuration to process
  * @param request - The original HTTP request to process
+ * @param env - The environment for the request
  * @returns Request modified based on the rule action
  */
-export async function processRuleset(ruleAction: RuleActionUnion, request: Request) {
+export async function processRuleset(ruleAction: RuleActionUnion, request: Request, env: TypedEnv) {
   console.debug('Processing ruleset:', ruleAction)
 
   switch (ruleAction.type) {
     case 'block':
-      return handleBlock(ruleAction)
+      return handleBlock(request, ruleAction, env)
 
     case 'allow':
       return handleAllow(request, ruleAction)
@@ -116,20 +119,34 @@ function createHeaders(headers: RuleHeader[]) {
 /**
  * Handles a 'block' action by creating a blocking response.
  *
+ * @param request - The original HTTP request to process
  * @param action - The block action configuration containing status code, headers, and body
+ * @param env - The environment for the request
  * @returns A Response object that blocks the request with the specified configuration
  */
-function handleBlock(action: BlockAction) {
-  const responseInit: ResponseInit = {}
+function handleBlock(request: Request, action: BlockAction, env: TypedEnv) {
+  let headers: Headers | null = null
   if (action.headers?.length) {
-    responseInit.headers = createHeaders(action.headers)
+    headers = createHeaders(action.headers)
   }
-  if (action.status_code) {
-    responseInit.status = action.status_code
+
+  const allowedOrigin = getAllowedOrigin(request, env)
+  if (allowedOrigin) {
+    // Set the CORS headers to allow the browser to return
+    // the response to the JS app
+    if (!headers) {
+      headers = new Headers()
+    }
+    headers.set('Access-Control-Allow-Origin', allowedOrigin)
+    // Additional CORS headers will be set by further downstream processing
+    // now that the Access-Control-Allow-Origin header field is set.
   }
 
   console.debug('Blocking request with custom response:', action)
-  return new Response(action.body, responseInit)
+  return new Response(action.body, {
+    status: action.status_code,
+    ...(headers ? { headers } : {}),
+  })
 }
 
 /**

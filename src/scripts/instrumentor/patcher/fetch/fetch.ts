@@ -1,6 +1,6 @@
 import { PatcherContext } from '../context'
 import { ProtectedApi } from '../../../../shared/types'
-import { handleSignalsInjection } from '../signalsInjection'
+import { collectSignalsForProtectedUrl, injectSignalsIntoRequest } from '../signalsInjection'
 import { resolvePatcherRequest } from './patcherRequest'
 import { AGENT_DATA_HEADER } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
@@ -34,25 +34,32 @@ export function patchFetch(ctx: PatcherContext) {
   const originalFetch = window.fetch
 
   window.fetch = async (...params) => {
-    let didInjectSignals = false
+    let signals: string | undefined = undefined
 
+    let actualParams: Parameters<typeof fetch> = params
     try {
       logger.debug('Incoming fetch request', params)
 
-      const request = resolvePatcherRequest(params)
+      const result = resolvePatcherRequest(params)
 
-      if (request) {
-        logger.debug('Resolved fetch request:', request)
-        didInjectSignals = await handleSignalsInjection({ request, ctx })
+      if (result) {
+        const [request, updatedParams] = result
+
+        logger.debug('Resolved fetch request and updated params:', request, updatedParams)
+        signals = await collectSignalsForProtectedUrl({ request, ctx })
+        if (signals) {
+          injectSignalsIntoRequest(request, signals)
+          actualParams = updatedParams
+        }
       }
     } catch (error) {
       logger.error('Patched fetch error:', error)
     }
 
-    const response = await originalFetch(...params)
+    const response = await originalFetch(...actualParams)
 
     try {
-      if (didInjectSignals) {
+      if (signals) {
         const agentData = response.headers.get(AGENT_DATA_HEADER)
 
         if (agentData) {

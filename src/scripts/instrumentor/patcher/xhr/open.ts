@@ -1,6 +1,6 @@
 import { PatcherContext } from '../context'
-import { FingerprintContextSymbol, XHRFingerprintMetadata, XHRContext } from './types'
-import { handleSignalsInjection } from '../signalsInjection'
+import { FingerprintContextSymbol, XHRFingerprintMetadata, XHRContext, XHRWithFingerprintContext } from './types'
+import { collectSignalsForProtectedUrl } from '../signalsInjection'
 import { createPatcherRequest } from './patcherRequest'
 import { logger } from '../../../shared/logger'
 
@@ -17,7 +17,7 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
   const originalOpen = XMLHttpRequest.prototype.open
 
   return function patchedOpen(
-    this: XMLHttpRequest & XHRFingerprintMetadata,
+    this: XHRWithFingerprintContext,
     method: string,
     url: string,
     async: boolean = true,
@@ -52,25 +52,34 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
     try {
       const request = createPatcherRequest(this, metadata)
       // Start gathering signals as soon as possible.
-      const signalsPromise = handleSignalsInjection({
+      const signalsCollectionPromise = collectSignalsForProtectedUrl({
         request,
         ctx,
       }).catch((error) => {
         logger.error('Error injecting signals:', error)
-        return false
+        return undefined
       })
 
-      const fingerprintContext: XHRContext = {
-        handleSignalsInjectionPromise: signalsPromise,
-        ...metadata,
+      const nextFingerprintContext: XHRContext = {
+        preservedWithCredentials: this[FingerprintContextSymbol]?.preservedWithCredentials,
+        signalsCollectionPromise,
+        request,
       }
       Object.assign(this, {
-        [FingerprintContextSymbol]: fingerprintContext,
+        [FingerprintContextSymbol]: nextFingerprintContext,
       })
     } catch (e) {
       logger.error('Error setting XHR fingerprint context:', e)
     }
 
-    return callOpen()
+    callOpen()
+
+    // Restore the original withCredentials setting. This can only be changed before the initial send
+    // or after the XHR instance is reinitialized by calling open after a send.
+    const fingerprintContext = this[FingerprintContextSymbol]
+    if (fingerprintContext?.preservedWithCredentials !== undefined) {
+      this.withCredentials = fingerprintContext.preservedWithCredentials
+      fingerprintContext.preservedWithCredentials = undefined
+    }
   }
 }
