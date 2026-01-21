@@ -1,5 +1,15 @@
 # flow-cloudflare-worker
 
+## 0.5.0
+
+### Minor Changes
+
+- Add support for protected APIs that are cross-origin (but same-site) from the identification pages ([498c1c7](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/498c1c75accbca4ecc92d62a56ce28e2cd43a521))
+
+### Patch Changes
+
+- Prevent the worker from throwing an error if FP_SECRET_KEY is missing on identification pages ([ef8b5e0](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/ef8b5e0e653262e2d94765444dd100c44cf63cb7))
+
 ## 0.4.1
 
 ### Patch Changes
