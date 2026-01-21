@@ -36,8 +36,6 @@ export async function handleProtectedApiCall({
     env,
   })
 
-  setCorsHeadersForInstrumentation(request, response.headers)
-
   /**
    * For HTML responses, inject the agent processor script into the <head> element to process the agent data.
    * */
@@ -87,6 +85,11 @@ async function getResponseForProtectedCall({
     removeCookies = result.removeCookies
   } catch (e) {
     console.error('Failed to parse incoming request:', e)
+
+    // Importantly, the request, not the originRequest is used here because
+    // the unmodified request must be sent to the origin if the request
+    // was not a valid instrumented request and the environment configuration
+    // indicates the request should be forwarded on error
     return [await handleFallbackRule(request, env), null]
   }
 
@@ -94,7 +97,18 @@ async function getResponseForProtectedCall({
     ingressResponse = await identificationClient.send(originRequest, signals, clientCookie)
   } catch (error) {
     console.error('Error sending request to ingress service:', error)
-    return [await handleFallbackRule(originRequest, env), null]
+    const response = await handleFallbackRule(originRequest, env)
+
+    // Make a copy of the headers because they are immutable
+    const originResponseHeaders = new Headers(response.headers)
+
+    // The identification could not be completed but the request was a
+    // valid instrumented request. As a result, the CORS headers
+    // need to be set appropriately in the response so the browser
+    // will not fail the request.
+    setCorsHeadersForInstrumentation(request, originResponseHeaders)
+
+    return [copyResponseWithNewHeaders(response, originResponseHeaders), null]
   }
 
   let originResponse: Response
@@ -116,6 +130,8 @@ async function getResponseForProtectedCall({
   if (!isDocumentDestination(request.headers)) {
     setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, removeCookies)
   }
+
+  setCorsHeadersForInstrumentation(request, originResponseHeaders)
 
   // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
   return [copyResponseWithNewHeaders(originResponse, originResponseHeaders), ingressResponse.agentData]

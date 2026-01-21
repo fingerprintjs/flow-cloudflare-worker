@@ -30,7 +30,20 @@ function prepareMockFetch({ mockIngressHandler, mockOriginHandler }: PrepareMock
 
       originRequest = params[0]
 
-      return mockOriginHandler()
+      const response = await mockOriginHandler()
+
+      // The Workers runtime prevents modification of headers received
+      // from the network. Ensure that tests can trigger this error
+      // if that happens
+      const throwImmutableHeadersError = () => {
+        throw new TypeError("Can't modify immutable headers")
+      }
+      Object.defineProperties(response.headers, {
+        set: { value: throwImmutableHeadersError },
+        append: { value: throwImmutableHeadersError },
+        delete: { value: throwImmutableHeadersError },
+      })
+      return response
     }
 
     return new Response('', { status: 404 })
@@ -1634,6 +1647,53 @@ describe('Protected API', () => {
         expect(await response.text()).toEqual('origin')
       }
     )
+
+    it('should forward the request to the origin after a successful ingress', async () => {
+      prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+              event: mockEvent(),
+            } satisfies SendResponse)
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = getCompleteHeaders()
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(
+        request,
+        {
+          // includes fallback action not executed because worker is in monitor mode
+          ...mockEnv,
+          FP_RULESET_ID: '',
+        } satisfies TypedEnv,
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      expect(response.status).toEqual(200)
+      expect(await response.text()).toEqual('origin')
+    })
   })
 
   describe('CORS handling', () => {
@@ -1789,34 +1849,206 @@ describe('Protected API', () => {
       expect(originRequest!.headers.get('Access-Control-Request-Method')).toEqual('PUT')
     })
 
-    it('should add CORS responses headers when ingress fails', async () => {
-      const { getOriginRequest } = prepareMockFetch({
-        mockIngressHandler: async () => {
-          throw new Error('Ingress failed')
-        },
-        mockOriginHandler: async () => {
-          throw new Error('Should not be called')
-        },
-      })
-
-      const request = new CloudflareRequest(apiUrl, {
-        method: 'POST',
-        headers: new Headers({
-          'Content-Type': 'text/plain',
-          origin: mockWorkerBaseUrl,
+    it.each([
+      [
+        'fallback allow',
+        (async () =>
+          new Response('origin', {
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })) satisfies () => Promise<Response>,
+        {
+          FP_FAILURE_FALLBACK_ACTION: {
+            type: 'allow',
+          },
+        } satisfies Partial<TypedEnv>,
+        200,
+        new Request(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            origin: mockWorkerBaseUrl,
+            Cookie: 'name=value',
+          },
         }),
-        body: 'content',
-      })
-      const ctx = createExecutionContext()
-      const response = await handler.fetch(request, crossOriginApiEnv, ctx)
-      await waitOnExecutionContext(ctx)
+        '*',
+      ],
+      [
+        'fallback block',
+        async () => {
+          throw new Error('Should not have been called')
+        },
+        {} satisfies Partial<TypedEnv>,
+        403,
+        undefined,
+        mockWorkerBaseUrl,
+      ],
+      [
+        'monitor mode',
+        (async () =>
+          new Response('origin', {
+            status: 201,
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })) satisfies () => Promise<Response>,
+        {
+          FP_RULESET_ID: '',
+        } satisfies Partial<TypedEnv>,
+        201,
+        new Request(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            origin: mockWorkerBaseUrl,
+            Cookie: 'name=value',
+          },
+        }),
+        '*',
+      ],
+    ])(
+      'should not set CORS headers when signals are not included in the request - %s',
+      async (
+        _name,
+        mockOriginHandler,
+        envUpdates,
+        expectedStatusCode,
+        expectedOriginRequest,
+        expectedAllowedOrigin
+      ) => {
+        const { getOriginRequest } = prepareMockFetch({
+          mockIngressHandler: async () => {
+            throw new Error('Ingress failed')
+          },
+          mockOriginHandler,
+        })
 
-      expect(response.status).toEqual(403)
-      expect(response.headers.get('Access-Control-Allow-Origin')).toEqual(mockWorkerBaseUrl)
-      expect(response.headers.get('Access-Control-Allow-Credentials')).toEqual('true')
-      expect(response.headers.get('Access-Control-Expose-Headers')).toBeNull()
+        const request = new CloudflareRequest(apiUrl, {
+          method: 'POST',
+          headers: new Headers({
+            'Content-Type': 'text/plain',
+            origin: mockWorkerBaseUrl,
+            Cookie: 'name=value',
+          }),
+          body: 'content',
+        })
 
-      expect(getOriginRequest()).toBeUndefined()
-    })
+        const testCaseEnv: TypedEnv = {
+          ...crossOriginApiEnv,
+          ...envUpdates,
+        }
+
+        const ctx = createExecutionContext()
+        const response = await handler.fetch(request, testCaseEnv, ctx)
+        await waitOnExecutionContext(ctx)
+
+        expect(response.status).toEqual(expectedStatusCode)
+        expect(response.headers.get('Access-Control-Allow-Origin')).toEqual(expectedAllowedOrigin)
+        expect(response.headers.get('Access-Control-Allow-Credentials')).toBeNull()
+        expect(response.headers.get('Access-Control-Expose-Headers')).toBeNull()
+
+        expect(getOriginRequest()).toEqual(expectedOriginRequest)
+      }
+    )
+
+    it.each([
+      [
+        'fallback allow',
+        (async () =>
+          new Response('origin', {
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })) satisfies () => Promise<Response>,
+        {
+          FP_FAILURE_FALLBACK_ACTION: {
+            type: 'allow',
+          },
+        } satisfies Partial<TypedEnv>,
+        200,
+        new Request(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            origin: mockWorkerBaseUrl,
+          },
+        }),
+      ],
+      [
+        'fallback block',
+        async () => {
+          throw new Error('Should not have been called')
+        },
+        {} satisfies Partial<TypedEnv>,
+        403,
+        undefined,
+      ],
+      [
+        'monitor mode',
+        (async () =>
+          new Response('origin', {
+            status: 201,
+            headers: {
+              'Content-Type': 'text/plain',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })) satisfies () => Promise<Response>,
+        {
+          FP_RULESET_ID: '',
+        } satisfies Partial<TypedEnv>,
+        201,
+        new Request(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            origin: mockWorkerBaseUrl,
+          },
+        }),
+      ],
+    ])(
+      'should add CORS responses headers when ingress fails - %s',
+      async (_name, mockOriginHandler, envUpdates, expectedStatusCode, expectedOriginRequest) => {
+        const { getOriginRequest } = prepareMockFetch({
+          mockIngressHandler: async () => {
+            throw new Error('Ingress failed')
+          },
+          mockOriginHandler,
+        })
+
+        // Include a cookie in the request but don't add the flag to the signals
+        // to test that cookies are still removed from the request before it is
+        // forwarded to the origin
+        const request = new CloudflareRequest(apiUrl, {
+          method: 'POST',
+          headers: new Headers({
+            'Content-Type': 'text/plain',
+            origin: mockWorkerBaseUrl,
+            Cookie: 'name=value',
+            [SIGNALS_KEY]: 'test-signals-data',
+          }),
+          body: 'content',
+        })
+
+        const testCaseEnv: TypedEnv = {
+          ...crossOriginApiEnv,
+          ...envUpdates,
+        }
+
+        const ctx = createExecutionContext()
+        const response = await handler.fetch(request, testCaseEnv, ctx)
+        await waitOnExecutionContext(ctx)
+
+        expect(response.status).toEqual(expectedStatusCode)
+        expect(response.headers.get('Access-Control-Allow-Origin')).toEqual(mockWorkerBaseUrl)
+        expect(response.headers.get('Access-Control-Allow-Credentials')).toEqual('true')
+        expect(response.headers.get('Access-Control-Expose-Headers')).toBeNull()
+
+        expect(getOriginRequest()).toEqual(expectedOriginRequest)
+      }
+    )
   })
 })
