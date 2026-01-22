@@ -311,7 +311,10 @@ export class IdentificationClient {
     try {
       // Otherwise, try to find signals in the request body
       if (hasContentType(request.headers, 'application/x-www-form-urlencoded', 'multipart/form-data')) {
-        const data = await request.clone().formData()
+        const multipartForm = hasContentType(request.headers, 'multipart/form-data')
+        const data = multipartForm
+          ? await request.clone().formData()
+          : new URLSearchParams(await request.clone().text())
         const signals = data.get(SIGNALS_KEY)
 
         if (typeof signals === 'string') {
@@ -320,7 +323,8 @@ export class IdentificationClient {
           data.delete(SIGNALS_KEY)
 
           const requestHeaders = new Headers(request.headers)
-          if (hasContentType(request.headers, 'multipart/form-data')) {
+
+          if (multipartForm) {
             // When modifying FormData for multipart/form-data, we also need to remove the old Content-Type header. Otherwise, the boundary will be different and the request will fail.
             // The new content type will be set automatically when constructing the new request.
             requestHeaders.delete('content-type')
