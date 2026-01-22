@@ -1,5 +1,11 @@
 # flow-cloudflare-worker
 
+## 0.5.1
+
+### Patch Changes
+
+- fix: correctly set CORS headers in error handling paths for protected APIs ([c7c4c89](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/c7c4c89b34016cb1f76749db0b23540bceca3ace))
+
 ## 0.5.0
 
 ### Minor Changes
