@@ -11,12 +11,15 @@ export type TestWorkerProjectName =
   | 'ruleset-based-block'
   // Represents worker with debug logging enabled
   | 'log-level-config'
+  // Represents worker with tests for CORS capabilities
+  | 'cors'
 
 /**
  * Represents the options that can be used to configure a FlowWorker test.
  */
 export type FlowWorkerTestOptions = {
   variables?: Partial<TypedEnv>
+  additionalDomainPatterns?: string[]
 }
 
 export type TestWorkerProjectData = {

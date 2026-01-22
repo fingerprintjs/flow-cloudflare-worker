@@ -42,14 +42,17 @@ function prepareWranglerConfig({
     FP_PUBLIC_KEY: getPublicKey(),
     FP_SECRET_KEY: getSecretKey(),
     FP_RULESET_ID: getRulesetId(projectName),
-    PROTECTED_APIS: getProtectedApis(projectName),
-    IDENTIFICATION_PAGE_URLS: [`https://${baseUrl}`],
     FP_FAILURE_FALLBACK_ACTION: {
       type: 'block',
       status_code: 403,
     },
     ...flowWorker?.variables,
+    PROTECTED_APIS: [...getProtectedApis(projectName), ...(flowWorker?.variables?.PROTECTED_APIS ?? [])],
+    IDENTIFICATION_PAGE_URLS: [`https://${baseUrl}`, ...(flowWorker?.variables?.IDENTIFICATION_PAGE_URLS ?? [])],
   }
+
+  const zoneId = getCloudflareZoneId()
+  const additionalRoutes = flowWorker?.additionalDomainPatterns?.map((pattern) => ({ pattern, zone_id: zoneId })) ?? []
 
   return {
     name: workerName,
@@ -58,8 +61,9 @@ function prepareWranglerConfig({
     routes: [
       {
         pattern: `${baseUrl}/*`,
-        zone_id: getCloudflareZoneId(),
+        zone_id: zoneId,
       },
+      ...additionalRoutes,
     ],
     vars,
     observability: {

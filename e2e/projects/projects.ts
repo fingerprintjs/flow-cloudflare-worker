@@ -1,4 +1,4 @@
-import { getTestProjectHost } from '../utils/env'
+import { getTestHost, getTestProjectHost } from '../utils/env'
 import { TestProject } from './TestProject'
 import { spaApp } from '../deploy/testApps/reactSpa'
 
@@ -11,9 +11,9 @@ const sharedTests = /shared\/.+\.test\.ts/
  *         test match criteria, project names, and any additional settings such as flow worker variables.
  */
 export function getTestProjects(): TestProject[] {
-  return [
+  const allTestProjects = [
     new TestProject({
-      testAppFn: spaApp,
+      testAppFn: spaApp(),
       displayName: 'Fallback Action Allow Worker',
       host: getTestProjectHost('fallback-action-allow'),
       testMatch: [sharedTests, /fallbackActionAllow\/.+\.test\.ts/],
@@ -36,7 +36,7 @@ export function getTestProjects(): TestProject[] {
     }),
 
     new TestProject({
-      testAppFn: spaApp,
+      testAppFn: spaApp(),
       displayName: 'Fallback Action Block Worker',
       host: getTestProjectHost('fallback-action-block'),
       testMatch: [sharedTests, /fallbackActionBlock\/.+\.test\.ts/],
@@ -54,7 +54,7 @@ export function getTestProjects(): TestProject[] {
     }),
 
     new TestProject({
-      testAppFn: spaApp,
+      testAppFn: spaApp(),
       displayName: 'Block Based On Ruleset Worker',
       host: getTestProjectHost('ruleset-based-block'),
       testMatch: [sharedTests, /rulesetBasedBlock\/.+\.test\.ts/],
@@ -62,7 +62,7 @@ export function getTestProjects(): TestProject[] {
     }),
 
     new TestProject({
-      testAppFn: spaApp,
+      testAppFn: spaApp(),
       displayName: 'Log Level Config',
       host: getTestProjectHost('log-level-config'),
       testMatch: [/logLevelConfig\/.+\.test\.ts/],
@@ -73,5 +73,41 @@ export function getTestProjects(): TestProject[] {
         },
       },
     }),
+
+    new TestProject({
+      testAppFn: spaApp({
+        // Serve the test app under an additional "cors-api" host
+        additionalDomainPatterns: [getTestHost('cors-api')],
+        vars: {
+          CORS_ALLOWED_ORIGINS: `https://${getTestProjectHost('cors')}`,
+        },
+      }),
+      displayName: 'CORS',
+      host: getTestProjectHost('cors'),
+      testMatch: [/cors\/.+\.test\.ts/],
+      projectName: 'cors',
+      flowWorker: {
+        // In the same manner, the flow worker also needs to handle the additional host
+        additionalDomainPatterns: [`${getTestHost('cors-api')}/api/*`],
+        variables: {
+          FP_LOG_LEVEL: 'debug',
+          PROTECTED_APIS: [
+            {
+              url: `https://${getTestHost('cors-api')}/api/*`,
+              method: 'POST',
+            },
+          ],
+          IDENTIFICATION_PAGE_URLS: [`https://${getTestHost('cors-api')}`],
+        },
+      },
+    }),
   ] satisfies TestProject[]
+
+  const filter = process.env.TEST_PROJECTS_FILTER
+
+  if (!filter) {
+    return allTestProjects
+  }
+
+  return allTestProjects.filter((p) => p.projectName.match(filter) !== null || p.displayName.match(filter) !== null)
 }

@@ -3,6 +3,10 @@
   "name": "react-spa",
   "compatibility_date": "2025-04-03",
   "main": "./worker/index.ts",
+  "vars": {
+    "CORS_ALLOWED_ORIGINS": "",
+    "CORS_ALLOW_CREDENTIALS": null
+  },
   "routes": [
     {
       "custom_domain": true,
