@@ -1844,9 +1844,49 @@ describe('Protected API', () => {
       expect(response.status).toEqual(204)
 
       const originRequest = getOriginRequest()
-      expect(originRequest).toBeDefined()
-      expect(originRequest!.headers.get('Access-Control-Request-Headers')).toEqual('content-type')
-      expect(originRequest!.headers.get('Access-Control-Request-Method')).toEqual('PUT')
+      assert(originRequest)
+      expect(originRequest.headers.get('Access-Control-Request-Headers')).toEqual('content-type')
+      expect(originRequest.headers.get('Access-Control-Request-Method')).toEqual('PUT')
+    })
+
+    it('should forward OPTIONS request and not set CORS response headers when signals are not included', async () => {
+      const { getOriginRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          throw new Error('Should not be called')
+        },
+        mockOriginHandler: async () => {
+          return new Response(null, {
+            status: 204,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Headers': 'content-type',
+              'Access-Control-Allow-Methods': 'POST',
+            },
+          })
+        },
+      })
+
+      const request = new CloudflareRequest(apiUrl, {
+        method: 'OPTIONS',
+        headers: new Headers({
+          'Access-Control-Request-Headers': 'content-type',
+          'Access-Control-Request-Method': 'POST',
+          Origin: mockWorkerBaseUrl,
+        }),
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(request, crossOriginApiEnv, ctx)
+      await waitOnExecutionContext(ctx)
+
+      expect(response.status).toEqual(204)
+      expect(response.headers.get('Access-Control-Allow-Origin')).toEqual('*')
+      expect(response.headers.get('Access-Control-Allow-Headers')).toEqual('content-type')
+      expect(response.headers.get('Access-Control-Allow-Methods')).toEqual('POST')
+
+      const originRequest = getOriginRequest()
+      assert(originRequest)
+      expect(originRequest.headers.get('Access-Control-Request-Headers')).toEqual('content-type')
+      expect(originRequest.headers.get('Access-Control-Request-Method')).toEqual('POST')
     })
 
     it.each([
