@@ -54,7 +54,6 @@ export async function handleProtectedApiOptionsCall({
     // Attempt to fail gracefully and let the origin handle this error case.
   }
 
-  let originRequest = request
   const accessControlRequestHeadersValues = accessControlRequestHeaders
     ? accessControlRequestHeaders.split(',').map((s) => s.trim())
     : []
@@ -66,19 +65,24 @@ export async function handleProtectedApiOptionsCall({
 
     removeHeaderValue(originRequestHeaders, 'Access-Control-Request-Headers', SIGNALS_KEY)
 
-    originRequest = copyRequest({
+    const originRequest = copyRequest({
       request,
       init: {
         headers: originRequestHeaders,
       },
     })
+
+    const originResponse = await fetchOrigin(originRequest)
+
+    const originResponseHeaders = new Headers(originResponse.headers)
+
+    setCorsHeadersForInstrumentation(request, originResponseHeaders)
+
+    return copyResponseWithNewHeaders(originResponse, originResponseHeaders)
   }
 
-  const originResponse = await fetchOrigin(originRequest)
-
-  const originResponseHeaders = new Headers(originResponse.headers)
-
-  setCorsHeadersForInstrumentation(request, originResponseHeaders)
-
-  return copyResponseWithNewHeaders(originResponse, originResponseHeaders)
+  // The OPTIONS request matches a protected API but the request is not being
+  // instrumented so forward the OPTIONS request to the origin. Protection
+  // logic will be applied to the actual request
+  return fetchOrigin(request)
 }
