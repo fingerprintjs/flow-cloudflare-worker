@@ -189,8 +189,14 @@ describe('Protected API', () => {
           ])
         )
 
-        const originBody = await getOriginRequest()!.formData()
-        expect(originBody.has(SIGNALS_KEY)).toBeFalsy()
+        const originRequest = getOriginRequest()
+        expect(originRequest).toBeDefined()
+        assert(originRequest)
+
+        expect(originRequest.headers.get('Content-Type')).toEqual(contentType)
+
+        const unparsedBody = await originRequest.text()
+        expect(unparsedBody).toEqual('login=login&password=password')
       }
     )
 
@@ -477,8 +483,23 @@ describe('Protected API', () => {
         ])
       )
 
-      const originBody = await getOriginRequest()!.formData()
-      expect(originBody.has(SIGNALS_KEY)).toBeFalsy()
+      const originRequest = getOriginRequest()
+      expect(originRequest).toBeDefined()
+      assert(originRequest)
+
+      // Confirm the request body was rewritten correctly
+      expect(originRequest.headers.get('Content-Type')).toContain('multipart/form-data')
+      const contentType = originRequest.headers.get('Content-Type')
+      const boundaryMatch = contentType?.match(/boundary=([^;]+)/)
+      const boundary = boundaryMatch ? boundaryMatch[1] : undefined
+      expect(boundary).toBeDefined()
+
+      const unparsedBody = await originRequest.text()
+      expect(unparsedBody).toContain(`--${boundary}\r\nContent-Disposition: form-data; name="login"\r\n\r\nlogin\r\n`)
+      expect(unparsedBody).toContain(
+        `--${boundary}\r\nContent-Disposition: form-data; name="password"\r\n\r\npassword\r\n`
+      )
+      expect(unparsedBody).not.toContain(`Content-Disposition: form-data; name="${SIGNALS_KEY}"`)
     })
 
     it('should send request to ingress and return modified response when client request has no cookies', async () => {
