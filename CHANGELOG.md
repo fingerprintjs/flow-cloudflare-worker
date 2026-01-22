@@ -1,5 +1,11 @@
 # flow-cloudflare-worker
 
+## 0.5.2
+
+### Patch Changes
+
+- fix: maintain form body encoding when removing signals ([70171ed](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/70171ed219affbd0a5be905d112d1d3b28e31b7a))
+
 ## 0.5.1
 
 ### Patch Changes
