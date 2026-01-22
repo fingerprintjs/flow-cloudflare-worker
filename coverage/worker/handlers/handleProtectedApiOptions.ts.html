@@ -30,9 +30,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">81.81% </span>
+                <span class="strong">90.9% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>9/11</span>
+                <span class='fraction'>10/11</span>
             </div>
         
             
@@ -147,7 +147,11 @@
 <a name='L82'></a><a href='#L82'>82</a>
 <a name='L83'></a><a href='#L83'>83</a>
 <a name='L84'></a><a href='#L84'>84</a>
-<a name='L85'></a><a href='#L85'>85</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -167,9 +171,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -203,12 +207,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
@@ -216,7 +219,6 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -230,6 +232,12 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { SIGNALS_KEY } from '../../shared/const'
 import { isSimpleMethod } from '../../shared/types'
@@ -287,11 +295,10 @@ export async function handleProtectedApiOptionsCall({
     // Attempt to fail gracefully and let the origin handle this error case.
   }
 &nbsp;
-  let originRequest = request
   const accessControlRequestHeadersValues = accessControlRequestHeaders
     ? accessControlRequestHeaders.split(',').map((s) =&gt; s.trim())
     : <span class="branch-1 cbranch-no" title="branch not covered" >[]</span>
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (accessControlRequestHeadersValues.includes(SIGNALS_KEY)) {
+  if (accessControlRequestHeadersValues.includes(SIGNALS_KEY)) {
     // The SIGNALS_KEY needs to be removed from the forwarded request to
     // avoid unexpected results from the origin.
 &nbsp;
@@ -299,21 +306,26 @@ export async function handleProtectedApiOptionsCall({
 &nbsp;
     removeHeaderValue(originRequestHeaders, 'Access-Control-Request-Headers', SIGNALS_KEY)
 &nbsp;
-    originRequest = copyRequest({
+    const originRequest = copyRequest({
       request,
       init: {
         headers: originRequestHeaders,
       },
     })
+&nbsp;
+    const originResponse = await fetchOrigin(originRequest)
+&nbsp;
+    const originResponseHeaders = new Headers(originResponse.headers)
+&nbsp;
+    setCorsHeadersForInstrumentation(request, originResponseHeaders)
+&nbsp;
+    return copyResponseWithNewHeaders(originResponse, originResponseHeaders)
   }
 &nbsp;
-  const originResponse = await fetchOrigin(originRequest)
-&nbsp;
-  const originResponseHeaders = new Headers(originResponse.headers)
-&nbsp;
-  setCorsHeadersForInstrumentation(request, originResponseHeaders)
-&nbsp;
-  return copyResponseWithNewHeaders(originResponse, originResponseHeaders)
+  // The OPTIONS request matches a protected API but the request is not being
+  // instrumented so forward the OPTIONS request to the origin. Protection
+  // logic will be applied to the actual request
+  return fetchOrigin(request)
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -322,7 +334,7 @@ export async function handleProtectedApiOptionsCall({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-01-21T14:27:28.079Z
+                at 2026-01-22T11:33:18.612Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
