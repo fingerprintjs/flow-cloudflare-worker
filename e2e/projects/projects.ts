@@ -1,4 +1,4 @@
-import { getTestHost, getTestProjectHost } from '../utils/env'
+import { getTestDomain, getTestHost, getTestProjectHost } from '../utils/env'
 import { TestProject } from './TestProject'
 import { spaApp } from '../deploy/testApps/reactSpa'
 
@@ -98,6 +98,33 @@ export function getTestProjects(): TestProject[] {
             },
           ],
           IDENTIFICATION_PAGE_URLS: [`https://${getTestHost('cors-api')}`],
+        },
+      },
+    }),
+
+    new TestProject({
+      testAppFn: spaApp({
+        // Serve the test app under an additional "api-wildcard" subdomain
+        additionalDomainPatterns: [getTestHost('api-wildcard')],
+      }),
+      displayName: 'Wildcard Protected API',
+      host: getTestProjectHost('wildcard-protected-api'),
+      testMatch: [/wildcardProtectedApi\/.+\.test\.ts/],
+      projectName: 'wildcard-protected-api',
+      flowWorker: {
+        // Configure route for the api-wildcard subdomain
+        additionalDomainPatterns: [`${getTestHost('api-wildcard')}/*`],
+        variables: {
+          FP_LOG_LEVEL: 'debug',
+          // Configure PROTECTED_APIS with wildcard subdomain and wildcard path
+          // This pattern should match https://*.{test-domain}/api/*
+          PROTECTED_APIS: [
+            {
+              url: `https://*.${getTestDomain()}/api/*`,
+              method: 'POST',
+            },
+          ],
+          IDENTIFICATION_PAGE_URLS: [`https://${getTestProjectHost('wildcard-protected-api')}`],
         },
       },
     }),
