@@ -34,8 +34,7 @@ test.describe('Protection', () => {
     // Wait for the request to be recorded by Playwright
     const protectedRequest = await requestPromise
     assertIsDefined(protectedRequest)
-    // This assertion should fail due to the bug - signals are not injected
-    // when protected API has both wildcard subdomain and wildcard path
+    // Assert that the request matching the wildcard protected API has the signals header injected
     expect(protectedRequest.headers()[SIGNALS_KEY]).toBeTruthy()
   })
 })
