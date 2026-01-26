@@ -13,6 +13,8 @@ export type TestWorkerProjectName =
   | 'log-level-config'
   // Represents worker with tests for CORS capabilities
   | 'cors'
+  // Represents worker with tests for wildcard subdomain and path protected APIs
+  | 'wildcard-protected-api'
 
 /**
  * Represents the options that can be used to configure a FlowWorker test.
