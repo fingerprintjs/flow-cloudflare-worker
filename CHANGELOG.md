@@ -1,5 +1,11 @@
 # flow-cloudflare-worker
 
+## 0.5.3
+
+### Patch Changes
+
+- fix: update `url-matcher` to instrument protected APIs with wildcard prefixes correctly ([0f4b821](https://github.com/fingerprintjs/fingerprintjs-pro-server-api-node-sdk/commit/0f4b82198c274d9cd894eaaebcce780483f300da))
+
 ## 0.5.2
 
 ### Patch Changes
