@@ -1,6 +1,6 @@
 import { FlowError } from '../errors'
-import { IdentificationEvent } from './identificationClient'
 import { getIp } from '../utils/headers'
+import { IdentificationEvent } from './identificationClientTypes'
 
 const ALLOWED_REQUEST_TIMESTAMP_DIFF_MS = 3000
 

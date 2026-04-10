@@ -6,9 +6,9 @@ import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import handler from '../../../src/worker'
 import { CloudflareRequest } from '../request'
 import { Region } from '../../../src/worker/fingerprint/region'
-import { SendBody, SendResponse } from '../../../src/worker/fingerprint/identificationClient'
 import { mockEnv, mockUrl, mockWorkerBaseUrl } from '../../utils/mockEnv'
 import { TypedEnv } from '../../../src/worker/types'
+import { SendBody, SendResponse } from '../../../src/worker/fingerprint/identificationClientTypes'
 
 type PrepareMockFetchParams = {
   mockIngressHandler: (request: Request) => Promise<Response>

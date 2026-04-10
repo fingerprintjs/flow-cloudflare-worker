@@ -1,5 +1,5 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
-import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
+import { IdentificationClient } from '../fingerprint/identificationClient'
 import { processRuleset } from '../fingerprint/ruleset'
 import { hasContentType, isDocumentDestination } from '../utils/headers'
 import { injectAgentProcessorScript } from '../scripts'
@@ -8,6 +8,7 @@ import { TypedEnv } from '../types'
 import { getFallbackRuleAction, getRoutePrefix, isMonitorMode } from '../env'
 import { setCorsHeadersForInstrumentation } from '../utils/request'
 import { copyResponseWithNewHeaders } from '../utils/response'
+import { SendResult } from '../fingerprint/identificationClientTypes'
 
 /**
  * Parameters required for handling a protected API call.
