@@ -167,7 +167,7 @@ export class IdentificationClient {
   }
 
   /**
-   * Sends an request to the HTTP Edge API and returns parsed EdgeResponse.
+   * Sends a request to the HTTP Edge API and returns parsed EdgeResponse.
    *
    * @param {Request} clientRequest The incoming client request containing headers, URL, and method information.
    * @return {Promise<EdgeResponse>} A promise that resolves to the processed and validated edge response data.
@@ -177,8 +177,16 @@ export class IdentificationClient {
     const clientIP = await getIp(clientRequest.headers)
     const ipType = getIpType(clientIP)
 
+    const clientRequestHeaders = new Headers(clientRequest.headers)
+
+    // In dev environment, we need to explicitly set the host header with the request url, otherwise ingress request will fail
+    // It's because vite sets the host header to localhost IP, so it becomes different from the actual request url
+    if (import.meta.env.MODE == 'dev') {
+      clientRequestHeaders.set('host', new URL(clientRequest.url).host)
+    }
+
     const edgeRequest: EdgeRequest = {
-      headers: Array.from(clientRequest.headers.entries()).map(([name, value]) => ({ name, value })),
+      headers: Array.from(clientRequestHeaders.entries()).map(([name, value]) => ({ name, value })),
       url: clientRequest.url,
       ipv4_address: ipType === 'ipv4' ? clientIP : undefined,
       ipv6_address: ipType === 'ipv6' ? clientIP : undefined,
@@ -190,16 +198,19 @@ export class IdentificationClient {
 
     const request = new Request(ingressUrl, {
       body: JSON.stringify(edgeRequest),
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.apiKey}`,
       },
     })
 
+    console.debug(`Sending edge request to ${ingressUrl}`, edgeRequest)
+
     const response = await fetch(request)
 
     if (!response.ok) {
-      const text = await response.text()
+      const text = await response.text().catch(() => '')
       throw new Error(`Edge request failed with status: ${response.status} with: ${text}`)
     }
 
@@ -210,6 +221,8 @@ export class IdentificationClient {
       console.error('Invalid edge response data', parsedData.error, parsedData.data)
       throw new Error('Invalid edge response data')
     }
+
+    console.debug('Edge response data:', parsedData.data)
 
     return parsedData.data
   }

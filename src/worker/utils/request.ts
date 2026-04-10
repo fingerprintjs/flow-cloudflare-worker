@@ -120,21 +120,24 @@ export function setCorsHeadersForInstrumentation(request: Request, originRespons
 
   originResponseHeaders.set('Access-Control-Allow-Credentials', 'true')
 
-  const allowedHeaders: string[] = []
-  // If any edge headers are present, add them to the allowed headers
-  Object.values(EdgeHeaders).forEach((header) => {
-    if (originResponseHeaders.has(header)) {
-      allowedHeaders.push(header)
-    }
-  })
-
   if (request.method !== 'OPTIONS') {
+    const allowedHeaders: string[] = []
+
     if (originResponseHeaders.get(AGENT_DATA_HEADER) !== null) {
+      // If any edge headers are present, add them to the allowed headers
+      Object.values(EdgeHeaders).forEach((header) => {
+        if (originResponseHeaders.has(header)) {
+          allowedHeaders.push(header)
+        }
+      })
+
       allowedHeaders.push(AGENT_DATA_HEADER)
+
+      if (allowedHeaders.length > 0) {
+        appendHeaderValue(originResponseHeaders, 'Access-Control-Expose-Headers', allowedHeaders.join(', '))
+      }
     }
   } else {
-    allowedHeaders.push(SIGNALS_KEY)
+    appendHeaderValue(originResponseHeaders, 'Access-Control-Allow-Headers', SIGNALS_KEY)
   }
-
-  appendHeaderValue(originResponseHeaders, 'Access-Control-Expose-Headers', allowedHeaders.join(', '))
 }
