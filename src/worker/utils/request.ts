@@ -136,5 +136,5 @@ export function setCorsHeadersForInstrumentation(request: Request, originRespons
     allowedHeaders.push(SIGNALS_KEY)
   }
 
-  appendHeaderValue(originResponseHeaders, 'Access-Control-Allow-Headers', allowedHeaders.join(', '))
+  appendHeaderValue(originResponseHeaders, 'Access-Control-Expose-Headers', allowedHeaders.join(', '))
 }
