@@ -25,78 +25,6 @@ export type SendBody = {
   ruleset_context?: RulesetContext
 }
 
-export const IdentificationEvent = z.object({
-  replayed: z.boolean(),
-  timestamp: z.coerce.date(),
-  url: z.url(),
-  ip_address: z.ipv4().or(z.ipv6()),
-})
-
-export type IdentificationEvent = z.infer<typeof IdentificationEvent>
-
-export const SendResponse = z.object({
-  // Agent data returned by the identification service
-  agent_data: z.string(),
-  // Rule action resolved by the identification service
-  rule_action: RuleAction.optional(),
-  // Cookies that need to be set in the origin response
-  set_cookie_headers: z.array(z.string()).optional(),
-
-  event: IdentificationEvent,
-})
-
-export type SendResponse = z.infer<typeof SendResponse>
-
-/**
- * Extended response structure that includes both agent data and cookie headers.
- */
-export type SendResult = {
-  /** Agent data returned by the identification service */
-  agentData: string
-  /** Array of Set-Cookie header values to be sent to the client */
-  setCookieHeaders?: string[] | undefined
-  /** Optional rule action that was resolved by ingress */
-  ruleAction: RuleAction | undefined
-}
-
-export type ParsedIncomingRequest = {
-  /** The signals extracted from a request */
-  signals: string
-
-  /**
-   * Identification requires that cookies be sent in cross-origin requests. But
-   * the application may not have requested this behavior.
-   *
-   * This flag will be true when the request is a cross-origin request
-   * and the application did not request that cookies be included in the request,
-   * indicating that both Cookies and Set-Cookie header fields must not be sent between the origin
-   * and the client.
-   */
-  removeCookies: boolean
-
-  /** The request with signals and optionally, cookies omitted, suitable for forwarding to the origin */
-  originRequest: Request
-
-  /** The cookie from the request that needs to be included in the identification request */
-  clientCookie: string | undefined
-}
-
-const EdgeRequestHeader = z.object({
-  name: z.string(),
-  value: z.string(),
-})
-
-export const EdgeRequest = z.object({
-  headers: z.array(EdgeRequestHeader).min(1),
-  method: z.string(),
-  url: z.url(),
-  ipv4_address: z.ipv4().optional(),
-  ipv6_address: z.ipv6().optional(),
-  cf_properties: z.record(z.string(), z.unknown()).optional(),
-})
-
-export type EdgeRequest = z.infer<typeof EdgeRequest>
-
 const BotInfo = z
   .object({
     /** The type and purpose of the bot. */
@@ -183,9 +111,81 @@ const IpInfo = z.object({
   v6: IpV6Info.optional(),
 })
 
-export const EdgeResponse = z.object({
+export const IdentificationEvent = z.object({
+  replayed: z.boolean(),
+  timestamp: z.coerce.date(),
+  url: z.url(),
+  ip_address: z.ipv4().or(z.ipv6()),
   ip_info: IpInfo,
   bot_info: BotInfo.optional(),
 })
 
+export type IdentificationEvent = z.infer<typeof IdentificationEvent>
+
+export const SendResponse = z.object({
+  // Agent data returned by the identification service
+  agent_data: z.string(),
+  // Rule action resolved by the identification service
+  rule_action: RuleAction.optional(),
+  // Cookies that need to be set in the origin response
+  set_cookie_headers: z.array(z.string()).optional(),
+
+  event: IdentificationEvent,
+})
+
+export type SendResponse = z.infer<typeof SendResponse>
+
+/**
+ * Extended response structure that includes both agent data and cookie headers.
+ */
+export type SendResult = {
+  // Agent data returned by the identification service
+  agentData: string
+  // Array of Set-Cookie header values to be sent to the client
+  setCookieHeaders?: string[] | undefined
+  // Optional rule action that was resolved by ingress
+  ruleAction: RuleAction | undefined
+  // Identification event received from ingress
+  event: IdentificationEvent
+}
+
+export type ParsedIncomingRequest = {
+  /** The signals extracted from a request */
+  signals: string
+
+  /**
+   * Identification requires that cookies be sent in cross-origin requests. But
+   * the application may not have requested this behavior.
+   *
+   * This flag will be true when the request is a cross-origin request
+   * and the application did not request that cookies be included in the request,
+   * indicating that both Cookies and Set-Cookie header fields must not be sent between the origin
+   * and the client.
+   */
+  removeCookies: boolean
+
+  /** The request with signals and optionally, cookies omitted, suitable for forwarding to the origin */
+  originRequest: Request
+
+  /** The cookie from the request that needs to be included in the identification request */
+  clientCookie: string | undefined
+}
+
+const EdgeRequestHeader = z.object({
+  name: z.string(),
+  value: z.string(),
+})
+
+export const EdgeRequest = z.object({
+  headers: z.array(EdgeRequestHeader).min(1),
+  method: z.string(),
+  url: z.url(),
+  ipv4_address: z.ipv4().optional(),
+  ipv6_address: z.ipv6().optional(),
+  cf_properties: z.record(z.string(), z.unknown()).optional(),
+})
+
+export type EdgeRequest = z.infer<typeof EdgeRequest>
+
+export const EdgeResponse = IdentificationEvent.pick({ ip_info: true, bot_info: true })
 export type EdgeResponse = z.infer<typeof EdgeResponse>

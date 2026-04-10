@@ -138,6 +138,7 @@ export class IdentificationClient {
       setCookieHeaders: identificationData.set_cookie_headers,
       agentData: identificationData.agent_data,
       ruleAction: identificationData.rule_action,
+      event: identificationData.event,
     }
   }
 
@@ -165,6 +166,13 @@ export class IdentificationClient {
     return fetch(request as unknown as Request<unknown, IncomingRequestCfProperties>)
   }
 
+  /**
+   * Sends an request to the HTTP Edge API and returns parsed EdgeResponse.
+   *
+   * @param {Request} clientRequest The incoming client request containing headers, URL, and method information.
+   * @return {Promise<EdgeResponse>} A promise that resolves to the processed and validated edge response data.
+   * @throws {Error} If the edge request fails or if the response contains invalid data.
+   */
   async edge(clientRequest: Request): Promise<EdgeResponse> {
     const clientIP = await getIp(clientRequest.headers)
     const ipType = getIpType(clientIP)
@@ -204,6 +212,23 @@ export class IdentificationClient {
     }
 
     return parsedData.data
+  }
+
+  /**
+   * Safely executes the edge method and handles any errors that may occur during execution.
+   * Logs an error message and returns undefined if the edge method fails.
+   *
+   * @param {Request} clientRequest - The request object to pass to the edge method.
+   * @return {Promise<EdgeResponse | undefined>} A promise that resolves to the edge response
+   * if the request is successful, or undefined if an error occurs.
+   */
+  async safeEdge(clientRequest: Request): Promise<EdgeResponse | undefined> {
+    try {
+      return await this.edge(clientRequest)
+    } catch (error) {
+      console.error('Failed to get edge response:', error)
+      return undefined
+    }
   }
 
   /**

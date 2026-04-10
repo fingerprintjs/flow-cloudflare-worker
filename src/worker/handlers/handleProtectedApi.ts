@@ -1,7 +1,7 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient } from '../fingerprint/identificationClient'
 import { processRuleset } from '../fingerprint/ruleset'
-import { hasContentType, isDocumentDestination } from '../utils/headers'
+import { createEdgeResponseHeaders, hasContentType, isDocumentDestination, mergeHeaders } from '../utils/headers'
 import { injectAgentProcessorScript } from '../scripts'
 import { fetchOrigin } from '../utils/origin'
 import { TypedEnv } from '../types'
@@ -125,10 +125,14 @@ async function getResponseForProtectedCall({
     }
   }
 
-  const originResponseHeaders = new Headers(originResponse.headers)
+  let originResponseHeaders = new Headers(originResponse.headers)
   // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
-  // it doesn't make sense to set headers from ingress, because the browser will discard them anyway
+  // it doesn't make sense to set headers from ingress and edge, because the browser will discard them anyway
   if (!isDocumentDestination(request.headers)) {
+    const edgeHeaders = createEdgeResponseHeaders(ingressResponse.event)
+
+    originResponseHeaders = mergeHeaders(originResponseHeaders, edgeHeaders)
+
     setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, removeCookies)
   }
 
