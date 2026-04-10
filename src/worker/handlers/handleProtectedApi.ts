@@ -151,7 +151,6 @@ async function getResponseForProtectedCall({
  *
  * @param ingressResponse - Result from the ingress service containing agent data and cookies
  * @param originResponseHeaders - Mutable headers object from the origin response to be modified
- * @param includedCrossOriginCredentials - true if the instrumented request is cross-origin and included credentials (i.e., cookies) for identification purposes
  * @param removeCookies - true if Set-Cookie header fields need to be removed from the response
  *
  */
