@@ -7,7 +7,15 @@ import { copyRequest, getCrossOriginUrl } from '../utils/request'
 import { handleTampering } from './tampering'
 import { TypedEnv } from '../types'
 import { getFpRegion, getIngressBaseHost, getRoutePrefix, getRulesetId, getSecretKey } from '../env'
-import { ParsedIncomingRequest, SendBody, SendResponse, SendResult } from './identificationClientTypes'
+import {
+  EdgeRequest,
+  EdgeResponse,
+  ParsedIncomingRequest,
+  SendBody,
+  SendResponse,
+  SendResult,
+} from './identificationClientTypes'
+import { getIpType } from '../utils/ip'
 
 /**
  * Client for communicating with the identification service.
@@ -155,6 +163,47 @@ export class IdentificationClient {
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return fetch(request as unknown as Request<unknown, IncomingRequestCfProperties>)
+  }
+
+  async edge(clientRequest: Request): Promise<EdgeResponse> {
+    const clientIP = await getIp(clientRequest.headers)
+    const ipType = getIpType(clientIP)
+
+    const edgeRequest: EdgeRequest = {
+      headers: Array.from(clientRequest.headers.entries()).map(([name, value]) => ({ name, value })),
+      url: clientRequest.url,
+      ipv4_address: ipType === 'ipv4' ? clientIP : undefined,
+      ipv6_address: ipType === 'ipv6' ? clientIP : undefined,
+      method: clientRequest.method,
+    }
+
+    const ingressUrl = new URL(this.url)
+    ingressUrl.pathname = '/v4/edge'
+
+    const request = new Request(ingressUrl, {
+      body: JSON.stringify(edgeRequest),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+    })
+
+    const response = await fetch(request)
+
+    if (!response.ok) {
+      const text = await response.text()
+      throw new Error(`Edge request failed with status: ${response.status} with: ${text}`)
+    }
+
+    const json = await response.json()
+    const parsedData = EdgeResponse.safeParse(json)
+
+    if (!parsedData.success) {
+      console.error('Invalid edge response data', parsedData.error, parsedData.data)
+      throw new Error('Invalid edge response data')
+    }
+
+    return parsedData.data
   }
 
   /**
