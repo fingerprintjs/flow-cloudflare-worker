@@ -129,9 +129,11 @@ async function getResponseForProtectedCall({
   // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
   // it doesn't make sense to set headers from ingress and edge, because the browser will discard them anyway
   if (!isDocumentDestination(request.headers)) {
-    const edgeHeaders = createEdgeResponseHeaders(ingressResponse.event)
+    if (env.FP_EDGE_API) {
+      const edgeHeaders = createEdgeResponseHeaders(ingressResponse.event)
 
-    originResponseHeaders = mergeHeaders(originResponseHeaders, edgeHeaders)
+      originResponseHeaders = mergeHeaders(originResponseHeaders, edgeHeaders)
+    }
 
     setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, removeCookies)
   }
