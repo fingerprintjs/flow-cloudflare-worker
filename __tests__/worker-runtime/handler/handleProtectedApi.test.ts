@@ -10,6 +10,7 @@ import { mockEnv, mockUrl, mockWorkerBaseUrl } from '../../utils/mockEnv'
 import { TypedEnv } from '../../../src/worker/types'
 import { SendBody, SendResponse } from '../../../src/worker/fingerprint/identificationClientTypes'
 import { mockEdgeResponseIpV4 } from '../../utils/mockEdge'
+import { EdgeHeaders } from '../../../src/worker/utils/headers'
 
 type PrepareMockFetchParams = {
   mockIngressHandler: (request: Request) => Promise<Response>
@@ -573,6 +574,112 @@ describe('Protected API', () => {
           '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
         ])
       )
+    })
+
+    it('should set Edge headers if Edge API is enabled', async () => {
+      const { getIngressRequest, getOriginRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          const headers = new Headers()
+          headers.append('Set-Cookie', 'ignored-set-cookie=123')
+
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+              rule_action: {
+                type: 'allow',
+                request_header_modifications: {},
+                rule_id: '1',
+                ruleset_id: '1',
+              },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+              event: mockEvent(),
+            } satisfies SendResponse),
+            {
+              headers,
+            }
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = getCompleteHeaders()
+
+      const cookies = 'client-cookie=value; another-client-cookie=value; _iidt=123456;'
+      requestHeaders.append('cookie', cookies)
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          FP_EDGE_API: true,
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      expect(response.status).toEqual(200)
+      expect(await response.text()).toEqual('origin')
+
+      const headers = Array.from(response.headers.entries())
+      expect(headers).toEqual([
+        ['content-type', 'text/plain;charset=UTF-8'],
+        [AGENT_DATA_HEADER, 'agent-data'],
+        [EdgeHeaders.BotInfoCategory, 'ai_agent'],
+        [EdgeHeaders.BotInfoIdentity, 'signed'],
+        [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
+        [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+        [EdgeHeaders.IpV4Address, '94.142.239.124'],
+        [EdgeHeaders.IpV6Address, ''],
+        ['set-cookie', 'origin-cookie=value'],
+        [
+          'set-cookie',
+          '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+        ],
+        ['set-cookie', 'fp-ingress-cookie=12345'],
+      ])
+
+      const ingressRequest = getIngressRequest()
+      checkIngressRequest(ingressRequest)
+
+      const ingressBody = await ingressRequest!.json()
+      expect(ingressBody).toEqual({
+        // Only _iidt cookie should be sent to ingress
+        client_cookie: '_iidt=123456',
+        client_headers: {
+          'cf-connecting-ip': '1.2.3.4',
+          host: 'example.com',
+          origin: 'https://example.com/',
+          'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+          'x-custom-header': 'custom-value',
+        },
+        client_host: 'example.com',
+        client_ip: '1.2.3.4',
+        client_user_agent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        fingerprint_data: 'signals',
+        ruleset_context: {
+          ruleset_id: 'r_1',
+        },
+      } satisfies SendBody)
+
+      const originRequest = getOriginRequest()
+      expect(originRequest).toBeDefined()
+      assert(originRequest)
     })
   })
 
