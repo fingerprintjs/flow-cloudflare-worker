@@ -5,7 +5,7 @@ import { createEdgeResponseHeaders, hasContentType, isDocumentDestination, merge
 import { injectAgentProcessorScript } from '../scripts'
 import { fetchOrigin } from '../utils/origin'
 import { TypedEnv } from '../types'
-import { getFallbackRuleAction, getRoutePrefix, isMonitorMode } from '../env'
+import { getFallbackRuleAction, getRoutePrefix, isEdgeApiEnabled, isMonitorMode } from '../env'
 import { setCorsHeadersForInstrumentation } from '../utils/request'
 import { copyResponseWithNewHeaders } from '../utils/response'
 import { SendResult } from '../fingerprint/identificationClientTypes'
@@ -129,7 +129,7 @@ async function getResponseForProtectedCall({
   // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
   // it doesn't make sense to set headers from ingress and edge, because the browser will discard them anyway
   if (!isDocumentDestination(request.headers)) {
-    if (env.FP_EDGE_API) {
+    if (isEdgeApiEnabled(env)) {
       const edgeHeaders = createEdgeResponseHeaders(ingressResponse.event)
 
       originResponseHeaders = mergeHeaders(originResponseHeaders, edgeHeaders)

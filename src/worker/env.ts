@@ -88,6 +88,10 @@ export function isMonitorMode(env: TypedEnv) {
   return !env.FP_RULESET_ID
 }
 
+export function isEdgeApiEnabled(env: TypedEnv) {
+  return Boolean(env.FP_EDGE_API)
+}
+
 export function getFpRegion(env: TypedEnv): Region {
   const region = env.FP_REGION
   if (region) {

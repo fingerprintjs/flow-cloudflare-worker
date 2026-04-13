@@ -2,6 +2,7 @@ import { TypedEnv } from '../types'
 import { IdentificationClient } from '../fingerprint/identificationClient'
 import { createEdgeResponseHeaders, mergeHeaders } from './headers'
 import { copyResponseWithNewHeaders } from './response'
+import { isEdgeApiEnabled } from '../env'
 
 export function fetchOrigin(request: Request) {
   const origin = import.meta.env.VITE_ORIGIN
@@ -42,7 +43,7 @@ export async function fetchOriginWithEdgeAPI(
   identificationClient: IdentificationClient,
   env: TypedEnv
 ): Promise<Response> {
-  if (!env.FP_EDGE_API) {
+  if (!isEdgeApiEnabled(env)) {
     return fetchOrigin(request)
   }
 
