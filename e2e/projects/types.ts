@@ -11,8 +11,10 @@ export type TestWorkerProjectName =
   | 'ruleset-based-block'
   // Represents worker with debug logging enabled
   | 'log-level-config'
-  // Represents worker with tests for CORS capabilities
+  // Represents worker with tests for CORS capabilities in monitor mode
   | 'cors'
+  // Represents worker with tests for CORS and ruleset that blocks request
+  | 'cors-block'
   // Represents worker with tests for wildcard subdomain and path protected APIs
   | 'wildcard-protected-api'
 

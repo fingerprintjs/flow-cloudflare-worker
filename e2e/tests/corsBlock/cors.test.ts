@@ -1,8 +1,17 @@
-import { corsTest as test } from '../../utils/playwright'
-import { expect } from '@playwright/test'
+import { corsBlockTest as test } from '../../utils/playwright'
+import { expect, Response } from '@playwright/test'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 
-test.describe('CORS', () => {
+async function checkResponse(response: Response) {
+  expect(response.status()).toEqual(403)
+
+  const body = await response.json()
+  expect(body).toEqual({
+    message: 'Blocked by default rule',
+  })
+}
+
+test.describe('CORS with ruleset that blocks', () => {
   test('should handle CORS requests correctly', async ({ page, corsUrl }) => {
     await page.goto('/', {
       waitUntil: 'networkidle',
@@ -25,7 +34,7 @@ test.describe('CORS', () => {
     expect(response).toBeDefined()
     response = response!
 
-    expect(response.status()).toEqual(200)
+    await checkResponse(response)
   })
 
   test('should include "_" in signals if request included credentials', async ({ page, corsUrl }) => {
@@ -49,6 +58,6 @@ test.describe('CORS', () => {
     expect(response).toBeDefined()
     response = response!
 
-    expect(response.status()).toEqual(200)
+    await checkResponse(response)
   })
 })

@@ -106,6 +106,34 @@ export function getTestProjects(): TestProject[] {
 
     new TestProject({
       testAppFn: spaApp({
+        // Serve the test app under an additional "cors-block-api" host
+        additionalDomainPatterns: [getTestHost('cors-block-api')],
+        vars: {
+          CORS_ALLOWED_ORIGINS: `https://${getTestProjectHost('cors-block')}`,
+        },
+      }),
+      displayName: 'CORS with blocking',
+      host: getTestProjectHost('cors-block'),
+      testMatch: [/corsBlock\/.+\.test\.ts/],
+      projectName: 'cors-block',
+      flowWorker: {
+        // In the same manner, the flow worker also needs to handle the additional host
+        additionalDomainPatterns: [`${getTestHost('cors-block-api')}/api/*`],
+        variables: {
+          FP_LOG_LEVEL: 'debug',
+          PROTECTED_APIS: [
+            {
+              url: `https://${getTestHost('cors-block-api')}/api/*`,
+              method: 'POST',
+            },
+          ],
+          IDENTIFICATION_PAGE_URLS: [`https://${getTestHost('cors-block-api')}`],
+        },
+      },
+    }),
+
+    new TestProject({
+      testAppFn: spaApp({
         // Serve the test app under an additional "api-wildcard" subdomain
         additionalDomainPatterns: [getTestHost('api-wildcard')],
       }),
