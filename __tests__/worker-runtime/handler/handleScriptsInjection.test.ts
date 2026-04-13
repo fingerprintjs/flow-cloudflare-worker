@@ -169,6 +169,126 @@ describe('Scripts injection', () => {
     expect(response.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('signed')
   })
 
+  it('should inject scripts on request to identification page with headers from Edge API if Edge response is empty', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(sampleHtml, {
+        headers: {
+          'Content-Type': 'text/html',
+        },
+        status: 200,
+      })
+    )
+
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(undefined, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 200,
+      })
+    )
+
+    const request = new CloudflareRequest(mockWorkerBaseUrl)
+    request.headers.set('cf-connecting-ip', '94.142.239.124')
+    const ctx = createExecutionContext()
+
+    const env = {
+      ...mockEnv,
+      FP_EDGE_API: true,
+    }
+
+    const response = await handler.fetch(request, env, ctx)
+    await waitOnExecutionContext(ctx)
+    const html = await response.text()
+
+    expect(fetch).toHaveBeenCalledTimes(2)
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const edgeRequest = vi.mocked(fetch).mock.calls[1][0] as Request
+    expect(edgeRequest).toBeInstanceOf(Request)
+    const edgeRequestBody = await edgeRequest.json()
+    expect(edgeRequestBody).toEqual({
+      headers: [
+        {
+          name: 'cf-connecting-ip',
+          value: '94.142.239.124',
+        },
+      ],
+      url: request.url,
+      ipv4_address: '94.142.239.124',
+      ipv6_address: undefined,
+      method: request.method,
+    })
+
+    expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
+
+    expect(response.headers.get(EdgeHeaders.IpV4Address)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.IpV6Address)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.BotInfoName)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('')
+  })
+
+  it('should inject scripts on request to identification page with headers from Edge API when error is thrown', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(sampleHtml, {
+        headers: {
+          'Content-Type': 'text/html',
+        },
+        status: 200,
+      })
+    )
+
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: 'error' }), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 400,
+      })
+    )
+
+    const request = new CloudflareRequest(mockWorkerBaseUrl)
+    request.headers.set('cf-connecting-ip', '94.142.239.124')
+    const ctx = createExecutionContext()
+
+    const env = {
+      ...mockEnv,
+      FP_EDGE_API: true,
+    }
+
+    const response = await handler.fetch(request, env, ctx)
+    await waitOnExecutionContext(ctx)
+    const html = await response.text()
+
+    expect(fetch).toHaveBeenCalledTimes(2)
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const edgeRequest = vi.mocked(fetch).mock.calls[1][0] as Request
+    expect(edgeRequest).toBeInstanceOf(Request)
+    const edgeRequestBody = await edgeRequest.json()
+    expect(edgeRequestBody).toEqual({
+      headers: [
+        {
+          name: 'cf-connecting-ip',
+          value: '94.142.239.124',
+        },
+      ],
+      url: request.url,
+      ipv4_address: '94.142.239.124',
+      ipv6_address: undefined,
+      method: request.method,
+    })
+
+    expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
+
+    expect(response.headers.get(EdgeHeaders.IpV4Address)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.IpV6Address)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.BotInfoName)).toEqual('')
+    expect(response.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('')
+  })
+
   it('should return normal response on page with broken HTML', async () => {
     const brokenHtml = `
     <!doctype html>
