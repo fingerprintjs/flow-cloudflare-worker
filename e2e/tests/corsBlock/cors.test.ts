@@ -7,7 +7,7 @@ async function checkResponse(response: Response) {
 
   const body = await response.json()
   expect(body).toEqual({
-    message: 'Blocked by default rule',
+    message: 'Proxy detected',
   })
 }
 
