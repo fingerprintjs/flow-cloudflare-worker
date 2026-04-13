@@ -75,6 +75,7 @@ jobs:
           FP_RULESET_ID: ${{ secrets.FP_RULESET_ID }}
           # Ruleset configured to block bad bots (will be true for playwright)
           RULESET_BASED_BLOCK_FP_RULESET_ID: ${{ secrets.RULESET_BASED_BLOCK_FP_RULESET_ID }}
+          CORS_BLOCK_FP_RULESET_ID: ${{ secrets.RULESET_BASED_BLOCK_FP_RULESET_ID }}
 
       - name: 'Upload test results'
         if: ${{ failure() }}
