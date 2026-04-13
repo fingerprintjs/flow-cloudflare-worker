@@ -1247,357 +1247,391 @@ describe('Protected API', () => {
         ])
       )
     })
+  })
 
-    it('should evaluate fallback rule if ingress request fails', async () => {
-      prepareMockFetch({
-        mockIngressHandler: async () => {
-          return new Response(
-            JSON.stringify({
-              v: '2',
-              requestId: '1234',
-              error: {
-                code: 'RequestCannotBeParsed',
-                message: 'bad request',
-              },
-              products: {},
-            }),
-            {
-              status: 400,
-            }
-          )
-        },
-        mockOriginHandler: async () =>
-          new Response('origin', {
-            headers: {
-              // Origin cookies, should be sent together with cookies from ingress
-              'Set-Cookie': 'origin-cookie=value',
-            },
-          }),
-      })
+  describe('Fallback rule evaluation', () => {
+    for (const edgeApiEnabled of [true, false]) {
+      function checkEdgeHeaders(response: Response) {
+        if (!edgeApiEnabled) {
+          return
+        }
 
-      const requestHeaders = getCompleteHeaders()
-
-      const request = new CloudflareRequest(mockUrl('/api/test'), {
-        method: 'POST',
-        headers: requestHeaders,
-      })
-      const ctx = createExecutionContext()
-      const response = await handler.fetch(request, mockEnv, ctx)
-      await waitOnExecutionContext(ctx)
-
-      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
-
-      expect(response.status).toEqual(403)
-      expect(await response.text()).toEqual('fallback block')
-    })
-
-    it('should evaluate fallback rule if request body json parse fails', async () => {
-      prepareMockFetch({
-        mockIngressHandler: async () => {
-          return new Response(
-            JSON.stringify({
-              agent_data: 'agent-data',
-              rule_action: {
-                type: 'allow',
-                request_header_modifications: {
-                  set: [
-                    {
-                      name: 'x-allowed',
-                      value: 'true',
-                    },
-                  ],
-                },
-                rule_expression: '',
-                rule_id: '12',
-                ruleset_id: '1',
-              },
-              set_cookie_headers: [
-                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
-                'fp-ingress-cookie=12345',
-              ],
-              event: mockEvent(),
-            } satisfies SendResponse)
-          )
-        },
-        mockOriginHandler: async () =>
-          new Response('origin', {
-            headers: {
-              // Origin cookies, should be sent together with cookies from ingress
-              'Set-Cookie': 'origin-cookie=value',
-            },
-          }),
-      })
-
-      const requestHeaders = getCompleteHeaders()
-      requestHeaders.append('content-type', 'application/json')
-      requestHeaders.delete(SIGNALS_KEY)
-
-      const data = {
-        login: 'login',
-        password: '',
+        for (const edgeHeader of Object.values(EdgeHeaders)) {
+          expect(response.headers.has(edgeHeader)).toBe(true)
+          expect(response.headers.get(edgeHeader)).toEqual('')
+        }
       }
 
-      const request = new CloudflareRequest(mockUrl('/api/test'), {
-        method: 'POST',
-        headers: requestHeaders,
-        // Simulate invalid JSON body
-        body: JSON.stringify(data).slice(0, 5),
-      })
-      const ctx = createExecutionContext()
-      const response = await handler.fetch(
-        request,
-        {
+      describe(edgeApiEnabled ? 'With Edge API' : 'Without Edge API', () => {
+        const env: TypedEnv = {
           ...mockEnv,
-          FP_FAILURE_FALLBACK_ACTION: {
-            type: 'block',
-            status_code: 403,
-            body: 'fallback block',
-          },
-        } satisfies TypedEnv,
-        ctx
-      )
-      await waitOnExecutionContext(ctx)
+          FP_EDGE_API: edgeApiEnabled,
+        }
 
-      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
-
-      expect(response.status).toEqual(403)
-      expect(await response.text()).toEqual('fallback block')
-    })
-
-    it('should evaluate fallback rule if request body form data parse fails', async () => {
-      prepareMockFetch({
-        mockIngressHandler: async () => {
-          return new Response(
-            JSON.stringify({
-              agent_data: 'agent-data',
-              rule_action: {
-                type: 'allow',
-                request_header_modifications: {
-                  set: [
-                    {
-                      name: 'x-allowed',
-                      value: 'true',
-                    },
-                  ],
+        it('should evaluate fallback rule if ingress request fails', async () => {
+          prepareMockFetch({
+            mockIngressHandler: async () => {
+              return new Response(
+                JSON.stringify({
+                  v: '2',
+                  requestId: '1234',
+                  error: {
+                    code: 'RequestCannotBeParsed',
+                    message: 'bad request',
+                  },
+                  products: {},
+                }),
+                {
+                  status: 400,
+                }
+              )
+            },
+            mockOriginHandler: async () =>
+              new Response('origin', {
+                headers: {
+                  // Origin cookies, should be sent together with cookies from ingress
+                  'Set-Cookie': 'origin-cookie=value',
                 },
-                rule_expression: '',
-                rule_id: '12',
-                ruleset_id: '1',
-              },
-              set_cookie_headers: [
-                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
-                'fp-ingress-cookie=12345',
-              ],
-              event: mockEvent(),
-            } satisfies SendResponse)
-          )
-        },
-        mockOriginHandler: async () =>
-          new Response('origin', {
-            headers: {
-              // Origin cookies, should be sent together with cookies from ingress
-              'Set-Cookie': 'origin-cookie=value',
-            },
-          }),
-      })
-
-      const requestHeaders = getCompleteHeaders()
-      // By setting the multipart/form-data explicitly here, the request will miss the boundary parameter
-      requestHeaders.append('content-type', 'multipart/form-data')
-      requestHeaders.delete(SIGNALS_KEY)
-
-      const data = new FormData()
-      data.append('login', 'login')
-      data.append('password', '')
-
-      const request = new CloudflareRequest(mockUrl('/api/test'), {
-        method: 'POST',
-        headers: requestHeaders,
-        // Simulate invalid JSON body
-        body: data,
-      })
-      const ctx = createExecutionContext()
-      const response = await handler.fetch(
-        request,
-        {
-          ...mockEnv,
-          FP_FAILURE_FALLBACK_ACTION: {
-            type: 'block',
-            status_code: 403,
-            body: 'fallback block',
-          },
-        } satisfies TypedEnv,
-        ctx
-      )
-      await waitOnExecutionContext(ctx)
-
-      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
-
-      expect(response.status).toEqual(403)
-      expect(await response.text()).toEqual('fallback block')
-    })
-
-    it('should evaluate fallback rule if ingress request fails - allow case', async () => {
-      prepareMockFetch({
-        mockIngressHandler: async () => {
-          return new Response(
-            JSON.stringify({
-              v: '2',
-              requestId: '1234',
-              error: {
-                code: 'RequestCannotBeParsed',
-                message: 'bad request',
-              },
-              products: {},
-            }),
-            {
-              status: 400,
-            }
-          )
-        },
-        mockOriginHandler: async () =>
-          new Response('origin', {
-            headers: {
-              // Origin cookies, should be sent together with cookies from ingress
-              'Set-Cookie': 'origin-cookie=value',
-            },
-          }),
-      })
-
-      const requestHeaders = getCompleteHeaders()
-
-      const request = new CloudflareRequest(mockUrl('/api/test'), {
-        method: 'POST',
-        headers: requestHeaders,
-      })
-      const ctx = createExecutionContext()
-      const response = await handler.fetch(
-        request,
-        {
-          ...mockEnv,
-          FP_FAILURE_FALLBACK_ACTION: {
-            type: 'allow',
-          },
-        },
-        ctx
-      )
-      await waitOnExecutionContext(ctx)
-
-      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
-
-      expect(response.status).toEqual(200)
-      expect(await response.text()).toEqual('origin')
-    })
-
-    it('should evaluate fallback rule if response if signals are missing', async () => {
-      const requestHeaders = getCompleteHeaders()
-      requestHeaders.delete(SIGNALS_KEY)
-
-      const request = new CloudflareRequest(mockUrl('/api/test'), {
-        method: 'POST',
-        headers: requestHeaders,
-      })
-      const ctx = createExecutionContext()
-      const response = await handler.fetch(request, mockEnv, ctx)
-      await waitOnExecutionContext(ctx)
-
-      expect(response.status).toEqual(403)
-      expect(await response.text()).toEqual('fallback block')
-    })
-
-    it('should evaluate fallback rule if agent data is missing in response', async () => {
-      prepareMockFetch({
-        mockIngressHandler: async () => {
-          return new Response(
-            JSON.stringify({
-              // agentData field is missing
-              v: '2',
-              requestId: '1234',
-              error: {
-                code: 'RequestCannotBeParsed',
-                message: 'bad request',
-              },
-              products: {},
-            }),
-            {
-              status: 200,
-            }
-          )
-        },
-        mockOriginHandler: async () =>
-          new Response('origin', {
-            headers: {
-              // Origin cookies, should be sent together with cookies from ingress
-              'Set-Cookie': 'origin-cookie=value',
-            },
-          }),
-      })
-
-      const requestHeaders = new Headers({
-        'cf-connecting-ip': '1.2.3.4',
-        host: 'example.com',
-        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
-        'x-custom-header': 'custom-value',
-      })
-
-      const request = new CloudflareRequest(mockUrl('/api/test'), {
-        method: 'POST',
-        headers: requestHeaders,
-      })
-      const ctx = createExecutionContext()
-      const response = await handler.fetch(request, mockEnv, ctx)
-      await waitOnExecutionContext(ctx)
-
-      expect(response.status).toEqual(403)
-      expect(await response.text()).toEqual('fallback block')
-    })
-
-    it.each(['cf-connecting-ip', 'host', 'user-agent'])(
-      'should evaluate fallback rule response if one of ingress required header %s is missing',
-      async (header) => {
-        prepareMockFetch({
-          mockIngressHandler: async () => {
-            return new Response(
-              JSON.stringify({
-                v: '2',
-                requestId: '1234',
-                error: {
-                  code: 'RequestCannotBeParsed',
-                  message: 'bad request',
-                },
-                products: {},
               }),
-              {
-                status: 400,
-              }
-            )
-          },
-          mockOriginHandler: async () =>
-            new Response('origin', {
-              headers: {
-                // Origin cookies, should be sent together with cookies from ingress
-                'Set-Cookie': 'origin-cookie=value',
+          })
+
+          const requestHeaders = getCompleteHeaders()
+
+          const request = new CloudflareRequest(mockUrl('/api/test'), {
+            method: 'POST',
+            headers: requestHeaders,
+          })
+          const ctx = createExecutionContext()
+          const response = await handler.fetch(request, env, ctx)
+          await waitOnExecutionContext(ctx)
+
+          expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+
+          expect(response.status).toEqual(403)
+          expect(await response.text()).toEqual('fallback block')
+
+          checkEdgeHeaders(response)
+        })
+
+        it('should evaluate fallback rule if request body json parse fails', async () => {
+          prepareMockFetch({
+            mockIngressHandler: async () => {
+              return new Response(
+                JSON.stringify({
+                  agent_data: 'agent-data',
+                  rule_action: {
+                    type: 'allow',
+                    request_header_modifications: {
+                      set: [
+                        {
+                          name: 'x-allowed',
+                          value: 'true',
+                        },
+                      ],
+                    },
+                    rule_expression: '',
+                    rule_id: '12',
+                    ruleset_id: '1',
+                  },
+                  set_cookie_headers: [
+                    '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                    'fp-ingress-cookie=12345',
+                  ],
+                  event: mockEvent(),
+                } satisfies SendResponse)
+              )
+            },
+            mockOriginHandler: async () =>
+              new Response('origin', {
+                headers: {
+                  // Origin cookies, should be sent together with cookies from ingress
+                  'Set-Cookie': 'origin-cookie=value',
+                },
+              }),
+          })
+
+          const requestHeaders = getCompleteHeaders()
+          requestHeaders.append('content-type', 'application/json')
+          requestHeaders.delete(SIGNALS_KEY)
+
+          const data = {
+            login: 'login',
+            password: '',
+          }
+
+          const request = new CloudflareRequest(mockUrl('/api/test'), {
+            method: 'POST',
+            headers: requestHeaders,
+            // Simulate invalid JSON body
+            body: JSON.stringify(data).slice(0, 5),
+          })
+          const ctx = createExecutionContext()
+          const response = await handler.fetch(
+            request,
+            {
+              ...env,
+              FP_FAILURE_FALLBACK_ACTION: {
+                type: 'block',
+                status_code: 403,
+                body: 'fallback block',
               },
-            }),
+            } satisfies TypedEnv,
+            ctx
+          )
+          await waitOnExecutionContext(ctx)
+
+          expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
+
+          expect(response.status).toEqual(403)
+          expect(await response.text()).toEqual('fallback block')
+
+          checkEdgeHeaders(response)
         })
 
-        const requestHeaders = getCompleteHeaders()
-        requestHeaders.delete(header)
+        it('should evaluate fallback rule if request body form data parse fails', async () => {
+          prepareMockFetch({
+            mockIngressHandler: async () => {
+              return new Response(
+                JSON.stringify({
+                  agent_data: 'agent-data',
+                  rule_action: {
+                    type: 'allow',
+                    request_header_modifications: {
+                      set: [
+                        {
+                          name: 'x-allowed',
+                          value: 'true',
+                        },
+                      ],
+                    },
+                    rule_expression: '',
+                    rule_id: '12',
+                    ruleset_id: '1',
+                  },
+                  set_cookie_headers: [
+                    '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                    'fp-ingress-cookie=12345',
+                  ],
+                  event: mockEvent(),
+                } satisfies SendResponse)
+              )
+            },
+            mockOriginHandler: async () =>
+              new Response('origin', {
+                headers: {
+                  // Origin cookies, should be sent together with cookies from ingress
+                  'Set-Cookie': 'origin-cookie=value',
+                },
+              }),
+          })
 
-        const request = new CloudflareRequest(mockUrl('/api/test'), {
-          method: 'POST',
-          headers: requestHeaders,
+          const requestHeaders = getCompleteHeaders()
+          // By setting the multipart/form-data explicitly here, the request will miss the boundary parameter
+          requestHeaders.append('content-type', 'multipart/form-data')
+          requestHeaders.delete(SIGNALS_KEY)
+
+          const data = new FormData()
+          data.append('login', 'login')
+          data.append('password', '')
+
+          const request = new CloudflareRequest(mockUrl('/api/test'), {
+            method: 'POST',
+            headers: requestHeaders,
+            // Simulate invalid JSON body
+            body: data,
+          })
+          const ctx = createExecutionContext()
+          const response = await handler.fetch(
+            request,
+            {
+              ...env,
+              FP_FAILURE_FALLBACK_ACTION: {
+                type: 'block',
+                status_code: 403,
+                body: 'fallback block',
+              },
+            } satisfies TypedEnv,
+            ctx
+          )
+          await waitOnExecutionContext(ctx)
+
+          expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
+
+          expect(response.status).toEqual(403)
+          expect(await response.text()).toEqual('fallback block')
+
+          checkEdgeHeaders(response)
         })
-        const ctx = createExecutionContext()
-        const response = await handler.fetch(request, mockEnv, ctx)
-        await waitOnExecutionContext(ctx)
 
-        expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
+        it('should evaluate fallback rule if ingress request fails - allow case', async () => {
+          prepareMockFetch({
+            mockIngressHandler: async () => {
+              return new Response(
+                JSON.stringify({
+                  v: '2',
+                  requestId: '1234',
+                  error: {
+                    code: 'RequestCannotBeParsed',
+                    message: 'bad request',
+                  },
+                  products: {},
+                }),
+                {
+                  status: 400,
+                }
+              )
+            },
+            mockOriginHandler: async () =>
+              new Response('origin', {
+                headers: {
+                  // Origin cookies, should be sent together with cookies from ingress
+                  'Set-Cookie': 'origin-cookie=value',
+                },
+              }),
+          })
 
-        expect(response.status).toEqual(403)
-        expect(await response.text()).toEqual('fallback block')
-      }
-    )
+          const requestHeaders = getCompleteHeaders()
+
+          const request = new CloudflareRequest(mockUrl('/api/test'), {
+            method: 'POST',
+            headers: requestHeaders,
+          })
+          const ctx = createExecutionContext()
+          const response = await handler.fetch(
+            request,
+            {
+              ...env,
+              FP_FAILURE_FALLBACK_ACTION: {
+                type: 'allow',
+              },
+            },
+            ctx
+          )
+          await waitOnExecutionContext(ctx)
+
+          expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+          expect(response.status).toEqual(200)
+          expect(await response.text()).toEqual('origin')
+
+          checkEdgeHeaders(response)
+        })
+
+        it('should evaluate fallback rule if response if signals are missing', async () => {
+          const requestHeaders = getCompleteHeaders()
+          requestHeaders.delete(SIGNALS_KEY)
+
+          const request = new CloudflareRequest(mockUrl('/api/test'), {
+            method: 'POST',
+            headers: requestHeaders,
+          })
+          const ctx = createExecutionContext()
+          const response = await handler.fetch(request, env, ctx)
+          await waitOnExecutionContext(ctx)
+
+          expect(response.status).toEqual(403)
+          expect(await response.text()).toEqual('fallback block')
+
+          checkEdgeHeaders(response)
+        })
+
+        it('should evaluate fallback rule if agent data is missing in response', async () => {
+          prepareMockFetch({
+            mockIngressHandler: async () => {
+              return new Response(
+                JSON.stringify({
+                  // agentData field is missing
+                  v: '2',
+                  requestId: '1234',
+                  error: {
+                    code: 'RequestCannotBeParsed',
+                    message: 'bad request',
+                  },
+                  products: {},
+                }),
+                {
+                  status: 200,
+                }
+              )
+            },
+            mockOriginHandler: async () =>
+              new Response('origin', {
+                headers: {
+                  // Origin cookies, should be sent together with cookies from ingress
+                  'Set-Cookie': 'origin-cookie=value',
+                },
+              }),
+          })
+
+          const requestHeaders = new Headers({
+            'cf-connecting-ip': '1.2.3.4',
+            host: 'example.com',
+            'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+            'x-custom-header': 'custom-value',
+          })
+
+          const request = new CloudflareRequest(mockUrl('/api/test'), {
+            method: 'POST',
+            headers: requestHeaders,
+          })
+          const ctx = createExecutionContext()
+          const response = await handler.fetch(request, env, ctx)
+          await waitOnExecutionContext(ctx)
+
+          expect(response.status).toEqual(403)
+          expect(await response.text()).toEqual('fallback block')
+        })
+
+        it.each(['cf-connecting-ip', 'host', 'user-agent'])(
+          'should evaluate fallback rule response if one of ingress required header %s is missing',
+          async (header) => {
+            prepareMockFetch({
+              mockIngressHandler: async () => {
+                return new Response(
+                  JSON.stringify({
+                    v: '2',
+                    requestId: '1234',
+                    error: {
+                      code: 'RequestCannotBeParsed',
+                      message: 'bad request',
+                    },
+                    products: {},
+                  }),
+                  {
+                    status: 400,
+                  }
+                )
+              },
+              mockOriginHandler: async () =>
+                new Response('origin', {
+                  headers: {
+                    // Origin cookies, should be sent together with cookies from ingress
+                    'Set-Cookie': 'origin-cookie=value',
+                  },
+                }),
+            })
+
+            const requestHeaders = getCompleteHeaders()
+            requestHeaders.delete(header)
+
+            const request = new CloudflareRequest(mockUrl('/api/test'), {
+              method: 'POST',
+              headers: requestHeaders,
+            })
+            const ctx = createExecutionContext()
+            const response = await handler.fetch(request, env, ctx)
+            await waitOnExecutionContext(ctx)
+
+            expect(vi.mocked(fetch)).toHaveBeenCalledTimes(0)
+
+            expect(response.status).toEqual(403)
+            expect(await response.text()).toEqual('fallback block')
+
+            checkEdgeHeaders(response)
+          }
+        )
+      })
+    }
   })
 
   describe('Identification regions', () => {
