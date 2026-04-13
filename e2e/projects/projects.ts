@@ -98,6 +98,8 @@ export function getTestProjects(): TestProject[] {
             },
           ],
           IDENTIFICATION_PAGE_URLS: [`https://${getTestHost('cors-api')}`],
+          // Deploy in monitor mode
+          FP_RULESET_ID: '',
         },
       },
     }),
