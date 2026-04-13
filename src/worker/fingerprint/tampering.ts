@@ -60,6 +60,7 @@ const tamperingHandlers: TamperingHandler[] = [
       const requestIp = await getIp(request.headers)
 
       if (requestIp !== event.ip_address) {
+        console.error('Unexpected IP address:', requestIp, 'vs', event.ip_address)
         throw new TamperingError('Unexpected IP address, potential replay attack.')
       }
     },
