@@ -52,11 +52,7 @@ export async function fetchOriginWithEdgeAPI(
     identificationClient.safeEdge(request),
   ])
 
-  if (edgeResponse) {
-    const edgeResponseHeaders = createEdgeResponseHeaders(edgeResponse)
+  const edgeResponseHeaders = createEdgeResponseHeaders(edgeResponse)
 
-    return copyResponseWithNewHeaders(originResponse, mergeHeaders(originResponse.headers, edgeResponseHeaders))
-  }
-
-  return originResponse
+  return copyResponseWithNewHeaders(originResponse, mergeHeaders(originResponse.headers, edgeResponseHeaders))
 }

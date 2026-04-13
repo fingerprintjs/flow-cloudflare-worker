@@ -82,18 +82,18 @@ export enum EdgeHeaders {
 /**
  * Constructs response headers based on provided edge response data.
  *
- * @param {EdgeResponse} edgeResponse - The edge response data containing information about IP addresses and bot information.
+ * @param {EdgeResponse|undefined} edgeResponse - The edge response data containing information about IP addresses and bot information. If undefined, headers are set to empty values to prevent spoofing.
  * @return {Headers} A Headers object populated with the constructed response headers.
  */
-export function createEdgeResponseHeaders(edgeResponse: EdgeResponse): Headers {
+export function createEdgeResponseHeaders(edgeResponse?: EdgeResponse): Headers {
   const headers = new Headers()
 
-  headers.set(EdgeHeaders.IpV4Address, edgeResponse.ip_info.v4?.address ?? '')
-  headers.set(EdgeHeaders.IpV6Address, edgeResponse.ip_info.v6?.address ?? '')
-  headers.set(EdgeHeaders.BotInfoCategory, edgeResponse.bot_info?.category ?? '')
-  headers.set(EdgeHeaders.BotInfoProvider, edgeResponse.bot_info?.provider ?? '')
-  headers.set(EdgeHeaders.BotInfoName, edgeResponse.bot_info?.name ?? '')
-  headers.set(EdgeHeaders.BotInfoIdentity, edgeResponse.bot_info?.identity ?? '')
+  headers.set(EdgeHeaders.IpV4Address, edgeResponse?.ip_info.v4?.address ?? '')
+  headers.set(EdgeHeaders.IpV6Address, edgeResponse?.ip_info.v6?.address ?? '')
+  headers.set(EdgeHeaders.BotInfoCategory, edgeResponse?.bot_info?.category ?? '')
+  headers.set(EdgeHeaders.BotInfoProvider, edgeResponse?.bot_info?.provider ?? '')
+  headers.set(EdgeHeaders.BotInfoName, edgeResponse?.bot_info?.name ?? '')
+  headers.set(EdgeHeaders.BotInfoIdentity, edgeResponse?.bot_info?.identity ?? '')
 
   return headers
 }
