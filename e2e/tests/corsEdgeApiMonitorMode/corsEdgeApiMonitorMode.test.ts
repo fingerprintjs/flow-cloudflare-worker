@@ -1,10 +1,9 @@
+import { corsEdgeApiMonitorModeTest as test } from '../../utils/playwright'
 import { expect } from '@playwright/test'
-import { test } from '../playwright'
 import { assertIsDefined } from '../shared/utils'
-import { getProtectedPath } from '../../utils/config'
 import { edgeHeaders } from '../../utils/edge'
 
-test.describe('Edge API in monitor mode', () => {
+test.describe('CORS with ruleset that blocks', () => {
   test('should return response with Edge headers for instrumentation page', async ({ page }) => {
     const response = await page.goto('/')
     assertIsDefined(response)
@@ -14,10 +13,10 @@ test.describe('Edge API in monitor mode', () => {
     }
   })
 
-  test('should return response with Edge headers for protected API', async ({ page, project }) => {
+  test('should return response with Edge headers for protected API', async ({ page, corsUrl }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
 
-    const protectedPath = getProtectedPath('/test', project.projectName)
+    const protectedPath = new URL('/api/test', corsUrl).toString()
 
     // Trigger the fetch
     await page.evaluate(async (url) => {

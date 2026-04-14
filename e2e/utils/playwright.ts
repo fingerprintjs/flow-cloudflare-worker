@@ -16,3 +16,5 @@ function createCorsTest(corsHost: string) {
 export const corsTest = createCorsTest('cors-api')
 
 export const corsBlockTest = createCorsTest('cors-block-api')
+
+export const corsEdgeApiMonitorModeTest = createCorsTest('cors-edge-api-monitor-mode-api')

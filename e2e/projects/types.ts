@@ -15,6 +15,8 @@ export type TestWorkerProjectName =
   | 'cors'
   // Represents worker with tests for CORS and ruleset that blocks request
   | 'cors-block'
+  // Represents worker with tests for CORS and ruleset that allows request
+  | 'cors-edge-api-monitor-mode'
   // Represents worker with tests for wildcard subdomain and path protected APIs
   | 'wildcard-protected-api'
   // Represents worker with tests for edge api monitor mode

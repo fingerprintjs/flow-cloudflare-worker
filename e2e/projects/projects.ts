@@ -134,6 +134,37 @@ export function getTestProjects(): TestProject[] {
 
     new TestProject({
       testAppFn: spaApp({
+        // Serve the test app under an additional "cors-edge-api-monitor-mode" host
+        additionalDomainPatterns: [getTestHost('cors-edge-api-monitor-mode-api')],
+        vars: {
+          CORS_ALLOWED_ORIGINS: `https://${getTestProjectHost('cors-edge-api-monitor-mode')}`,
+        },
+      }),
+      displayName: 'CORS with Edge API in monitor mode',
+      host: getTestProjectHost('cors-edge-api-monitor-mode'),
+      testMatch: [/corsEdgeApiMonitorMode\/.+\.test\.ts/],
+      projectName: 'cors-edge-api-monitor-mode',
+      flowWorker: {
+        // In the same manner, the flow worker also needs to handle the additional host
+        additionalDomainPatterns: [`${getTestHost('cors-edge-api-monitor-mode-api')}/api/*`],
+        variables: {
+          FP_LOG_LEVEL: 'debug',
+          PROTECTED_APIS: [
+            {
+              url: `https://${getTestHost('cors-edge-api-monitor-mode-api')}/api/*`,
+              method: 'POST',
+            },
+          ],
+          IDENTIFICATION_PAGE_URLS: [`https://${getTestHost('cors-edge-api-monitor-mode')}`],
+          FP_EDGE_API: true,
+          // Deploy in monitor mode
+          FP_RULESET_ID: '',
+        },
+      },
+    }),
+
+    new TestProject({
+      testAppFn: spaApp({
         // Serve the test app under an additional "api-wildcard" subdomain
         additionalDomainPatterns: [getTestHost('api-wildcard')],
       }),
