@@ -158,6 +158,22 @@ export function getTestProjects(): TestProject[] {
         },
       },
     }),
+
+    new TestProject({
+      testAppFn: spaApp(),
+      displayName: 'Edge API in monitor mode',
+      host: getTestProjectHost('edge-api-monitor-mode'),
+      testMatch: [sharedTests, /edgeApiMonitorMode\/.+\.test\.ts/],
+      projectName: 'edge-api-monitor-mode',
+      flowWorker: {
+        variables: {
+          FP_EDGE_API: true,
+
+          // Deploy in monitor mode
+          FP_RULESET_ID: '',
+        },
+      },
+    }),
   ] satisfies TestProject[]
 
   const filter = process.env.TEST_PROJECTS_FILTER

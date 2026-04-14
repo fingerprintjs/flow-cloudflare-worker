@@ -17,6 +17,8 @@ export type TestWorkerProjectName =
   | 'cors-block'
   // Represents worker with tests for wildcard subdomain and path protected APIs
   | 'wildcard-protected-api'
+  // Represents worker with tests for edge api monitor mode
+  | 'edge-api-monitor-mode'
 
 /**
  * Represents the options that can be used to configure a FlowWorker test.
