@@ -188,21 +188,10 @@ function setHeadersFromIngressToOrigin(
  * @param {TypedEnv} env - The environment for the request
  * @return {Promise<Response>} A promise that resolves to the response after processing the request.
  */
-async function handleFallbackRule(request: Request, env: TypedEnv): Promise<Response> {
-  let response: Response
-
+function handleFallbackRule(request: Request, env: TypedEnv): Promise<Response> {
   if (isMonitorMode(env)) {
-    response = await fetchOrigin(request)
-  } else {
-    response = await processRuleset(getFallbackRuleAction(env), request, env)
+    return fetchOrigin(request)
   }
 
-  if (!isEdgeApiEnabled(env)) {
-    return response
-  }
-
-  // Create "empty" edge headers to prevent spoofing and include them in the fallback response
-  const edgeHeaders = createEdgeResponseHeaders()
-
-  return copyResponseWithNewHeaders(response, mergeHeaders(response.headers, edgeHeaders))
+  return processRuleset(getFallbackRuleAction(env), request, env)
 }
