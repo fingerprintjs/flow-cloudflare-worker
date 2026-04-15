@@ -1,6 +1,6 @@
 import { TypedEnv } from '../types'
 import { getAllowedOrigin } from '../urlMatching'
-import { fetchOrigin, fetchOriginWithEdgeAPIHeaders } from '../utils/origin'
+import { fetchOriginWithEdgeAPIHeaders } from '../utils/origin'
 import { copyRequest } from '../utils/request'
 import { z } from 'zod/v4'
 import { EdgeResponse } from './identificationClientTypes'
@@ -103,7 +103,7 @@ export async function processRuleset(
 
     default:
       console.warn('Invalid rule type:', ruleAction)
-      return fetchOrigin(request)
+      return fetchOriginWithEdgeAPIHeaders(request, env)
   }
 }
 
@@ -192,5 +192,5 @@ function handleAllow(request: Request, action: AllowAction, env: TypedEnv, edgeR
     },
   })
 
-  return fetchOriginWithEdgeAPIHeaders(requestClone, edgeResponse, env)
+  return fetchOriginWithEdgeAPIHeaders(requestClone, env, edgeResponse)
 }

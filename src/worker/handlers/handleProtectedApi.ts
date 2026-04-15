@@ -115,7 +115,7 @@ async function getResponseForProtectedCall({
   let originResponse: Response
 
   if (isMonitorMode(env)) {
-    originResponse = await fetchOriginWithEdgeAPIHeaders(originRequest, ingressResponse.event, env)
+    originResponse = await fetchOriginWithEdgeAPIHeaders(originRequest, env, ingressResponse.event)
   } else {
     if (ingressResponse.ruleAction) {
       originResponse = await processRuleset(ingressResponse.ruleAction, originRequest, env, ingressResponse.event)
@@ -185,7 +185,7 @@ function setHeadersFromIngressToOrigin(
  */
 function handleFallbackRule(request: Request, env: TypedEnv, edgeResponse?: EdgeResponse): Promise<Response> {
   if (isMonitorMode(env)) {
-    return fetchOriginWithEdgeAPIHeaders(request, edgeResponse, env)
+    return fetchOriginWithEdgeAPIHeaders(request, env, edgeResponse)
   }
 
   return processRuleset(getFallbackRuleAction(env), request, env, edgeResponse)

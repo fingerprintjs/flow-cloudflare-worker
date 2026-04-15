@@ -48,13 +48,23 @@ export async function fetchOriginWithEdgeAPIRequest(
 
   const edgeResponse = await identificationClient.safeEdge(request)
 
-  return fetchOriginWithEdgeAPIHeaders(request, edgeResponse, env)
+  return fetchOriginWithEdgeAPIHeaders(request, env, edgeResponse)
 }
 
+/**
+ * Fetches the origin resource with custom headers from the Edge API
+ * if the Edge API is enabled. Merges the original request headers
+ * with the headers generated from the Edge API response.
+ *
+ * @param {Request} request - The original request object.
+ * @param {TypedEnv} env - The environment settings, determines if Edge API is enabled.
+ * @param {EdgeResponse} [edgeResponse] - Optional response from the Edge API, used to create additional headers.
+ * @return {Promise<Response>} A promise that resolves to the response from the origin server.
+ */
 export async function fetchOriginWithEdgeAPIHeaders(
   request: Request,
-  edgeResponse: EdgeResponse | undefined,
-  env: TypedEnv
+  env: TypedEnv,
+  edgeResponse?: EdgeResponse
 ): Promise<Response> {
   if (!isEdgeApiEnabled(env)) {
     return fetchOrigin(request)
