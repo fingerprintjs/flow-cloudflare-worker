@@ -987,6 +987,74 @@ describe('Protected API', () => {
       )
     })
 
+    it('ingress request error', async () => {
+      const { getOriginRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              v: '2',
+              requestId: '1234',
+              error: {
+                code: 'RequestCannotBeParsed',
+                message: 'bad request',
+              },
+              products: {},
+            }),
+            { status: 400 }
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = new Headers({
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+        [SIGNALS_KEY]: 'signals',
+        origin: mockUrl('/'),
+      })
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          FP_EDGE_API: true,
+          FP_FAILURE_FALLBACK_ACTION: {
+            type: 'allow',
+          },
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      const originRequest = getOriginRequest()
+      expect(originRequest).toBeDefined()
+      assert(originRequest)
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, ''],
+          [EdgeHeaders.BotInfoIdentity, ''],
+          [EdgeHeaders.BotInfoName, ''],
+          [EdgeHeaders.BotInfoProvider, ''],
+          [EdgeHeaders.IpV4Address, ''],
+          [EdgeHeaders.IpV6Address, ''],
+        ])
+      )
+    })
+
     it('with ipv6', async () => {
       const { getIngressRequest, getOriginRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
