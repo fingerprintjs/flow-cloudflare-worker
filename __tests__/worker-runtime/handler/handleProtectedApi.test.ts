@@ -645,8 +645,8 @@ describe('Protected API', () => {
         expect.arrayContaining([
           [EdgeHeaders.BotInfoCategory, 'ai_agent'],
           [EdgeHeaders.BotInfoIdentity, 'signed'],
-          [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
-          [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
+          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
           [EdgeHeaders.IpV4Address, '94.142.239.124'],
           [EdgeHeaders.IpV6Address, ''],
         ])
@@ -797,8 +797,8 @@ describe('Protected API', () => {
         expect.arrayContaining([
           [EdgeHeaders.BotInfoCategory, 'ai_agent'],
           [EdgeHeaders.BotInfoIdentity, 'signed'],
-          [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
-          [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
+          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
           [EdgeHeaders.IpV4Address, ''],
           [EdgeHeaders.IpV6Address, mockEdgeResponseIpV6.ip_info.v6!.address],
         ])
@@ -1327,8 +1327,8 @@ describe('Protected API', () => {
         expect.arrayContaining([
           [EdgeHeaders.BotInfoCategory, 'ai_agent'],
           [EdgeHeaders.BotInfoIdentity, 'signed'],
-          [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
-          [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
+          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
           [EdgeHeaders.IpV4Address, '94.142.239.124'],
           [EdgeHeaders.IpV6Address, ''],
         ])
@@ -1709,8 +1709,8 @@ describe('Protected API', () => {
         expect.arrayContaining([
           [EdgeHeaders.BotInfoCategory, 'ai_agent'],
           [EdgeHeaders.BotInfoIdentity, 'signed'],
-          [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
-          [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
+          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
           [EdgeHeaders.IpV4Address, '94.142.239.124'],
           [EdgeHeaders.IpV6Address, ''],
         ])

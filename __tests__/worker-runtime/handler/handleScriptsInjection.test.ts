@@ -135,8 +135,8 @@ describe('Scripts injection', () => {
       expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('94.142.239.124')
       expect(originRequest.headers.get(EdgeHeaders.IpV6Address)).toEqual('')
       expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('ai_agent')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('OpenAI')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('ChatGPT Agent')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('Fingerprint')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('Fingerprint Agent')
       expect(originRequest.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('signed')
 
       Object.values(EdgeHeaders).forEach((header) => {
@@ -203,8 +203,8 @@ describe('Scripts injection', () => {
       expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('')
       expect(originRequest.headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8:3333:4444:5555:6666:7777:8888')
       expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('ai_agent')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('OpenAI')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('ChatGPT Agent')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('Fingerprint')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('Fingerprint Agent')
       expect(originRequest.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('signed')
     })
 
