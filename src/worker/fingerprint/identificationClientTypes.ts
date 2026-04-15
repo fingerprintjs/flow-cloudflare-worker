@@ -26,71 +26,61 @@ export type SendBody = {
 }
 
 // https://docs.fingerprint.com/reference/server-api-v4-get-event#response-bot-info
-const BotInfo = z
-  .object({
-    category: z.string(),
-    provider: z.string(),
-    provider_url: z.string().optional(),
-    name: z.string(),
-    identity: z.enum(['verified', 'signed', 'spoofed', 'unknown']),
-    confidence: z.enum(['low', 'medium', 'high']),
-  })
-  .strict()
+const BotInfo = z.object({
+  category: z.string(),
+  provider: z.string(),
+  provider_url: z.string().optional(),
+  name: z.string(),
+  identity: z.enum(['verified', 'signed', 'spoofed', 'unknown']),
+  confidence: z.enum(['low', 'medium', 'high']),
+})
 
-const GeolocationSubdivision = z
-  .object({
-    iso_code: z.string(),
-    name: z.string(),
-  })
-  .strict()
+const GeolocationSubdivision = z.object({
+  iso_code: z.string(),
+  name: z.string(),
+})
 
 /**
  * https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v4-geolocation
  * https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v6-geolocation
  * */
-const Geolocation = z
-  .object({
-    accuracy_radius: z.int().min(0).optional(),
-    latitude: z.number().min(-90).max(90).optional(),
-    longitude: z.number().min(-180).max(180).optional(),
-    postal_code: z.string().optional(),
-    timezone: z.string().optional(),
-    city_name: z.string().optional(),
-    country_code: z.string().min(2).max(2).optional(),
-    country_name: z.string().optional(),
-    continent_code: z.string().min(2).max(2).optional(),
-    continent_name: z.string().optional(),
-    subdivisions: z.array(GeolocationSubdivision).optional(),
-  })
-  .strict()
+const Geolocation = z.object({
+  accuracy_radius: z.int().min(0).optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+  postal_code: z.string().optional(),
+  timezone: z.string().optional(),
+  city_name: z.string().optional(),
+  country_code: z.string().min(2).max(2).optional(),
+  country_name: z.string().optional(),
+  continent_code: z.string().min(2).max(2).optional(),
+  continent_name: z.string().optional(),
+  subdivisions: z.array(GeolocationSubdivision).optional(),
+})
 
 // https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v4
-const IpV4Info = z
-  .object({
-    address: z.ipv4(),
-    geolocation: Geolocation.optional(),
-    asn: z.string().optional(),
-    asn_name: z.string().optional(),
-    asn_network: z.string().optional(),
-    asn_type: z.string().optional(),
-    datacenter_result: z.boolean().optional(),
-    datacenter_name: z.string().optional(),
-  })
-  .strict()
+const IpV4Info = z.object({
+  address: z.ipv4(),
+  geolocation: Geolocation.optional(),
+  asn: z.string().optional(),
+  asn_name: z.string().optional(),
+  asn_network: z.string().optional(),
+  asn_type: z.string().optional(),
+  datacenter_result: z.boolean().optional(),
+  datacenter_name: z.string().optional(),
+})
 
 // https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v6
-const IpV6Info = z
-  .object({
-    address: z.ipv6(),
-    geolocation: Geolocation.optional(),
-    asn: z.string().optional(),
-    asn_name: z.string().optional(),
-    asn_network: z.string().optional(),
-    asn_type: z.string().optional(),
-    datacenter_result: z.boolean().optional(),
-    datacenter_name: z.string().optional(),
-  })
-  .strict()
+const IpV6Info = z.object({
+  address: z.ipv6(),
+  geolocation: Geolocation.optional(),
+  asn: z.string().optional(),
+  asn_name: z.string().optional(),
+  asn_network: z.string().optional(),
+  asn_type: z.string().optional(),
+  datacenter_result: z.boolean().optional(),
+  datacenter_name: z.string().optional(),
+})
 
 // https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info
 const IpInfo = z.object({
@@ -174,5 +164,13 @@ export const EdgeRequest = z.object({
 
 export type EdgeRequest = z.infer<typeof EdgeRequest>
 
-export const EdgeResponse = IdentificationEvent.pick({ ip_info: true, bot_info: true })
+const EdgeResponseIpInfo = z.object({
+  v4: IpV4Info.pick({ address: true }).optional(),
+  v6: IpV6Info.pick({ address: true }).optional(),
+})
+
+export const EdgeResponse = IdentificationEvent.pick({ bot_info: true }).extend({
+  ip_info: EdgeResponseIpInfo,
+})
+
 export type EdgeResponse = z.infer<typeof EdgeResponse>
