@@ -3,9 +3,9 @@ import { EdgeResponse } from '../../src/worker/fingerprint/identificationClientT
 export const mockEdgeResponseIpV4: EdgeResponse = {
   bot_info: {
     category: 'ai_agent',
-    provider: 'OpenAI',
-    provider_url: 'https://openai.com',
-    name: 'ChatGPT Agent',
+    provider: 'Fingerprint',
+    provider_url: 'https://fingerprint.com',
+    name: 'Fingerprint Agent',
     identity: 'signed',
     confidence: 'high',
   },
