@@ -1,17 +1,14 @@
-import { expect } from '@playwright/test'
 import { test } from '../playwright'
 import { assertIsDefined } from '../shared/utils'
 import { getProtectedPath } from '../../utils/config'
-import { edgeHeaders } from '../../utils/edge'
+import { checkEdgeHeaders } from '../../utils/edge'
 
 test.describe('Edge API in monitor mode', () => {
   test('should return response with Edge headers for instrumentation page', async ({ page }) => {
     const response = await page.goto('/')
     assertIsDefined(response)
 
-    for (const edgeHeadersKey of edgeHeaders) {
-      expect(response.headers()[edgeHeadersKey]).toBeDefined()
-    }
+    checkEdgeHeaders(response)
   })
 
   test('should return response with Edge headers for protected API', async ({ page, project }) => {
@@ -36,8 +33,6 @@ test.describe('Edge API in monitor mode', () => {
     const protectedResponse = await protectedRequest.response()
     assertIsDefined(protectedResponse)
 
-    for (const edgeHeadersKey of edgeHeaders) {
-      expect(protectedResponse.headers()[edgeHeadersKey]).toBeDefined()
-    }
+    checkEdgeHeaders(protectedResponse)
   })
 })

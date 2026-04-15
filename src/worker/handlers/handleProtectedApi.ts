@@ -1,14 +1,14 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient } from '../fingerprint/identificationClient'
 import { processRuleset } from '../fingerprint/ruleset'
-import { createEdgeResponseHeaders, hasContentType, isDocumentDestination, mergeHeaders } from '../utils/headers'
+import { hasContentType, isDocumentDestination } from '../utils/headers'
 import { injectAgentProcessorScript } from '../scripts'
-import { fetchOrigin } from '../utils/origin'
+import { fetchOriginWithEdgeAPIHeaders } from '../utils/origin'
 import { TypedEnv } from '../types'
-import { getFallbackRuleAction, getRoutePrefix, isEdgeApiEnabled, isMonitorMode } from '../env'
+import { getFallbackRuleAction, getRoutePrefix, isMonitorMode } from '../env'
 import { setCorsHeadersForInstrumentation } from '../utils/request'
 import { copyResponseWithNewHeaders } from '../utils/response'
-import { SendResult } from '../fingerprint/identificationClientTypes'
+import { EdgeResponse, SendResult } from '../fingerprint/identificationClientTypes'
 
 /**
  * Parameters required for handling a protected API call.
@@ -115,26 +115,20 @@ async function getResponseForProtectedCall({
   let originResponse: Response
 
   if (isMonitorMode(env)) {
-    originResponse = await fetchOrigin(originRequest)
+    originResponse = await fetchOriginWithEdgeAPIHeaders(originRequest, ingressResponse.event, env)
   } else {
     if (ingressResponse.ruleAction) {
-      originResponse = await processRuleset(ingressResponse.ruleAction, originRequest, env)
+      originResponse = await processRuleset(ingressResponse.ruleAction, originRequest, env, ingressResponse.event)
     } else {
       console.warn('No ruleset processor found for ingress response, using fallback rule.')
-      originResponse = await processRuleset(getFallbackRuleAction(env), originRequest, env)
+      originResponse = await processRuleset(getFallbackRuleAction(env), originRequest, env, ingressResponse.event)
     }
   }
 
-  let originResponseHeaders = new Headers(originResponse.headers)
+  const originResponseHeaders = new Headers(originResponse.headers)
   // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
   // it doesn't make sense to set headers from ingress and edge, because the browser will discard them anyway
   if (!isDocumentDestination(request.headers)) {
-    if (isEdgeApiEnabled(env)) {
-      const edgeHeaders = createEdgeResponseHeaders(ingressResponse.event)
-
-      originResponseHeaders = mergeHeaders(originResponseHeaders, edgeHeaders)
-    }
-
     setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, removeCookies)
   }
 
@@ -186,12 +180,13 @@ function setHeadersFromIngressToOrigin(
  *
  * @param {Request} request - The incoming request object to be processed.
  * @param {TypedEnv} env - The environment for the request
+ * @param {EdgeResponse} edgeResponse - The edge response object
  * @return {Promise<Response>} A promise that resolves to the response after processing the request.
  */
-function handleFallbackRule(request: Request, env: TypedEnv): Promise<Response> {
+function handleFallbackRule(request: Request, env: TypedEnv, edgeResponse?: EdgeResponse): Promise<Response> {
   if (isMonitorMode(env)) {
-    return fetchOrigin(request)
+    return fetchOriginWithEdgeAPIHeaders(request, edgeResponse, env)
   }
 
-  return processRuleset(getFallbackRuleAction(env), request, env)
+  return processRuleset(getFallbackRuleAction(env), request, env, edgeResponse)
 }

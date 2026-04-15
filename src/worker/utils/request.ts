@@ -1,5 +1,5 @@
 import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../shared/const'
-import { appendHeaderValue, EdgeHeaders } from './headers'
+import { appendHeaderValue } from './headers'
 
 interface CopyRequestParams {
   // The original request to be copied
@@ -121,21 +121,8 @@ export function setCorsHeadersForInstrumentation(request: Request, originRespons
   originResponseHeaders.set('Access-Control-Allow-Credentials', 'true')
 
   if (request.method !== 'OPTIONS') {
-    const allowedHeaders: string[] = []
-
     if (originResponseHeaders.get(AGENT_DATA_HEADER) !== null) {
-      // If any edge headers are present, add them to the allowed headers
-      Object.values(EdgeHeaders).forEach((header) => {
-        if (originResponseHeaders.has(header)) {
-          allowedHeaders.push(header)
-        }
-      })
-
-      allowedHeaders.push(AGENT_DATA_HEADER)
-
-      if (allowedHeaders.length > 0) {
-        appendHeaderValue(originResponseHeaders, 'Access-Control-Expose-Headers', allowedHeaders.join(', '))
-      }
+      appendHeaderValue(originResponseHeaders, 'Access-Control-Expose-Headers', AGENT_DATA_HEADER)
     }
   } else {
     appendHeaderValue(originResponseHeaders, 'Access-Control-Allow-Headers', SIGNALS_KEY)

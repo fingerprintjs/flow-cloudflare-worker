@@ -1,8 +1,9 @@
 import { TypedEnv } from '../types'
 import { getAllowedOrigin } from '../urlMatching'
-import { fetchOrigin } from '../utils/origin'
+import { fetchOrigin, fetchOriginWithEdgeAPIHeaders } from '../utils/origin'
 import { copyRequest } from '../utils/request'
 import { z } from 'zod/v4'
+import { EdgeResponse } from './identificationClientTypes'
 
 const RuleHeader = z.object({
   name: z.string(),
@@ -82,9 +83,15 @@ export type RuleAction = z.infer<typeof RuleAction>
  * @param ruleAction - The rule action configuration to process
  * @param request - The original HTTP request to process
  * @param env - The environment for the request
+ * @param edgeResponse - Optional Edge API response data. If provided, related headers will be sent in request to origin
  * @returns Request modified based on the rule action
  */
-export async function processRuleset(ruleAction: RuleActionUnion, request: Request, env: TypedEnv) {
+export async function processRuleset(
+  ruleAction: RuleActionUnion,
+  request: Request,
+  env: TypedEnv,
+  edgeResponse?: EdgeResponse
+) {
   console.debug('Processing ruleset:', ruleAction)
 
   switch (ruleAction.type) {
@@ -92,7 +99,7 @@ export async function processRuleset(ruleAction: RuleActionUnion, request: Reque
       return handleBlock(request, ruleAction, env)
 
     case 'allow':
-      return handleAllow(request, ruleAction)
+      return handleAllow(request, ruleAction, env, edgeResponse)
 
     default:
       console.warn('Invalid rule type:', ruleAction)
@@ -157,9 +164,11 @@ function handleBlock(request: Request, action: BlockAction, env: TypedEnv) {
  *
  * @param request - The original HTTP request
  * @param action - The allow action configuration with optional header modifications
+ * @param env - The environment for the request
+ * @param edgeResponse - Optional Edge API response data. If provided, related headers will be sent in request to origin
  * @returns A Promise that resolves to the origin server's response
  */
-function handleAllow(request: Request, action: AllowAction) {
+function handleAllow(request: Request, action: AllowAction, env: TypedEnv, edgeResponse?: EdgeResponse) {
   console.debug('Allowing request with header modifications:', action)
 
   const requestHeaders = new Headers(request.headers)
@@ -183,5 +192,5 @@ function handleAllow(request: Request, action: AllowAction) {
     },
   })
 
-  return fetchOrigin(requestClone)
+  return fetchOriginWithEdgeAPIHeaders(requestClone, edgeResponse, env)
 }

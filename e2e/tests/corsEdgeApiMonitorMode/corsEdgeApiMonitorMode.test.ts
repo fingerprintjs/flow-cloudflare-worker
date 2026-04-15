@@ -1,16 +1,13 @@
 import { corsEdgeApiMonitorModeTest as test } from '../../utils/playwright'
-import { expect } from '@playwright/test'
 import { assertIsDefined } from '../shared/utils'
-import { edgeHeaders } from '../../utils/edge'
+import { checkEdgeHeaders } from '../../utils/edge'
 
 test.describe('CORS with ruleset that blocks', () => {
   test('should return response with Edge headers for instrumentation page', async ({ page }) => {
     const response = await page.goto('/')
     assertIsDefined(response)
 
-    for (const edgeHeadersKey of edgeHeaders) {
-      expect(response.headers()[edgeHeadersKey]).toBeDefined()
-    }
+    checkEdgeHeaders(response)
   })
 
   test('should return response with Edge headers for protected API', async ({ page, corsUrl }) => {
@@ -35,8 +32,6 @@ test.describe('CORS with ruleset that blocks', () => {
     const protectedResponse = await protectedRequest.response()
     assertIsDefined(protectedResponse)
 
-    for (const edgeHeadersKey of edgeHeaders) {
-      expect(protectedResponse.headers()[edgeHeadersKey]).toBeDefined()
-    }
+    checkEdgeHeaders(protectedResponse)
   })
 })

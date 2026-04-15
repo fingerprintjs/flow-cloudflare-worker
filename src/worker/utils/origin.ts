@@ -1,8 +1,9 @@
 import { TypedEnv } from '../types'
 import { IdentificationClient } from '../fingerprint/identificationClient'
 import { createEdgeResponseHeaders, mergeHeaders } from './headers'
-import { copyResponseWithNewHeaders } from './response'
 import { isEdgeApiEnabled } from '../env'
+import { copyRequest } from './request'
+import { EdgeResponse } from '../fingerprint/identificationClientTypes'
 
 export function fetchOrigin(request: Request) {
   const origin = import.meta.env.VITE_ORIGIN
@@ -29,16 +30,14 @@ export function fetchOrigin(request: Request) {
 }
 
 /**
- * Fetches the origin response using the Edge API if the environment configuration allows it.
- * Falls back to fetching directly from the origin if the Edge API is not configured.
+ * Fetches the origin with the Edge API headers if enabled, otherwise directly fetches the origin.
  *
- *
- * @param {Request} request The HTTP request object to be processed.
- * @param {IdentificationClient} identificationClient The client responsible for edge identification operations.
- * @param {TypedEnv} env The environment configuration object containing API details and settings.
- * @return {Promise<Response>} A promise that resolves to the origin response with edge headers merged in if the Edge API is enabled.
+ * @param {Request} request - The incoming HTTP request to be processed.
+ * @param {IdentificationClient} identificationClient - The client responsible for interacting with the Edge API.
+ * @param {TypedEnv} env - The environment configuration object, used to determine if the Edge API is enabled.
+ * @return {Promise<Response>} A promise that resolves to the HTTP response from the origin.
  */
-export async function fetchOriginWithEdgeAPI(
+export async function fetchOriginWithEdgeAPIRequest(
   request: Request,
   identificationClient: IdentificationClient,
   env: TypedEnv
@@ -47,12 +46,29 @@ export async function fetchOriginWithEdgeAPI(
     return fetchOrigin(request)
   }
 
-  const [originResponse, edgeResponse] = await Promise.all([
-    fetchOrigin(request),
-    identificationClient.safeEdge(request),
-  ])
+  const edgeResponse = await identificationClient.safeEdge(request)
 
-  const edgeResponseHeaders = createEdgeResponseHeaders(edgeResponse)
+  return fetchOriginWithEdgeAPIHeaders(request, edgeResponse, env)
+}
 
-  return copyResponseWithNewHeaders(originResponse, mergeHeaders(originResponse.headers, edgeResponseHeaders))
+export async function fetchOriginWithEdgeAPIHeaders(
+  request: Request,
+  edgeResponse: EdgeResponse | undefined,
+  env: TypedEnv
+): Promise<Response> {
+  if (!isEdgeApiEnabled(env)) {
+    return fetchOrigin(request)
+  }
+
+  const edgeHeaders = createEdgeResponseHeaders(edgeResponse)
+
+  const originRequestHeaders = new Headers(request.headers)
+  const originRequest = copyRequest({
+    request,
+    init: {
+      headers: mergeHeaders(originRequestHeaders, edgeHeaders),
+    },
+  })
+
+  return fetchOrigin(originRequest)
 }

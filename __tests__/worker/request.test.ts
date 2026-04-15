@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import { getCrossOriginUrl, setCorsHeadersForInstrumentation } from '../../src/worker/utils/request'
 import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../src/shared/const'
-import { EdgeHeaders } from '../../src/worker/utils/headers'
 
 describe('Request', () => {
   describe('getCrossOriginUrl', () => {
@@ -172,40 +171,6 @@ describe('Request', () => {
       setCorsHeadersForInstrumentation(request, headers)
 
       expect(headers.get('Access-Control-Expose-Headers')).toBe(`X-Custom-Header,X-Another-Header,${AGENT_DATA_HEADER}`)
-    })
-
-    it('should add to Access-Control-Expose-Headers headers from Edge API', () => {
-      const request = new Request('https://example.com', {
-        headers: { Origin: 'https://origin.example.com' },
-      })
-      const headers = new Headers({
-        'Access-Control-Allow-Origin': 'https://allowed.example.com',
-        'Access-Control-Expose-Headers': 'X-Custom-Header, X-Another-Header',
-        [AGENT_DATA_HEADER]: 'agent-data',
-        [EdgeHeaders.BotInfoName]: 'bot',
-        [EdgeHeaders.BotInfoProvider]: 'provider',
-        [EdgeHeaders.BotInfoCategory]: 'category',
-        [EdgeHeaders.BotInfoIdentity]: 'good',
-        [EdgeHeaders.IpV6Address]: 'fc00:db20:35b:7399::5',
-        [EdgeHeaders.IpV4Address]: '192.168.1.1',
-      })
-
-      setCorsHeadersForInstrumentation(request, headers)
-
-      const exposedHeaders = headers
-        .get('Access-Control-Expose-Headers')
-        ?.split(',')
-        .map((it) => it.trim())
-
-      // Expected length: All edge headers + custom headers (2) + agent data header
-      expect(exposedHeaders).toHaveLength(Object.values(EdgeHeaders).length + 3)
-      expect(exposedHeaders).toContain('X-Custom-Header')
-      expect(exposedHeaders).toContain('X-Another-Header')
-      expect(exposedHeaders).toContain(AGENT_DATA_HEADER)
-
-      for (const edgeHeader of Object.values(EdgeHeaders)) {
-        expect(exposedHeaders).toContain(edgeHeader)
-      }
     })
 
     it('should handle Origin with port correctly', () => {

@@ -576,7 +576,7 @@ describe('Protected API', () => {
       )
     })
 
-    it('should set Edge headers if Edge API is enabled', async () => {
+    it('should set Edge headers in origin request if Edge API is enabled', async () => {
       const { getIngressRequest, getOriginRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
           const headers = new Headers()
@@ -636,16 +636,26 @@ describe('Protected API', () => {
       expect(response.status).toEqual(200)
       expect(await response.text()).toEqual('origin')
 
-      const headers = Array.from(response.headers.entries())
-      expect(headers).toEqual([
+      const originRequest = getOriginRequest()
+      expect(originRequest).toBeDefined()
+      assert(originRequest)
+
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
+          [EdgeHeaders.BotInfoIdentity, 'signed'],
+          [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
+          [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+          [EdgeHeaders.IpV4Address, '94.142.239.124'],
+          [EdgeHeaders.IpV6Address, ''],
+        ])
+      )
+
+      const responseHeaders = Array.from(response.headers.entries())
+      expect(responseHeaders).toEqual([
         ['content-type', 'text/plain;charset=UTF-8'],
         [AGENT_DATA_HEADER, 'agent-data'],
-        [EdgeHeaders.BotInfoCategory, 'ai_agent'],
-        [EdgeHeaders.BotInfoIdentity, 'signed'],
-        [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
-        [EdgeHeaders.BotInfoProvider, 'OpenAI'],
-        [EdgeHeaders.IpV4Address, '94.142.239.124'],
-        [EdgeHeaders.IpV6Address, ''],
         ['set-cookie', 'origin-cookie=value'],
         [
           'set-cookie',
@@ -676,13 +686,9 @@ describe('Protected API', () => {
           ruleset_id: 'r_1',
         },
       } satisfies SendBody)
-
-      const originRequest = getOriginRequest()
-      expect(originRequest).toBeDefined()
-      assert(originRequest)
     })
 
-    it('should set Edge headers if Edge API is enabled with ipv6', async () => {
+    it('should set Edge headers in origin request if Edge API is enabled with ipv6', async () => {
       const { getIngressRequest, getOriginRequest } = prepareMockFetch({
         mockIngressHandler: async () => {
           const headers = new Headers()
@@ -751,12 +757,6 @@ describe('Protected API', () => {
       expect(headers).toEqual([
         ['content-type', 'text/plain;charset=UTF-8'],
         [AGENT_DATA_HEADER, 'agent-data'],
-        [EdgeHeaders.BotInfoCategory, 'ai_agent'],
-        [EdgeHeaders.BotInfoIdentity, 'signed'],
-        [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
-        [EdgeHeaders.BotInfoProvider, 'OpenAI'],
-        [EdgeHeaders.IpV4Address, ''],
-        [EdgeHeaders.IpV6Address, '2001:db8:3333:4444:5555:6666:7777:8888'],
         ['set-cookie', 'origin-cookie=value'],
         [
           'set-cookie',
@@ -791,6 +791,18 @@ describe('Protected API', () => {
       const originRequest = getOriginRequest()
       expect(originRequest).toBeDefined()
       assert(originRequest)
+
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
+          [EdgeHeaders.BotInfoIdentity, 'signed'],
+          [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
+          [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+          [EdgeHeaders.IpV4Address, ''],
+          [EdgeHeaders.IpV6Address, mockEdgeResponseIpV6.ip_info.v6!.address],
+        ])
+      )
     })
   })
 
@@ -1248,6 +1260,97 @@ describe('Protected API', () => {
       )
     })
 
+    it('should send request to ingress and modify the request - with Edge API headers', async () => {
+      const originResponse = new Response('origin')
+      prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+              rule_action: {
+                type: 'allow',
+                request_header_modifications: {
+                  set: [
+                    {
+                      name: 'x-allowed',
+                      value: 'true',
+                    },
+                  ],
+                },
+                rule_expression: '',
+                rule_id: '12',
+                ruleset_id: '1',
+              },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+              event: mockEvent(),
+            } satisfies SendResponse)
+          )
+        },
+        mockOriginHandler: async () => originResponse,
+      })
+
+      const requestHeaders = new Headers({
+        [SIGNALS_KEY]: 'signals',
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        origin: mockUrl('/'),
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+      })
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          FP_EDGE_API: true,
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      const originRequest = vi.mocked(fetch).mock.calls[1][0] as Request
+      expect(originRequest).toBeInstanceOf(Request)
+      expect(originRequest.headers.get('x-allowed')).toEqual('true')
+
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
+          [EdgeHeaders.BotInfoIdentity, 'signed'],
+          [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
+          [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+          [EdgeHeaders.IpV4Address, '94.142.239.124'],
+          [EdgeHeaders.IpV6Address, ''],
+        ])
+      )
+
+      // Assert that the response from origin is not modified based on the ruleset
+      expect(await response.text()).toEqual('origin')
+      const responseHeaders = Array.from(response.headers)
+      expect(responseHeaders).toHaveLength(4)
+      expect(responseHeaders).toEqual(
+        expect.arrayContaining([
+          ['content-type', 'text/plain;charset=UTF-8'],
+          ['fp-agent-data', 'agent-data'],
+          ['set-cookie', 'fp-ingress-cookie=12345'],
+          [
+            'set-cookie',
+            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+          ],
+        ])
+      )
+    })
+
     it('should evaluate fallback rule if ingress request fails', async () => {
       prepareMockFetch({
         mockIngressHandler: async () => {
@@ -1550,6 +1653,68 @@ describe('Protected API', () => {
 
       expect(response.status).toEqual(403)
       expect(await response.text()).toEqual('fallback block')
+    })
+
+    it('should evaluate fallback rule if agent data is empty in response - allow case with Edge API headers', async () => {
+      const { getOriginRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              event: mockEvent(),
+              agent_data: '',
+            })
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = new Headers({
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+        [SIGNALS_KEY]: 'signals',
+        origin: mockUrl('/'),
+      })
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          FP_EDGE_API: true,
+          FP_FAILURE_FALLBACK_ACTION: {
+            type: 'allow',
+          },
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      const originRequest = getOriginRequest()
+      expect(originRequest).toBeDefined()
+      assert(originRequest)
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
+          [EdgeHeaders.BotInfoIdentity, 'signed'],
+          [EdgeHeaders.BotInfoName, 'ChatGPT Agent'],
+          [EdgeHeaders.BotInfoProvider, 'OpenAI'],
+          [EdgeHeaders.IpV4Address, '94.142.239.124'],
+          [EdgeHeaders.IpV6Address, ''],
+        ])
+      )
     })
 
     it.each(['cf-connecting-ip', 'host', 'user-agent'])(
