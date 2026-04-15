@@ -102,7 +102,7 @@ describe('Scripts injection', () => {
 
       const env = {
         ...mockEnv,
-        FP_EDGE_API: true,
+        FP_EDGE_API: 'true',
       }
 
       const response = await handler.fetch(request, env, ctx)
@@ -169,7 +169,7 @@ describe('Scripts injection', () => {
 
       const env = {
         ...mockEnv,
-        FP_EDGE_API: true,
+        FP_EDGE_API: 'true',
       }
 
       const response = await handler.fetch(request, env, ctx)
@@ -233,7 +233,7 @@ describe('Scripts injection', () => {
 
       const env = {
         ...mockEnv,
-        FP_EDGE_API: true,
+        FP_EDGE_API: 'true',
       }
 
       const response = await handler.fetch(request, env, ctx)
@@ -297,7 +297,7 @@ describe('Scripts injection', () => {
 
       const env = {
         ...mockEnv,
-        FP_EDGE_API: true,
+        FP_EDGE_API: 'true',
       }
 
       const response = await handler.fetch(request, env, ctx)

@@ -156,7 +156,7 @@ export function getTestProjects(): TestProject[] {
             },
           ],
           IDENTIFICATION_PAGE_URLS: [`https://${getTestHost('cors-edge-api-monitor-mode')}`],
-          FP_EDGE_API: true,
+          FP_EDGE_API: 'true',
           // Deploy in monitor mode
           FP_RULESET_ID: '',
         },
@@ -198,7 +198,7 @@ export function getTestProjects(): TestProject[] {
       projectName: 'edge-api-monitor-mode',
       flowWorker: {
         variables: {
-          FP_EDGE_API: true,
+          FP_EDGE_API: 'true',
 
           // Deploy in monitor mode
           FP_RULESET_ID: '',

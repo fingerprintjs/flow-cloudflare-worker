@@ -89,7 +89,7 @@ export function isMonitorMode(env: TypedEnv) {
 }
 
 export function isEdgeApiEnabled(env: TypedEnv) {
-  return Boolean(env.FP_EDGE_API)
+  return env.FP_EDGE_API === 'true'
 }
 
 export function getFpRegion(env: TypedEnv): Region {

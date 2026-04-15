@@ -883,7 +883,7 @@ describe('Protected API', () => {
         request,
         {
           ...mockEnv,
-          FP_EDGE_API: true,
+          FP_EDGE_API: 'true',
         },
         ctx
       )
@@ -962,7 +962,7 @@ describe('Protected API', () => {
         request,
         {
           ...mockEnv,
-          FP_EDGE_API: true,
+          FP_EDGE_API: 'true',
           FP_FAILURE_FALLBACK_ACTION: {
             type: 'allow',
           },
@@ -1030,7 +1030,7 @@ describe('Protected API', () => {
         request,
         {
           ...mockEnv,
-          FP_EDGE_API: true,
+          FP_EDGE_API: 'true',
           FP_FAILURE_FALLBACK_ACTION: {
             type: 'allow',
           },
@@ -1109,7 +1109,7 @@ describe('Protected API', () => {
         request,
         {
           ...mockEnv,
-          FP_EDGE_API: true,
+          FP_EDGE_API: 'true',
         },
         ctx
       )
