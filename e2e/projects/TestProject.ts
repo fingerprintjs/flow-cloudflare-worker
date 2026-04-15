@@ -69,11 +69,18 @@ export class TestProject implements TestWorkerProjectData {
    * @return {Promise<void>} A promise that resolves when the deletion process is complete.
    */
   async delete(): Promise<void> {
-    console.info(`[${this.projectName}] Deleting app...`)
-    if (await this.testApp.delete()) {
-      console.info(`[${this.projectName}] ✅ App deleted`)
-    } else {
-      console.info(`[${this.projectName}] App not found`)
+    let hasError = false
+
+    try {
+      console.info(`[${this.projectName}] Deleting app...`)
+      if (await this.testApp.delete()) {
+        console.info(`[${this.projectName}] ✅ App deleted`)
+      } else {
+        console.info(`[${this.projectName}] App not found`)
+      }
+    } catch (error) {
+      hasError = true
+      console.error(`[${this.projectName}] Failed to delete app:`, error)
     }
 
     console.info(`[${this.projectName}] Deleting flow worker...`)
@@ -81,6 +88,10 @@ export class TestProject implements TestWorkerProjectData {
       console.info(`[${this.projectName}] ✅ Flow worker deleted`)
     } else {
       console.info(`[${this.projectName}] Flow worker not found`)
+    }
+
+    if (hasError) {
+      throw new Error('Failed to fully delete test deployment. Please check the logs for more details.')
     }
   }
 }

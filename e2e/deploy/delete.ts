@@ -16,9 +16,19 @@ config({
  */
 async function deleteDeployments(): Promise<void> {
   const projects = getTestProjects()
+  let hasError = false
 
   for (const project of projects) {
-    await project.delete()
+    try {
+      await project.delete()
+    } catch (error) {
+      console.error(`Failed to delete deployment for ${project.projectName}:`, error)
+      hasError = true
+    }
+  }
+
+  if (hasError) {
+    throw new Error('One or more deployments failed to delete. Please check the logs for more details.')
   }
 }
 
