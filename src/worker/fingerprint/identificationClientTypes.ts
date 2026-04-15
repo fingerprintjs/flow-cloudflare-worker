@@ -25,25 +25,14 @@ export type SendBody = {
   ruleset_context?: RulesetContext
 }
 
+// https://docs.fingerprint.com/reference/server-api-v4-get-event#response-bot-info
 const BotInfo = z
   .object({
-    /** The type and purpose of the bot. */
     category: z.string(),
-    /** The organization or company operating the bot. */
     provider: z.string(),
-    /** The URL of the bot provider's website. */
     provider_url: z.string().optional(),
-    /** The specific name or identifier of the bot. */
     name: z.string(),
-    /**
-     * The verification status of the bot's identity:
-     * - `verified` - well-known bot with publicly verifiable identity, directed by the bot provider.
-     * - `signed` - bot that signs its platform via Web Bot Auth, directed by the bot provider's customers.
-     * - `spoofed` - bot that claims a public identity but fails verification.
-     * - `unknown` - bot that does not publish a verifiable identity.
-     */
     identity: z.enum(['verified', 'signed', 'spoofed', 'unknown']),
-    /** Confidence level of the bot identification. */
     confidence: z.enum(['low', 'medium', 'high']),
   })
   .strict()
@@ -55,31 +44,27 @@ const GeolocationSubdivision = z
   })
   .strict()
 
+/**
+ * https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v4-geolocation
+ * https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v6-geolocation
+ * */
 const Geolocation = z
   .object({
-    /** The IP address is likely to be within this radius (in km) of the specified location. */
     accuracy_radius: z.int().min(0).optional(),
-    /** Latitude of the geolocation. */
     latitude: z.number().min(-90).max(90).optional(),
-    /** Longitude of the geolocation. */
     longitude: z.number().min(-180).max(180).optional(),
     postal_code: z.string().optional(),
-    /** Time zone of the geolocation. */
     timezone: z.string().optional(),
-    /** City name of the geolocation. */
     city_name: z.string().optional(),
-    /** ISO 3166-1 alpha-2 country code. */
     country_code: z.string().min(2).max(2).optional(),
-    /** Country name of the geolocation. */
     country_name: z.string().optional(),
-    /** Two-letter continent code. */
     continent_code: z.string().min(2).max(2).optional(),
-    /** Continent name of the geolocation. */
     continent_name: z.string().optional(),
     subdivisions: z.array(GeolocationSubdivision).optional(),
   })
   .strict()
 
+// https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v4
 const IpV4Info = z
   .object({
     address: z.ipv4(),
@@ -93,6 +78,7 @@ const IpV4Info = z
   })
   .strict()
 
+// https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v6
 const IpV6Info = z
   .object({
     address: z.ipv6(),
@@ -106,6 +92,7 @@ const IpV6Info = z
   })
   .strict()
 
+// https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info
 const IpInfo = z.object({
   v4: IpV4Info.optional(),
   v6: IpV6Info.optional(),
