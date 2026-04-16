@@ -10,6 +10,7 @@
     "FP_PUBLIC_KEY": "FINGERPRINT_PUBLIC_KEY",
     "FP_SECRET_KEY": "FINGERPRINT_SECRET_KEY",
     "FP_RULESET_ID": "FINGERPRINT_RULESET_ID",
+    "FP_EDGE_API": "false",
     "PROTECTED_APIS": [
       {
         "method": "POST",

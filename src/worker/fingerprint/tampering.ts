@@ -1,6 +1,6 @@
 import { FlowError } from '../errors'
-import { IdentificationEvent } from './identificationClient'
 import { getIp } from '../utils/headers'
+import { IdentificationEvent } from './identificationClientTypes'
 
 const ALLOWED_REQUEST_TIMESTAMP_DIFF_MS = 3000
 
@@ -60,6 +60,7 @@ const tamperingHandlers: TamperingHandler[] = [
       const requestIp = await getIp(request.headers)
 
       if (requestIp !== event.ip_address) {
+        console.error('Unexpected IP address:', requestIp, 'vs', event.ip_address)
         throw new TamperingError('Unexpected IP address, potential replay attack.')
       }
     },

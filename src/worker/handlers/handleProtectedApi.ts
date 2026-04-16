@@ -1,13 +1,14 @@
 import { AGENT_DATA_HEADER } from '../../shared/const'
-import { IdentificationClient, SendResult } from '../fingerprint/identificationClient'
+import { IdentificationClient } from '../fingerprint/identificationClient'
 import { processRuleset } from '../fingerprint/ruleset'
 import { hasContentType, isDocumentDestination } from '../utils/headers'
 import { injectAgentProcessorScript } from '../scripts'
-import { fetchOrigin } from '../utils/origin'
+import { fetchOriginWithEdgeAPIHeaders } from '../utils/origin'
 import { TypedEnv } from '../types'
 import { getFallbackRuleAction, getRoutePrefix, isMonitorMode } from '../env'
 import { setCorsHeadersForInstrumentation } from '../utils/request'
 import { copyResponseWithNewHeaders } from '../utils/response'
+import { EdgeResponse, SendResult } from '../fingerprint/identificationClientTypes'
 
 /**
  * Parameters required for handling a protected API call.
@@ -114,19 +115,19 @@ async function getResponseForProtectedCall({
   let originResponse: Response
 
   if (isMonitorMode(env)) {
-    originResponse = await fetchOrigin(originRequest)
+    originResponse = await fetchOriginWithEdgeAPIHeaders(originRequest, env, ingressResponse.event)
   } else {
     if (ingressResponse.ruleAction) {
-      originResponse = await processRuleset(ingressResponse.ruleAction, originRequest, env)
+      originResponse = await processRuleset(ingressResponse.ruleAction, originRequest, env, ingressResponse.event)
     } else {
       console.warn('No ruleset processor found for ingress response, using fallback rule.')
-      originResponse = await processRuleset(getFallbackRuleAction(env), originRequest, env)
+      originResponse = await processRuleset(getFallbackRuleAction(env), originRequest, env, ingressResponse.event)
     }
   }
 
   const originResponseHeaders = new Headers(originResponse.headers)
   // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
-  // it doesn't make sense to set headers from ingress, because the browser will discard them anyway
+  // it doesn't make sense to set headers from ingress and edge, because the browser will discard them anyway
   if (!isDocumentDestination(request.headers)) {
     setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, removeCookies)
   }
@@ -146,7 +147,6 @@ async function getResponseForProtectedCall({
  *
  * @param ingressResponse - Result from the ingress service containing agent data and cookies
  * @param originResponseHeaders - Mutable headers object from the origin response to be modified
- * @param includedCrossOriginCredentials - true if the instrumented request is cross-origin and included credentials (i.e., cookies) for identification purposes
  * @param removeCookies - true if Set-Cookie header fields need to be removed from the response
  *
  */
@@ -180,12 +180,13 @@ function setHeadersFromIngressToOrigin(
  *
  * @param {Request} request - The incoming request object to be processed.
  * @param {TypedEnv} env - The environment for the request
+ * @param {EdgeResponse} edgeResponse - The edge response object
  * @return {Promise<Response>} A promise that resolves to the response after processing the request.
  */
-function handleFallbackRule(request: Request, env: TypedEnv): Promise<Response> {
+function handleFallbackRule(request: Request, env: TypedEnv, edgeResponse?: EdgeResponse): Promise<Response> {
   if (isMonitorMode(env)) {
-    return fetchOrigin(request)
+    return fetchOriginWithEdgeAPIHeaders(request, env, edgeResponse)
   }
 
-  return processRuleset(getFallbackRuleAction(env), request, env)
+  return processRuleset(getFallbackRuleAction(env), request, env, edgeResponse)
 }

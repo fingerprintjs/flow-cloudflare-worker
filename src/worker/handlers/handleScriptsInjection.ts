@@ -1,8 +1,9 @@
 import { TypedEnv } from '../types'
 import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
-import { fetchOrigin } from '../utils/origin'
+import { fetchOriginWithEdgeAPIRequest } from '../utils/origin'
 import { getRoutePrefix } from '../env'
+import { IdentificationClient } from '../fingerprint/identificationClient'
 
 type HandleScriptsInjectionParams = {
   request: Request
@@ -20,10 +21,12 @@ type HandleScriptsInjectionParams = {
  * @return {Promise<Response>} A Promise that resolves to an HTTP Response, potentially modified with injected scripts if the content type is HTML.
  */
 export async function handleScriptsInjection({ request, env }: HandleScriptsInjectionParams): Promise<Response> {
+  const identificationClient = IdentificationClient.fromEnv(env)
+
   console.info('Injecting instrumentation script for page:', request.url)
 
   // Propagate a request to the origin
-  const response = await fetchOrigin(request)
+  const response = await fetchOriginWithEdgeAPIRequest(request, identificationClient, env)
 
   if (hasContentType(response.headers, 'text/html')) {
     try {

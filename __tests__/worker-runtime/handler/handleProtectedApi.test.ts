@@ -6,9 +6,11 @@ import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import handler from '../../../src/worker'
 import { CloudflareRequest } from '../request'
 import { Region } from '../../../src/worker/fingerprint/region'
-import { SendBody, SendResponse } from '../../../src/worker/fingerprint/identificationClient'
 import { mockEnv, mockUrl, mockWorkerBaseUrl } from '../../utils/mockEnv'
 import { TypedEnv } from '../../../src/worker/types'
+import { SendBody, SendResponse } from '../../../src/worker/fingerprint/identificationClientTypes'
+import { mockEdgeResponseIpV4, mockEdgeResponseIpV6 } from '../../utils/mockEdge'
+import { EdgeHeaders } from '../../../src/worker/utils/headers'
 
 type PrepareMockFetchParams = {
   mockIngressHandler: (request: Request) => Promise<Response>
@@ -69,6 +71,8 @@ function mockEvent(): SendResponse['event'] {
     ip_address: '1.2.3.4',
     timestamp: new Date(),
     replayed: false,
+
+    ...mockEdgeResponseIpV4,
   }
 }
 
@@ -825,6 +829,347 @@ describe('Protected API', () => {
           ruleset_id: 'r_1',
         },
       } satisfies SendBody)
+    })
+  })
+
+  describe('Edge headers in origin request', () => {
+    it('allow action from ruleset', async () => {
+      const originResponse = new Response('origin')
+      prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+              rule_action: {
+                type: 'allow',
+                request_header_modifications: {
+                  set: [
+                    {
+                      name: 'x-allowed',
+                      value: 'true',
+                    },
+                  ],
+                },
+                rule_expression: '',
+                rule_id: '12',
+                ruleset_id: '1',
+              },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+              event: mockEvent(),
+            } satisfies SendResponse)
+          )
+        },
+        mockOriginHandler: async () => originResponse,
+      })
+
+      const requestHeaders = new Headers({
+        [SIGNALS_KEY]: 'signals',
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        origin: mockUrl('/'),
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+      })
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          FP_EDGE_API: 'true',
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      const originRequest = vi.mocked(fetch).mock.calls[1][0] as Request
+      expect(originRequest).toBeInstanceOf(Request)
+      expect(originRequest.headers.get('x-allowed')).toEqual('true')
+
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
+          [EdgeHeaders.BotInfoIdentity, 'signed'],
+          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
+          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
+          [EdgeHeaders.IpV4Address, '94.142.239.124'],
+          [EdgeHeaders.IpV6Address, ''],
+        ])
+      )
+
+      // Assert that the response from origin is not modified based on the ruleset
+      expect(await response.text()).toEqual('origin')
+      const responseHeaders = Array.from(response.headers)
+      expect(responseHeaders).toHaveLength(4)
+      expect(responseHeaders).toEqual(
+        expect.arrayContaining([
+          ['content-type', 'text/plain;charset=UTF-8'],
+          ['fp-agent-data', 'agent-data'],
+          ['set-cookie', 'fp-ingress-cookie=12345'],
+          [
+            'set-cookie',
+            '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+          ],
+        ])
+      )
+    })
+
+    it('fallback rule - allow case', async () => {
+      const { getOriginRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              event: mockEvent(),
+              // Trigger fallback rule by providing empty agent data
+              agent_data: '',
+            })
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = new Headers({
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+        [SIGNALS_KEY]: 'signals',
+        origin: mockUrl('/'),
+      })
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          FP_EDGE_API: 'true',
+          FP_FAILURE_FALLBACK_ACTION: {
+            type: 'allow',
+          },
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      const originRequest = getOriginRequest()
+      expect(originRequest).toBeDefined()
+      assert(originRequest)
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
+          [EdgeHeaders.BotInfoIdentity, 'signed'],
+          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
+          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
+          [EdgeHeaders.IpV4Address, '94.142.239.124'],
+          [EdgeHeaders.IpV6Address, ''],
+        ])
+      )
+    })
+
+    it('ingress request error', async () => {
+      const { getOriginRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          return new Response(
+            JSON.stringify({
+              v: '2',
+              requestId: '1234',
+              error: {
+                code: 'RequestCannotBeParsed',
+                message: 'bad request',
+              },
+              products: {},
+            }),
+            { status: 400 }
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = new Headers({
+        'cf-connecting-ip': '1.2.3.4',
+        host: 'example.com',
+        'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        'x-custom-header': 'custom-value',
+        [SIGNALS_KEY]: 'signals',
+        origin: mockUrl('/'),
+      })
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          FP_EDGE_API: 'true',
+          FP_FAILURE_FALLBACK_ACTION: {
+            type: 'allow',
+          },
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      const originRequest = getOriginRequest()
+      expect(originRequest).toBeDefined()
+      assert(originRequest)
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, ''],
+          [EdgeHeaders.BotInfoIdentity, ''],
+          [EdgeHeaders.BotInfoName, ''],
+          [EdgeHeaders.BotInfoProvider, ''],
+          [EdgeHeaders.IpV4Address, ''],
+          [EdgeHeaders.IpV6Address, ''],
+        ])
+      )
+    })
+
+    it('with ipv6', async () => {
+      const { getIngressRequest, getOriginRequest } = prepareMockFetch({
+        mockIngressHandler: async () => {
+          const headers = new Headers()
+          headers.append('Set-Cookie', 'ignored-set-cookie=123')
+
+          return new Response(
+            JSON.stringify({
+              agent_data: 'agent-data',
+              rule_action: {
+                type: 'allow',
+                request_header_modifications: {},
+                rule_id: '1',
+                ruleset_id: '1',
+              },
+              set_cookie_headers: [
+                '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+                'fp-ingress-cookie=12345',
+              ],
+              event: {
+                ...mockEvent(),
+                ip_address: mockEdgeResponseIpV6.ip_info.v6!.address,
+                ...mockEdgeResponseIpV6,
+              },
+            } satisfies SendResponse),
+            {
+              headers,
+            }
+          )
+        },
+        mockOriginHandler: async () =>
+          new Response('origin', {
+            headers: {
+              // Origin cookies, should be sent together with cookies from ingress
+              'Set-Cookie': 'origin-cookie=value',
+            },
+          }),
+      })
+
+      const requestHeaders = getCompleteHeaders()
+      requestHeaders.set('cf-connecting-ip', '2001:db8:3333:4444:5555:6666:7777:8888')
+
+      const cookies = 'client-cookie=value; another-client-cookie=value; _iidt=123456;'
+      requestHeaders.append('cookie', cookies)
+
+      const request = new CloudflareRequest(mockUrl('/api/test'), {
+        method: 'POST',
+        headers: requestHeaders,
+      })
+      const ctx = createExecutionContext()
+      const response = await handler.fetch(
+        request,
+        {
+          ...mockEnv,
+          FP_EDGE_API: 'true',
+        },
+        ctx
+      )
+      await waitOnExecutionContext(ctx)
+
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+
+      expect(response.status).toEqual(200)
+      expect(await response.text()).toEqual('origin')
+
+      const headers = Array.from(response.headers.entries())
+      expect(headers).toEqual([
+        ['content-type', 'text/plain;charset=UTF-8'],
+        [AGENT_DATA_HEADER, 'agent-data'],
+        ['set-cookie', 'origin-cookie=value'],
+        [
+          'set-cookie',
+          '_iidt=123456; Path=/; Domain=example.com; Expires=Fri, 20 Feb 2026 13:55:06 GMT; HttpOnly; Secure; SameSite=None',
+        ],
+        ['set-cookie', 'fp-ingress-cookie=12345'],
+      ])
+
+      const ingressRequest = getIngressRequest()
+      checkIngressRequest(ingressRequest)
+
+      const ingressBody = await ingressRequest!.json()
+      expect(ingressBody).toEqual({
+        // Only _iidt cookie should be sent to ingress
+        client_cookie: '_iidt=123456',
+        client_headers: {
+          'cf-connecting-ip': '2001:db8:3333:4444:5555:6666:7777:8888',
+          host: 'example.com',
+          origin: 'https://example.com/',
+          'user-agent': 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+          'x-custom-header': 'custom-value',
+        },
+        client_host: 'example.com',
+        client_ip: '2001:db8:3333:4444:5555:6666:7777:8888',
+        client_user_agent: 'Mozilla/5.0 (platform; rv:gecko-version) Gecko/gecko-trail Firefox/firefox-version',
+        fingerprint_data: 'signals',
+        ruleset_context: {
+          ruleset_id: 'r_1',
+        },
+      } satisfies SendBody)
+
+      const originRequest = getOriginRequest()
+      expect(originRequest).toBeDefined()
+      assert(originRequest)
+
+      const originRequestHeaders = Array.from(originRequest.headers.entries())
+      expect(originRequestHeaders).toEqual(
+        expect.arrayContaining([
+          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
+          [EdgeHeaders.BotInfoIdentity, 'signed'],
+          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
+          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
+          [EdgeHeaders.IpV4Address, ''],
+          [EdgeHeaders.IpV6Address, mockEdgeResponseIpV6.ip_info.v6!.address],
+        ])
+      )
     })
   })
 

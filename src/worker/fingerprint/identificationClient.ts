@@ -3,91 +3,19 @@ import { APP_INCLUDED_CREDENTIALS_FLAG, SIGNALS_KEY } from '../../shared/const'
 import { IdentificationRequestFailedError, SignalsNotAvailableError } from '../errors'
 import { getHeaderOrThrow, getIp, hasContentType } from '../utils/headers'
 import { findCookie } from '../cookies'
-import { RuleAction } from './ruleset'
 import { copyRequest, getCrossOriginUrl } from '../utils/request'
-import { z } from 'zod/v4'
 import { handleTampering } from './tampering'
 import { TypedEnv } from '../types'
 import { getFpRegion, getIngressBaseHost, getRoutePrefix, getRulesetId, getSecretKey } from '../env'
-
-type RulesetContext = {
-  ruleset_id: string
-}
-/**
- * Request body structure for sending fingerprint data to the identification service.
- *
- */
-export type SendBody = {
-  /** Fingerprint data with signals */
-  fingerprint_data: string
-  /** Client's host header value */
-  client_host: string
-  /** Client's IP address from Cloudflare headers */
-  client_ip: string
-  /** Client's user agent string */
-  client_user_agent: string
-  /** Optional client cookie data (filtered to include only _iidt cookie) */
-  client_cookie?: string
-  /** Optional additional client headers (excluding cookies) */
-  client_headers?: Record<string, string>
-  /** Ruleset context for rule action evaluation */
-  ruleset_context?: RulesetContext
-}
-
-export const IdentificationEvent = z.object({
-  replayed: z.boolean(),
-  timestamp: z.coerce.date(),
-  url: z.url(),
-  ip_address: z.ipv4().or(z.ipv6()),
-})
-
-export type IdentificationEvent = z.infer<typeof IdentificationEvent>
-
-export const SendResponse = z.object({
-  // Agent data returned by the identification service
-  agent_data: z.string(),
-  // Rule action resolved by the identification service
-  rule_action: RuleAction.optional(),
-  // Cookies that need to be set in the origin response
-  set_cookie_headers: z.array(z.string()).optional(),
-
-  event: IdentificationEvent,
-})
-
-export type SendResponse = z.infer<typeof SendResponse>
-/**
- * Extended response structure that includes both agent data and cookie headers.
- */
-export type SendResult = {
-  /** Agent data returned by the identification service */
-  agentData: string
-  /** Array of Set-Cookie header values to be sent to the client */
-  setCookieHeaders?: string[] | undefined
-  /** Optional rule action that was resolved by ingress */
-  ruleAction: RuleAction | undefined
-}
-
-export type ParsedIncomingRequest = {
-  /** The signals extracted from a request */
-  signals: string
-
-  /**
-   * Identification requires that cookies be sent in cross-origin requests. But
-   * the application may not have requested this behavior.
-   *
-   * This flag will be true when the request is a cross-origin request
-   * and the application did not request that cookies be included in the request,
-   * indicating that both Cookies and Set-Cookie header fields must not be sent between the origin
-   * and the client.
-   */
-  removeCookies: boolean
-
-  /** The request with signals and optionally, cookies omitted, suitable for forwarding to the origin */
-  originRequest: Request
-
-  /** The cookie from the request that needs to be included in the identification request */
-  clientCookie: string | undefined
-}
+import {
+  EdgeRequest,
+  EdgeResponse,
+  ParsedIncomingRequest,
+  SendBody,
+  SendResponse,
+  SendResult,
+} from './identificationClientTypes'
+import { getIpType } from '../utils/ip'
 
 /**
  * Client for communicating with the identification service.
@@ -210,6 +138,7 @@ export class IdentificationClient {
       setCookieHeaders: identificationData.set_cookie_headers,
       agentData: identificationData.agent_data,
       ruleAction: identificationData.rule_action,
+      event: identificationData.event,
     }
   }
 
@@ -235,6 +164,84 @@ export class IdentificationClient {
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return fetch(request as unknown as Request<unknown, IncomingRequestCfProperties>)
+  }
+
+  /**
+   * Sends a request to the HTTP Edge API and returns parsed EdgeResponse.
+   *
+   * @param {Request} clientRequest The incoming client request containing headers, URL, and method information.
+   * @return {Promise<EdgeResponse>} A promise that resolves to the processed and validated edge response data.
+   * @throws {Error} If the edge request fails or if the response contains invalid data.
+   */
+  async edge(clientRequest: Request): Promise<EdgeResponse> {
+    const clientIP = await getIp(clientRequest.headers)
+    const ipType = getIpType(clientIP)
+
+    const clientRequestHeaders = new Headers(clientRequest.headers)
+
+    // In dev environment, we need to explicitly set the host header with the request url, otherwise ingress request will fail
+    // It's because vite sets the host header to localhost IP, so it becomes different from the actual request url
+    if (import.meta.env.MODE == 'dev') {
+      clientRequestHeaders.set('host', new URL(clientRequest.url).host)
+    }
+
+    const edgeRequest: EdgeRequest = {
+      headers: Array.from(clientRequestHeaders.entries()).map(([name, value]) => ({ name, value })),
+      url: clientRequest.url,
+      ipv4_address: ipType === 'ipv4' ? clientIP : undefined,
+      ipv6_address: ipType === 'ipv6' ? clientIP : undefined,
+      method: clientRequest.method,
+    }
+
+    const ingressUrl = new URL(this.url)
+    ingressUrl.pathname = '/v4/edge'
+
+    const request = new Request(ingressUrl, {
+      body: JSON.stringify(edgeRequest),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+    })
+
+    console.debug(`Sending edge request to ${ingressUrl}`, edgeRequest)
+
+    const response = await fetch(request)
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '')
+      throw new Error(`Edge request failed with status: ${response.status} with: ${text}`)
+    }
+
+    const json = await response.json()
+    const parsedData = EdgeResponse.safeParse(json)
+
+    if (!parsedData.success) {
+      console.error('Invalid edge response data', parsedData.error, parsedData.data)
+      throw new Error('Invalid edge response data')
+    }
+
+    console.debug('Edge response data:', parsedData.data)
+
+    return parsedData.data
+  }
+
+  /**
+   * Safely executes the edge method and handles any errors that may occur during execution.
+   * Logs an error message and returns undefined if the edge method fails.
+   *
+   * @param {Request} clientRequest - The request object to pass to the edge method.
+   * @return {Promise<EdgeResponse | undefined>} A promise that resolves to the edge response
+   * if the request is successful, or undefined if an error occurs.
+   */
+  async safeEdge(clientRequest: Request): Promise<EdgeResponse | undefined> {
+    try {
+      return await this.edge(clientRequest)
+    } catch (error) {
+      console.error('Failed to get edge response:', error)
+      return undefined
+    }
   }
 
   /**
