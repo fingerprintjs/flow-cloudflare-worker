@@ -2,7 +2,7 @@ import { corsEdgeApiMonitorModeTest as test } from '../../utils/playwright'
 import { assertIsDefined } from '../shared/utils'
 import { checkEdgeHeaders } from '../../utils/edge'
 
-test.describe('CORS with ruleset that blocks', () => {
+test.describe('CORS with Edge API in monitor mode', () => {
   test('should return response with Edge headers for instrumentation page', async ({ page }) => {
     const response = await page.goto('/')
     assertIsDefined(response)
