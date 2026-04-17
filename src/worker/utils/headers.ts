@@ -71,8 +71,8 @@ export function removeHeaderValue(headers: Headers, name: string, value: string)
 }
 
 export enum EdgeHeaders {
-  IpV4Address = 'fp-info-v4-address',
-  IpV6Address = 'fp-info-v6-address',
+  IpV4Address = 'fp-ip-info-v4-address',
+  IpV6Address = 'fp-ip-info-v6-address',
   BotInfoCategory = 'fp-bot-info-category',
   BotInfoProvider = 'fp-bot-info-provider',
   BotInfoName = 'fp-bot-info-name',
