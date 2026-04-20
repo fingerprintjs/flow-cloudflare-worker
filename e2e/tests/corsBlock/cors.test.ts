@@ -7,7 +7,7 @@ async function checkResponse(response: Response) {
 
   const body = await response.json()
   expect(body).toEqual({
-    message: 'Proxy detected',
+    message: 'Bad bot detected',
   })
 }
 
