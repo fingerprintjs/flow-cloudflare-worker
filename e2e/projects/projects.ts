@@ -1,4 +1,4 @@
-import { getTestDomain, getTestHost, getTestProjectHost } from '../utils/env'
+import { getEnv, getTestDomain, getTestHost, getTestProjectHost } from '../utils/env'
 import { TestProject } from './TestProject'
 import { spaApp } from '../deploy/testApps/reactSpa'
 
@@ -128,6 +128,7 @@ export function getTestProjects(): TestProject[] {
             },
           ],
           IDENTIFICATION_PAGE_URLS: [`https://${getTestHost('cors-block-api')}`],
+          FP_RULESET_ID: getEnv('RULESET_BASED_BLOCK_FP_RULESET_ID'),
         },
       },
     }),

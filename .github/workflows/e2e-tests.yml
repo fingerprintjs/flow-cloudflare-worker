@@ -1,6 +1,10 @@
 name: E2E tests
 on:
   pull_request:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
 
 # TODO E2E tests for release artifact
 jobs:

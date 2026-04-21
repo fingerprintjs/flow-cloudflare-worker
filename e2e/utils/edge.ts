@@ -3,8 +3,8 @@ import { getReceivedHeaders } from '../tests/shared/utils'
 import { expect, Response } from '@playwright/test'
 
 export const edgeHeaders = [
-  'fp-info-v4-address',
-  'fp-info-v6-address',
+  'fp-ip-info-v4-address',
+  'fp-ip-info-v6-address',
   'fp-bot-info-category',
   'fp-bot-info-provider',
   'fp-bot-info-name',
@@ -17,7 +17,7 @@ export function checkEdgeHeaders(response: Response) {
     expect(receivedHeaders.get(edgeHeadersKey)).toBeDefined()
   }
   // At least one ip header should be present
-  const ipHeaders = [receivedHeaders.get('fp-info-v4-address'), receivedHeaders.get('fp-info-v6-address')].filter(
+  const ipHeaders = [receivedHeaders.get('fp-ip-info-v4-address'), receivedHeaders.get('fp-ip-info-v6-address')].filter(
     Boolean
   )
 
