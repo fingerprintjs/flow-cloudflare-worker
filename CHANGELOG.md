@@ -1,5 +1,11 @@
 # flow-cloudflare-worker
 
+## 0.6.0
+
+### Minor Changes
+
+- Integrate Edge HTTP API support with identification and protected API requests ([0217352](https://github.com/fingerprintjs/flow-cloudflare-worker/commit/02173520d7ec83f5a94f4905206f331ba2cf9ed5))
+
 ## 0.5.3
 
 ### Patch Changes
