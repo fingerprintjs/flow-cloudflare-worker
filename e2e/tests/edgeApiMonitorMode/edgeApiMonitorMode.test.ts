@@ -1,7 +1,13 @@
 import { test } from '../playwright'
 import { assertIsDefined, getReceivedHeaders } from '../shared/utils'
 import { getProtectedPath } from '../../utils/config'
-import { checkEdgeHeaders, edgeHeaders } from '../../utils/edge'
+import {
+  BotIdentityVariant,
+  checkEdgeHeaders,
+  edgeHeaders,
+  getBotSignatureHeaders,
+  verifyEdgeBotHeaders,
+} from '../../utils/edge'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { expect } from '@playwright/test'
 
@@ -73,5 +79,53 @@ test.describe('Edge API in monitor mode', () => {
         expect(receivedHeaders.get(edgeHeader)).toEqual('')
       }
     })
+  })
+
+  test.describe('Bot Detection', () => {
+    for (const identityVariant of Object.values(BotIdentityVariant)) {
+      test.describe('Instrumentation page', () => {
+        test(`should return response with Edge headers for ${identityVariant}`, async ({ page, baseURL }) => {
+          const headers = await getBotSignatureHeaders(new URL(baseURL!), identityVariant)
+          await page.setExtraHTTPHeaders(headers)
+
+          const response = await page.goto('/')
+          assertIsDefined(response)
+
+          const edgeHeaders = checkEdgeHeaders(response)
+          verifyEdgeBotHeaders(edgeHeaders, identityVariant)
+        })
+      })
+
+      test.describe('Protected API', () => {
+        test(`should return response with Edge headers for ${identityVariant}`, async ({ page, project, baseURL }) => {
+          const headers = await getBotSignatureHeaders(new URL(baseURL!), identityVariant)
+          await page.setExtraHTTPHeaders(headers)
+
+          await page.goto('/', { waitUntil: 'networkidle' })
+
+          const protectedPath = getProtectedPath('/test', project.projectName)
+
+          // Trigger the fetch
+          await page.evaluate(async (url) => {
+            try {
+              await fetch(url, { method: 'POST' })
+            } catch (error) {
+              // Ignore fetch errors - the request may still be recorded
+            }
+          }, protectedPath)
+
+          const protectedRequest = await page
+            .requests()
+            .then((requests) => requests.find((request) => request.url().includes(protectedPath)))
+          assertIsDefined(protectedRequest)
+
+          const protectedResponse = await protectedRequest.response()
+          assertIsDefined(protectedResponse)
+
+          const edgeHeaders = checkEdgeHeaders(protectedResponse)
+          verifyEdgeBotHeaders(edgeHeaders, identityVariant)
+        })
+      })
+    }
   })
 })
