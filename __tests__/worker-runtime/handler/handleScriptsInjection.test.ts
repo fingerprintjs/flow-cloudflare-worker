@@ -133,7 +133,7 @@ describe('Scripts injection', () => {
       expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
 
       expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('94.142.239.124')
-      expect(originRequest.headers.get(EdgeHeaders.IpV6Address)).toEqual('')
+      expect(originRequest.headers.has(EdgeHeaders.IpV6Address)).toBeFalsy()
       expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('ai_agent')
       expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('Fingerprint')
       expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('Fingerprint Agent')
@@ -200,7 +200,7 @@ describe('Scripts injection', () => {
 
       expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
 
-      expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('')
+      expect(originRequest.headers.has(EdgeHeaders.IpV4Address)).toBeFalsy()
       expect(originRequest.headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8:3333:4444:5555:6666:7777:8888')
       expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('ai_agent')
       expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('Fingerprint')
@@ -264,12 +264,12 @@ describe('Scripts injection', () => {
 
       expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
 
-      expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.IpV6Address)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('')
+      expect(originRequest.headers.has(EdgeHeaders.IpV4Address)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.IpV6Address)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.BotInfoCategory)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.BotInfoProvider)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.BotInfoName)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.BotInfoIdentity)).toBeFalsy()
     })
 
     it('with error from Edge API', async () => {
@@ -293,6 +293,12 @@ describe('Scripts injection', () => {
 
       const request = new CloudflareRequest(mockWorkerBaseUrl)
       request.headers.set('cf-connecting-ip', '94.142.239.124')
+      request.headers.set(EdgeHeaders.BotInfoCategory, 'ai_agent')
+      request.headers.set(EdgeHeaders.BotInfoIdentity, 'verified')
+      request.headers.set(EdgeHeaders.BotInfoName, 'Fingerprint Agent')
+      request.headers.set(EdgeHeaders.BotInfoProvider, 'Fingerprint')
+      request.headers.set(EdgeHeaders.IpV4Address, '10.0.0.10')
+      request.headers.set(EdgeHeaders.IpV6Address, '::1')
       const ctx = createExecutionContext()
 
       const env = {
@@ -318,6 +324,30 @@ describe('Scripts injection', () => {
             name: 'cf-connecting-ip',
             value: '94.142.239.124',
           },
+          {
+            name: EdgeHeaders.BotInfoCategory,
+            value: 'ai_agent',
+          },
+          {
+            name: EdgeHeaders.BotInfoIdentity,
+            value: 'verified',
+          },
+          {
+            name: EdgeHeaders.BotInfoName,
+            value: 'Fingerprint Agent',
+          },
+          {
+            name: EdgeHeaders.BotInfoProvider,
+            value: 'Fingerprint',
+          },
+          {
+            name: EdgeHeaders.IpV4Address,
+            value: '10.0.0.10',
+          },
+          {
+            name: EdgeHeaders.IpV6Address,
+            value: '::1',
+          },
         ],
         url: request.url,
         ipv4_address: '94.142.239.124',
@@ -326,13 +356,6 @@ describe('Scripts injection', () => {
       })
 
       expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
-
-      expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.IpV6Address)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('')
     })
   })
 })

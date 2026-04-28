@@ -80,22 +80,34 @@ export enum EdgeHeaders {
 }
 
 /**
- * Constructs response headers based on provided edge response data.
+ * Set header fields that correspond to the properties from the `EdgeResponse` in the specified `requestHeaders`
  *
- * @param {EdgeResponse|undefined} edgeResponse - The edge response data containing information about IP addresses and bot information. If undefined, headers are set to empty values to prevent spoofing.
- * @return {Headers} A Headers object populated with the constructed response headers.
+ * @param requestHeaders the `Headers` to update
+ * @param edgeResponse the `EdgeResponse`
  */
-export function createEdgeResponseHeaders(edgeResponse?: EdgeResponse): Headers {
-  const headers = new Headers()
+export function setEdgeResponseHeaders(requestHeaders: Headers, edgeResponse?: EdgeResponse) {
+  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.IpV4Address, edgeResponse?.ip_info.v4?.address)
+  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.IpV6Address, edgeResponse?.ip_info.v6?.address)
+  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoCategory, edgeResponse?.bot_info?.category)
+  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoProvider, edgeResponse?.bot_info?.provider)
+  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoName, edgeResponse?.bot_info?.name)
+  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoIdentity, edgeResponse?.bot_info?.identity)
+}
 
-  headers.set(EdgeHeaders.IpV4Address, edgeResponse?.ip_info.v4?.address ?? '')
-  headers.set(EdgeHeaders.IpV6Address, edgeResponse?.ip_info.v6?.address ?? '')
-  headers.set(EdgeHeaders.BotInfoCategory, edgeResponse?.bot_info?.category ?? '')
-  headers.set(EdgeHeaders.BotInfoProvider, edgeResponse?.bot_info?.provider ?? '')
-  headers.set(EdgeHeaders.BotInfoName, edgeResponse?.bot_info?.name ?? '')
-  headers.set(EdgeHeaders.BotInfoIdentity, edgeResponse?.bot_info?.identity ?? '')
-
-  return headers
+/**
+ * If `value` is truthy, sets the header field to the value in the passed headers.
+ * If `value` is falsy, removes the header field from the headers.
+ *
+ * @param headers the `Headers` to update
+ * @param name the name of the header field
+ * @param value the value of the header field or a falsy value if the header should not be set
+ */
+export function setOrRemoveHeaderField(headers: Headers, name: string, value?: string) {
+  if (value) {
+    headers.set(name, value)
+  } else {
+    headers.delete(name)
+  }
 }
 
 /**
