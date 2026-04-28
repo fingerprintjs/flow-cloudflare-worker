@@ -13,7 +13,14 @@ export const edgeHeaders = [
   'fp-bot-info-identity',
 ] as const
 
-export type EdgeHeadersDict = Record<(typeof edgeHeaders)[number], string>
+export type EdgeHeader = (typeof edgeHeaders)[number]
+
+export type EdgeHeadersDict = Record<EdgeHeader, string>
+
+export function isEdgeHeader(header: string): header is EdgeHeader {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return edgeHeaders.includes(header as EdgeHeader)
+}
 
 export function checkEdgeHeaders(response: Response) {
   const fpHeaders: EdgeHeadersDict = {

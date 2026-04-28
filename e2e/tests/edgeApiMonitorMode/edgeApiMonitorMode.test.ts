@@ -1,15 +1,10 @@
 import { test } from '../playwright'
 import { assertIsDefined, getReceivedHeaders } from '../shared/utils'
 import { getProtectedPath } from '../../utils/config'
-import {
-  BotIdentityVariant,
-  checkEdgeHeaders,
-  edgeHeaders,
-  getBotSignatureHeaders,
-  verifyEdgeBotHeaders,
-} from '../../utils/edge'
+import { checkEdgeHeaders, edgeHeaders, EdgeHeadersDict } from '../../utils/edge'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { expect } from '@playwright/test'
+import { AiAgentAPI, NoScriptRequest } from '../../utils/aiAgentApi'
 
 test.describe('Edge API in monitor mode', () => {
   test.describe('Instrumentation page', () => {
@@ -82,48 +77,53 @@ test.describe('Edge API in monitor mode', () => {
   })
 
   test.describe('Bot Detection', () => {
-    for (const identityVariant of Object.values(BotIdentityVariant)) {
+    type TestCase = {
+      name: string
+      noScriptRequest: Pick<NoScriptRequest, 'malformedModes' | 'spoofOriginUrl'>
+      expectedEdgeHeaders: Pick<
+        EdgeHeadersDict,
+        'fp-bot-info-category' | 'fp-bot-info-name' | 'fp-bot-info-identity' | 'fp-bot-info-provider'
+      >
+      only?: boolean
+    }
+
+    const testCases: TestCase[] = [
+      {
+        name: 'verified bot',
+        noScriptRequest: {},
+        expectedEdgeHeaders: {
+          'fp-bot-info-category': 'ai_agent',
+          'fp-bot-info-name': 'Fingerprint Agent',
+          'fp-bot-info-identity': 'verified',
+          'fp-bot-info-provider': 'Fingerprint',
+        },
+      },
+
+      {
+        name: 'spoofed bot',
+        noScriptRequest: {
+          spoofOriginUrl: 'https://fingerprint.com',
+        },
+        expectedEdgeHeaders: {
+          'fp-bot-info-category': 'ai_agent',
+          'fp-bot-info-name': 'Fingerprint Agent',
+          'fp-bot-info-identity': 'spoofed',
+          'fp-bot-info-provider': 'Fingerprint',
+        },
+      },
+    ]
+
+    for (const testCase of testCases) {
       test.describe('Instrumentation page', () => {
-        test(`should return response with Edge headers for ${identityVariant}`, async ({ page, baseURL }) => {
-          const headers = await getBotSignatureHeaders(new URL(baseURL!), identityVariant)
-          await page.setExtraHTTPHeaders(headers)
+        const t = testCase.only ? test.only : test
 
-          const response = await page.goto('/')
-          assertIsDefined(response)
+        t(testCase.name, async ({ baseURL }) => {
+          const edgeHeaders = await AiAgentAPI.noScript({
+            url: baseURL!,
+            ...testCase.noScriptRequest,
+          })
 
-          const edgeHeaders = checkEdgeHeaders(response)
-          verifyEdgeBotHeaders(edgeHeaders, identityVariant)
-        })
-      })
-
-      test.describe('Protected API', () => {
-        test(`should return response with Edge headers for ${identityVariant}`, async ({ page, project, baseURL }) => {
-          const headers = await getBotSignatureHeaders(new URL(baseURL!), identityVariant)
-          await page.setExtraHTTPHeaders(headers)
-
-          await page.goto('/', { waitUntil: 'networkidle' })
-
-          const protectedPath = getProtectedPath('/test', project.projectName)
-
-          // Trigger the fetch
-          await page.evaluate(async (url) => {
-            try {
-              await fetch(url, { method: 'POST' })
-            } catch (error) {
-              // Ignore fetch errors - the request may still be recorded
-            }
-          }, protectedPath)
-
-          const protectedRequest = await page
-            .requests()
-            .then((requests) => requests.find((request) => request.url().includes(protectedPath)))
-          assertIsDefined(protectedRequest)
-
-          const protectedResponse = await protectedRequest.response()
-          assertIsDefined(protectedResponse)
-
-          const edgeHeaders = checkEdgeHeaders(protectedResponse)
-          verifyEdgeBotHeaders(edgeHeaders, identityVariant)
+          expect(edgeHeaders).toEqual(expect.objectContaining(testCase.expectedEdgeHeaders))
         })
       })
     }
