@@ -4,7 +4,7 @@ import { getProtectedPath } from '../../utils/config'
 import { checkEdgeHeaders, edgeHeaders, EdgeHeadersDict } from '../../utils/edge'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { expect } from '@playwright/test'
-import { AiAgentAPI, NoScriptRequest } from '../../utils/aiAgentApi'
+import { AiAgentAPI, MalformedModes, NoScriptRequest } from '../../utils/aiAgentApi'
 
 test.describe('Edge API in monitor mode', () => {
   test.describe('Instrumentation page', () => {
@@ -84,6 +84,7 @@ test.describe('Edge API in monitor mode', () => {
         EdgeHeadersDict,
         'fp-bot-info-category' | 'fp-bot-info-name' | 'fp-bot-info-identity' | 'fp-bot-info-provider'
       >
+      // Set to true to run only this test case, useful for debugging
       only?: boolean
     }
 
@@ -111,20 +112,83 @@ test.describe('Edge API in monitor mode', () => {
           'fp-bot-info-provider': 'Fingerprint',
         },
       },
+
+      {
+        name: 'malformed bot - expired signature',
+        noScriptRequest: {
+          malformedModes: [MalformedModes.ExpiredSignature],
+        },
+        expectedEdgeHeaders: {
+          'fp-bot-info-category': 'ai_agent',
+          'fp-bot-info-name': 'Fingerprint Agent',
+          'fp-bot-info-identity': 'unknown',
+          'fp-bot-info-provider': 'Fingerprint',
+        },
+      },
+
+      {
+        name: 'malformed bot - missing signature agent',
+        noScriptRequest: {
+          malformedModes: [MalformedModes.MissingSignatureAgent],
+        },
+        expectedEdgeHeaders: {
+          'fp-bot-info-category': 'ai_agent',
+          'fp-bot-info-name': 'Fingerprint Agent',
+          'fp-bot-info-identity': 'unknown',
+          'fp-bot-info-provider': 'Fingerprint',
+        },
+      },
+
+      {
+        name: 'malformed bot - missing authority',
+        noScriptRequest: {
+          malformedModes: [MalformedModes.MissingAuthority],
+        },
+        expectedEdgeHeaders: {
+          'fp-bot-info-category': 'ai_agent',
+          'fp-bot-info-name': 'Fingerprint Agent',
+          'fp-bot-info-identity': 'unknown',
+          'fp-bot-info-provider': 'Fingerprint',
+        },
+      },
+
+      {
+        name: 'malformed bot - invalid expires',
+        noScriptRequest: {
+          malformedModes: [MalformedModes.NotValidExpires],
+        },
+        expectedEdgeHeaders: {
+          'fp-bot-info-category': 'ai_agent',
+          'fp-bot-info-name': 'Fingerprint Agent',
+          'fp-bot-info-identity': 'unknown',
+          'fp-bot-info-provider': 'Fingerprint',
+        },
+      },
+
+      {
+        name: 'malformed bot - invalid created',
+        noScriptRequest: {
+          malformedModes: [MalformedModes.NotValidCreated],
+        },
+        expectedEdgeHeaders: {
+          'fp-bot-info-category': 'ai_agent',
+          'fp-bot-info-name': 'Fingerprint Agent',
+          'fp-bot-info-identity': 'unknown',
+          'fp-bot-info-provider': 'Fingerprint',
+        },
+      },
     ]
 
     for (const testCase of testCases) {
-      test.describe('Instrumentation page', () => {
-        const t = testCase.only ? test.only : test
+      const t = testCase.only ? test.only : test
 
-        t(testCase.name, async ({ baseURL }) => {
-          const edgeHeaders = await AiAgentAPI.noScript({
-            url: baseURL!,
-            ...testCase.noScriptRequest,
-          })
-
-          expect(edgeHeaders).toEqual(expect.objectContaining(testCase.expectedEdgeHeaders))
+      t(testCase.name, async ({ baseURL }) => {
+        const edgeHeaders = await AiAgentAPI.noScript({
+          url: baseURL!,
+          ...testCase.noScriptRequest,
         })
+
+        expect(edgeHeaders).toEqual(expect.objectContaining(testCase.expectedEdgeHeaders))
       })
     }
   })
