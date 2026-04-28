@@ -8,6 +8,12 @@ on:
 
 # TODO E2E tests for release artifact
 jobs:
+  set_datadog_team:
+    name: Set Datadog team
+    uses: fingerprintjs/dx-team-toolkit/.github/workflows/set-datadog-team.yml@v1
+    secrets:
+      DD_API_KEY: ${{ secrets.INTEGRATIONS_DATADOG_API_KEY }}
+
   e2e-tests:
     name: Run e2e tests for Flow Worker
     runs-on: ubuntu-latest
