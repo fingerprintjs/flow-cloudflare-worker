@@ -1,11 +1,5 @@
 # flow-cloudflare-worker
 
-## 0.6.1
-
-### Patch Changes
-
-- Skip including empty `fp-*` header fields in forwarded requests when FP_EDGE_API is enabled ([9ca6868](https://github.com/fingerprintjs/flow-cloudflare-worker/commit/9ca68684006fa23be11ed6586372465b4f5af65d))
-
 ## 0.6.0
 
 ### Minor Changes
