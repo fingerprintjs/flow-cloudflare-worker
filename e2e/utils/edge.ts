@@ -20,21 +20,19 @@ export function isEdgeHeader(header: string): header is EdgeHeader {
   return edgeHeaders.includes(header as EdgeHeader)
 }
 
-export function checkEdgeHeaders(response: Response) {
-  const fpHeaders: EdgeHeadersDict = {
-    'fp-ip-info-v4-address': '',
-    'fp-ip-info-v6-address': '',
-    'fp-bot-info-category': '',
-    'fp-bot-info-provider': '',
-    'fp-bot-info-name': '',
-    'fp-bot-info-identity': '',
-  }
+export function checkEdgeNoBotHeaders(response: Response) {
+  const botHeaderKeys: EdgeHeader[] = [
+    'fp-bot-info-category',
+    'fp-bot-info-provider',
+    'fp-bot-info-name',
+    'fp-bot-info-identity',
+  ]
 
   const receivedHeaders = getReceivedHeaders(response)
-  for (const edgeHeadersKey of edgeHeaders) {
-    expect(receivedHeaders.get(edgeHeadersKey)).toBeDefined()
-    fpHeaders[edgeHeadersKey] = receivedHeaders.get(edgeHeadersKey)!
+  for (const botHeaderKey of botHeaderKeys) {
+    expect(receivedHeaders.has(botHeaderKey)).toBeFalsy()
   }
+
   // At least one ip header should be present
   const ipHeaders = [receivedHeaders.get('fp-ip-info-v4-address'), receivedHeaders.get('fp-ip-info-v6-address')].filter(
     Boolean
@@ -45,6 +43,4 @@ export function checkEdgeHeaders(response: Response) {
   for (const ipHeader of ipHeaders) {
     expect(ipHeader).toBeTruthy()
   }
-
-  return fpHeaders
 }

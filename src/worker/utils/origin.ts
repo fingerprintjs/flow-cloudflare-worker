@@ -1,6 +1,6 @@
 import { TypedEnv } from '../types'
 import { IdentificationClient } from '../fingerprint/identificationClient'
-import { createEdgeResponseHeaders, mergeHeaders } from './headers'
+import { setEdgeResponseHeaders } from './headers'
 import { isEdgeApiEnabled } from '../env'
 import { copyRequest } from './request'
 import { EdgeResponse } from '../fingerprint/identificationClientTypes'
@@ -70,13 +70,13 @@ export async function fetchOriginWithEdgeAPIHeaders(
     return fetchOrigin(request)
   }
 
-  const edgeHeaders = createEdgeResponseHeaders(edgeResponse)
-
   const originRequestHeaders = new Headers(request.headers)
+  setEdgeResponseHeaders(originRequestHeaders, edgeResponse)
+
   const originRequest = copyRequest({
     request,
     init: {
-      headers: mergeHeaders(originRequestHeaders, edgeHeaders),
+      headers: originRequestHeaders,
     },
   })
 

@@ -903,9 +903,9 @@ describe('Protected API', () => {
           [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
           [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
           [EdgeHeaders.IpV4Address, '94.142.239.124'],
-          [EdgeHeaders.IpV6Address, ''],
         ])
       )
+      expect(originRequest.headers.has(EdgeHeaders.IpV6Address)).toBeFalsy()
 
       // Assert that the response from origin is not modified based on the ruleset
       expect(await response.text()).toEqual('origin')
@@ -982,9 +982,9 @@ describe('Protected API', () => {
           [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
           [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
           [EdgeHeaders.IpV4Address, '94.142.239.124'],
-          [EdgeHeaders.IpV6Address, ''],
         ])
       )
+      expect(originRequest.headers.has(EdgeHeaders.IpV6Address)).toBeFalsy()
     })
 
     it('ingress request error', async () => {
@@ -1019,6 +1019,12 @@ describe('Protected API', () => {
         'x-custom-header': 'custom-value',
         [SIGNALS_KEY]: 'signals',
         origin: mockUrl('/'),
+        [EdgeHeaders.BotInfoCategory]: 'ai_agent',
+        [EdgeHeaders.BotInfoIdentity]: 'verified',
+        [EdgeHeaders.BotInfoName]: 'Fingerprint Agent',
+        [EdgeHeaders.BotInfoProvider]: 'Fingerprint',
+        [EdgeHeaders.IpV4Address]: '10.0.0.10',
+        [EdgeHeaders.IpV6Address]: '::1',
       })
 
       const request = new CloudflareRequest(mockUrl('/api/test'), {
@@ -1042,17 +1048,12 @@ describe('Protected API', () => {
       const originRequest = getOriginRequest()
       expect(originRequest).toBeDefined()
       assert(originRequest)
-      const originRequestHeaders = Array.from(originRequest.headers.entries())
-      expect(originRequestHeaders).toEqual(
-        expect.arrayContaining([
-          [EdgeHeaders.BotInfoCategory, ''],
-          [EdgeHeaders.BotInfoIdentity, ''],
-          [EdgeHeaders.BotInfoName, ''],
-          [EdgeHeaders.BotInfoProvider, ''],
-          [EdgeHeaders.IpV4Address, ''],
-          [EdgeHeaders.IpV6Address, ''],
-        ])
-      )
+      expect(originRequest.headers.has(EdgeHeaders.BotInfoCategory)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.BotInfoIdentity)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.BotInfoName)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.BotInfoProvider)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.IpV4Address)).toBeFalsy()
+      expect(originRequest.headers.has(EdgeHeaders.IpV6Address)).toBeFalsy()
     })
 
     it('with ipv6', async () => {
@@ -1166,10 +1167,10 @@ describe('Protected API', () => {
           [EdgeHeaders.BotInfoIdentity, 'signed'],
           [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
           [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
-          [EdgeHeaders.IpV4Address, ''],
           [EdgeHeaders.IpV6Address, mockEdgeResponseIpV6.ip_info.v6!.address],
         ])
       )
+      expect(originRequest.headers.has(EdgeHeaders.IpV4Address)).toBeFalsy()
     })
   })
 

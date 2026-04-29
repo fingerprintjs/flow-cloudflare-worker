@@ -1,13 +1,13 @@
 import { corsEdgeApiMonitorModeTest as test } from '../../utils/playwright'
 import { assertIsDefined } from '../shared/utils'
-import { checkEdgeHeaders } from '../../utils/edge'
+import { checkEdgeNoBotHeaders } from '../../utils/edge'
 
 test.describe('CORS with Edge API in monitor mode', () => {
   test('should return response with Edge headers for instrumentation page', async ({ page }) => {
     const response = await page.goto('/')
     assertIsDefined(response)
 
-    checkEdgeHeaders(response)
+    checkEdgeNoBotHeaders(response)
   })
 
   test('should return response with Edge headers for protected API', async ({ page, corsUrl }) => {
@@ -32,6 +32,6 @@ test.describe('CORS with Edge API in monitor mode', () => {
     const protectedResponse = await protectedRequest.response()
     assertIsDefined(protectedResponse)
 
-    checkEdgeHeaders(protectedResponse)
+    checkEdgeNoBotHeaders(protectedResponse)
   })
 })
