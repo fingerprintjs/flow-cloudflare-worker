@@ -21,7 +21,7 @@ jobs:
       language: node
       language-version: 21
       prepare-command: pnpm build
-      github-release-files: dist/flow_cloudflare_worker/index.js
+      github-release-files: dist/flow_cloudflare_worker.js
     secrets:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
       RUNNER_APP_PRIVATE_KEY: ${{ secrets.RUNNER_APP_PRIVATE_KEY }} 
