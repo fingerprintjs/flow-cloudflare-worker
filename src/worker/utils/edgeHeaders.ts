@@ -160,6 +160,7 @@ function deleteHeaders(headers: Headers, names: readonly string[]) {
  * @param edgeResponse the `EdgeResponse`
  */
 export function setEdgeResponseHeaders(requestHeaders: Headers, edgeResponse?: EdgeResponse) {
+  // Handle both v4 and v6 formats, the implementation will automatically set only the appropriate headers for correct IP version and remove the others
   setIpVersionHeaders(requestHeaders, edgeResponse?.ip_info.v4, IP_V4_INFO_HEADERS)
   setIpVersionHeaders(requestHeaders, edgeResponse?.ip_info.v6, IP_V6_INFO_HEADERS)
 
