@@ -236,12 +236,12 @@ describe('Headers', () => {
   })
 
   describe('sfString', () => {
-    it('passes a plain value through unchanged', () => {
-      expect(sfString('AWS')).toEqual('AWS')
+    it('wraps a plain value in double quotes', () => {
+      expect(sfString('AWS')).toEqual('"AWS"')
     })
 
-    it('escapes backslashes and double quotes per RFC 8941', () => {
-      expect(sfString('a "quoted" \\ value')).toEqual('a \\"quoted\\" \\\\ value')
+    it('wraps and escapes backslashes and double quotes per RFC 8941', () => {
+      expect(sfString('a "quoted" \\ value')).toEqual('"a \\"quoted\\" \\\\ value"')
     })
   })
 

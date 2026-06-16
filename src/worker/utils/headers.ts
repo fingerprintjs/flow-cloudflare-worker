@@ -127,10 +127,11 @@ export function mergeHeaders(headers: Headers, ...otherHeaders: Headers[]): Head
   return result
 }
 /**
- * Escape a value per RFC 8941 structured-field string rules (`\` and `"` get backslash-escaped).
+ * Encode a value as an RFC 8941 structured-field string: surrounded by double quotes, with `\` and
+ * `"` backslash-escaped. Consumers must unquote and unescape to recover the original value.
  */
 export function sfString(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
 }
 
 /**
