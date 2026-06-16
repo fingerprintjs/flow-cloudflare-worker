@@ -1,4 +1,4 @@
-import { EdgeResponse } from '../fingerprint/identificationClientTypes'
+import type { EdgeResponse } from '../fingerprint/identificationClientTypes'
 import { setOrRemoveHeaderField, sfBoolTrue, sfDate, sfString } from './headers'
 
 export enum EdgeHeaders {

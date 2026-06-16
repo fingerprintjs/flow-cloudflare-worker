@@ -17,10 +17,9 @@ export const ipV4EdgeHeaders = [
   'fp-ip-info-v4-asn-type',
 ] as const
 
-export const optionalIpV4EdgeHeaders = ['fp-ip-info-v4-datacenter-name']
+export const optionalIpV4EdgeHeaders = ['fp-ip-info-v4-datacenter-name'] as const
 
-export const optionalIpV6EdgeHeaders = ['fp-ip-info-v6-datacenter-name']
-
+export const optionalIpV6EdgeHeaders = ['fp-ip-info-v6-datacenter-name'] as const
 export const ipV6EdgeHeaders = [
   'fp-ip-info-v6-address',
   'fp-ip-info-v6-geolocation-accuracy-radius',
@@ -72,17 +71,21 @@ export function isEdgeHeader(header: string): header is EdgeHeader {
 export function checkIpHeaders(response: Response) {
   const headers = getReceivedHeaders(response)
 
-  let headersToCheck: any[]
+  const headersToCheck: string[] = []
 
   if (headers.has('fp-ip-info-v4-address')) {
-    headersToCheck = [...ipV4EdgeHeaders]
-  } else {
-    headersToCheck = [...ipV6EdgeHeaders]
+    headersToCheck.push(...ipV4EdgeHeaders)
   }
 
-  headersToCheck.forEach((header) => {
+  if (headers.has('fp-ip-info-v6-address')) {
+    headersToCheck.push(...ipV6EdgeHeaders)
+  }
+
+  expect(headersToCheck.length, 'No IP address header (v4 or v6) was found.').toBeGreaterThan(0)
+
+  for (const header of headersToCheck) {
     expect(headers.has(header), `${header} was not found.`).toBeTruthy()
-  })
+  }
 }
 
 export function checkEdgeNoBotHeaders(response: Response) {
