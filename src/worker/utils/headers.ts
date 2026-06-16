@@ -1,5 +1,4 @@
 import { HeaderMissingError } from '../errors'
-import { EdgeResponse } from '../fingerprint/identificationClientTypes'
 
 export function hasContentType(headers: Headers, ...expectedContentTypes: string[]) {
   const contentType = headers.get('Content-Type')?.toLowerCase()
@@ -70,30 +69,6 @@ export function removeHeaderValue(headers: Headers, name: string, value: string)
   }
 }
 
-export enum EdgeHeaders {
-  IpV4Address = 'fp-ip-info-v4-address',
-  IpV6Address = 'fp-ip-info-v6-address',
-  BotInfoCategory = 'fp-bot-info-category',
-  BotInfoProvider = 'fp-bot-info-provider',
-  BotInfoName = 'fp-bot-info-name',
-  BotInfoIdentity = 'fp-bot-info-identity',
-}
-
-/**
- * Set header fields that correspond to the properties from the `EdgeResponse` in the specified `requestHeaders`
- *
- * @param requestHeaders the `Headers` to update
- * @param edgeResponse the `EdgeResponse`
- */
-export function setEdgeResponseHeaders(requestHeaders: Headers, edgeResponse?: EdgeResponse) {
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.IpV4Address, edgeResponse?.ip_info.v4?.address)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.IpV6Address, edgeResponse?.ip_info.v6?.address)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoCategory, edgeResponse?.bot_info?.category)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoProvider, edgeResponse?.bot_info?.provider)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoName, edgeResponse?.bot_info?.name)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoIdentity, edgeResponse?.bot_info?.identity)
-}
-
 /**
  * If `value` is truthy, sets the header field to the value in the passed headers.
  * If `value` is falsy, removes the header field from the headers.
@@ -151,3 +126,19 @@ export function mergeHeaders(headers: Headers, ...otherHeaders: Headers[]): Head
 
   return result
 }
+/**
+ * Escape a value per RFC 8941 structured-field string rules (`\` and `"` get backslash-escaped).
+ */
+export function sfString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
+/**
+ * Encode a unix-seconds timestamp as an RFC 8941 structured-field date: `@<seconds>`.
+ */
+export function sfDate(date: Date): string {
+  return `@${Math.trunc(date.getTime() / 1000)}`
+}
+
+// Represents `true` boolean value per RFC 8941
+export const sfBoolTrue = '?1'

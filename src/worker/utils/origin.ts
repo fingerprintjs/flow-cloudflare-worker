@@ -1,6 +1,6 @@
 import { TypedEnv } from '../types'
 import { IdentificationClient } from '../fingerprint/identificationClient'
-import { setEdgeResponseHeaders } from './headers'
+import { setEdgeResponseHeaders } from './edgeHeaders'
 import { isEdgeApiEnabled } from '../env'
 import { copyRequest } from './request'
 import { EdgeResponse } from '../fingerprint/identificationClientTypes'
