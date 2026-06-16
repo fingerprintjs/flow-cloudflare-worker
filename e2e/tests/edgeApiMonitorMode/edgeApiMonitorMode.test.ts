@@ -1,7 +1,7 @@
 import { test } from '../playwright'
 import { assertIsDefined, getReceivedHeaders } from '../shared/utils'
 import { getProtectedPath } from '../../utils/config'
-import { checkEdgeNoBotHeaders, edgeHeaders, EdgeHeadersDict } from '../../utils/edge'
+import { checkEdgeNoBotHeaders, checkIpHeaders, edgeHeaders, EdgeHeadersDict } from '../../utils/edge'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { expect } from '@playwright/test'
 import { AiAgentAPI, MalformedModes, NoScriptRequest } from '../../utils/aiAgentApi'
@@ -269,5 +269,32 @@ test.describe('Edge API in monitor mode', () => {
         expect(edgeHeaders).toEqual(expect.objectContaining(testCase.expectedEdgeHeaders))
       })
     }
+  })
+
+  test.describe('IP Intelligence', () => {
+    test('should return all IP headers', async ({ page, project }) => {
+      await page.goto('/', { waitUntil: 'networkidle' })
+
+      const protectedPath = getProtectedPath('/test', project.projectName)
+
+      // Trigger the fetch
+      await page.evaluate(async (url) => {
+        try {
+          await fetch(url, { method: 'POST' })
+        } catch (error) {
+          // Ignore fetch errors - the request may still be recorded
+        }
+      }, protectedPath)
+
+      const protectedRequest = await page
+        .requests()
+        .then((requests) => requests.find((request) => request.url().includes(protectedPath)))
+      assertIsDefined(protectedRequest)
+
+      const protectedResponse = await protectedRequest.response()
+      assertIsDefined(protectedResponse)
+
+      checkIpHeaders(protectedResponse)
+    })
   })
 })

@@ -134,7 +134,7 @@ export function sfString(value: string): string {
 }
 
 /**
- * Encode a unix-seconds timestamp as an RFC 8941 structured-field date: `@<seconds>`.
+ * Encode a unix-seconds timestamp as an RFC 9651 structured-field date: `@<seconds>`.
  */
 export function sfDate(date: Date): string {
   return `@${Math.trunc(date.getTime() / 1000)}`

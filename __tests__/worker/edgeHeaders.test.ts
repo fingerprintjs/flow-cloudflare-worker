@@ -81,7 +81,7 @@ describe('Edge headers', () => {
       expect(headers.get(EdgeHeaders.IpV4Address)).toEqual(fullEdgeResponse.ip_info.v4.address)
     })
 
-    describe('IP intelligence', () => {
+    describe('ip', () => {
       const fullV4: EdgeResponse = {
         ip_info: {
           v4: {
