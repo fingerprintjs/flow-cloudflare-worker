@@ -1,7 +1,7 @@
 import { test } from '../playwright'
 import { assertIsDefined, getReceivedHeaders } from '../shared/utils'
 import { getProtectedPath } from '../../utils/config'
-import { checkEdgeNoBotHeaders, checkIpHeaders, edgeHeaders, EdgeHeadersDict } from '../../utils/edge'
+import { checkEdgeBotHeaders, checkEdgeNoBotHeaders, checkIpHeaders, edgeHeaders, EdgeHeadersDict } from '../../utils/edge'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { expect } from '@playwright/test'
 import { AiAgentAPI, MalformedModes, NoScriptRequest } from '../../utils/aiAgentApi'
@@ -69,7 +69,8 @@ test.describe('Edge API in monitor mode', () => {
       const protectedResponse = await protectedRequest.response()
       assertIsDefined(protectedResponse)
 
-      checkEdgeNoBotHeaders(protectedResponse)
+      // Playwright will be identified as a browser automation bot
+      checkEdgeBotHeaders(protectedResponse)
     })
 
     test('should return empty Edge headers when agent data is missing', async ({ page, project }) => {
@@ -108,15 +109,19 @@ test.describe('Edge API in monitor mode', () => {
     test('should prevent spoofing of Edge headers', async ({ page, project }) => {
       await page.goto('/', { waitUntil: 'networkidle' })
 
+      const spoofedHeaders: Record<string, string> = {
+        'fp-bot-info-category': 'ai_agent',
+        'fp-bot-info-name': 'Fingerprint Agent',
+        'fp-bot-info-identity': 'verified',
+        'fp-bot-info-provider': 'Fingerprint',
+        'fp-ip-info-v4-address': '1.2.3.4',
+        'fp-ip-info-v6-address': '::1',
+      }
+
       await page.route('/test', (route, request) => {
         const headers = {
           ...request.headers(),
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'verified',
-          'fp-bot-info-provider': 'Fingerprint',
-          'fp-ip-info-v4-address': '1.2.3.4',
-          'fp-ip-info-v6-address': '::1',
+          ...spoofedHeaders,
         }
         route.continue({ headers })
       })
@@ -140,16 +145,13 @@ test.describe('Edge API in monitor mode', () => {
       const protectedResponse = await protectedRequest.response()
       assertIsDefined(protectedResponse)
 
-      checkEdgeNoBotHeaders(protectedResponse)
-
       const receivedHeaders = getReceivedHeaders(protectedResponse)
-      const ipv4AddressValue = receivedHeaders.get('fp-ip-info-v4-address')
-      if (ipv4AddressValue) {
-        expect(ipv4AddressValue).not.toEqual('1.2.3.4')
-      }
-      const ipv6AddressValue = receivedHeaders.get('fp-ip-info-v6-address')
-      if (ipv6AddressValue) {
-        expect(ipv6AddressValue).not.toEqual('::1')
+
+      for (const [name, spoofedValue] of Object.entries(spoofedHeaders)) {
+        const actualValue = receivedHeaders.get(name)
+        if (actualValue) {
+          expect(actualValue).not.toEqual(spoofedValue)
+        }
       }
     })
   })
