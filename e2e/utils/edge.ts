@@ -95,14 +95,6 @@ export function checkIpHeaders(response: Response) {
   }
 }
 
-export function checkEdgeNoBotHeaders(response: Response) {
-  const botHeaderKeys: EdgeHeader[] = [
-    'fp-bot-info-category',
-    'fp-bot-info-provider',
-    'fp-bot-info-name',
-    'fp-bot-info-identity',
-  ]
-
 export function checkEdgeBotHeaders(response: Response) {
   const receivedHeaders = getReceivedHeaders(response)
   for (const botHeaderKey of botHeaderKeys) {

@@ -1,7 +1,13 @@
 import { test } from '../playwright'
 import { assertIsDefined, getReceivedHeaders } from '../shared/utils'
 import { getProtectedPath } from '../../utils/config'
-import { checkEdgeBotHeaders, checkEdgeNoBotHeaders, checkIpHeaders, edgeHeaders, EdgeHeadersDict } from '../../utils/edge'
+import {
+  checkEdgeBotHeaders,
+  checkEdgeNoBotHeaders,
+  checkIpHeaders,
+  edgeHeaders,
+  EdgeHeadersDict,
+} from '../../utils/edge'
 import { SIGNALS_KEY } from '../../../src/shared/const'
 import { expect } from '@playwright/test'
 import { AiAgentAPI, MalformedModes, NoScriptRequest } from '../../utils/aiAgentApi'

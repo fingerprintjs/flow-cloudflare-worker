@@ -1,6 +1,6 @@
 import { corsEdgeApiMonitorModeTest as test } from '../../utils/playwright'
 import { assertIsDefined } from '../shared/utils'
-import { checkEdgeNoBotHeaders } from '../../utils/edge'
+import { checkEdgeBotHeaders, checkEdgeNoBotHeaders } from '../../utils/edge'
 
 test.describe('CORS with Edge API in monitor mode', () => {
   test('should return response with Edge headers for instrumentation page', async ({ page }) => {
@@ -32,6 +32,7 @@ test.describe('CORS with Edge API in monitor mode', () => {
     const protectedResponse = await protectedRequest.response()
     assertIsDefined(protectedResponse)
 
-    checkEdgeNoBotHeaders(protectedResponse)
+    // Playwright will be identified as a browser automation bot
+    checkEdgeBotHeaders(protectedResponse)
   })
 })
