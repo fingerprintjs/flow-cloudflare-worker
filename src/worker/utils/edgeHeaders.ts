@@ -164,73 +164,77 @@ export function setEdgeResponseHeaders(requestHeaders: Headers, edgeResponse?: E
   setIpVersionHeaders(requestHeaders, edgeResponse?.ip_info.v4, IP_V4_INFO_HEADERS)
   setIpVersionHeaders(requestHeaders, edgeResponse?.ip_info.v6, IP_V6_INFO_HEADERS)
 
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoCategory, edgeResponse?.bot_info?.category)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoProvider, edgeResponse?.bot_info?.provider)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoName, edgeResponse?.bot_info?.name)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoIdentity, edgeResponse?.bot_info?.identity)
-
-  if (edgeResponse?.proxy) {
-    requestHeaders.set(EdgeHeaders.Proxy, sfBoolTrue)
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.ProxyConfidence,
-      edgeResponse.proxy_confidence ? sfString(edgeResponse.proxy_confidence) : undefined
-    )
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.ProxyDetailsProxyType,
-      edgeResponse.proxy_details?.proxy_type ? sfString(edgeResponse.proxy_details.proxy_type) : undefined
-    )
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.ProxyDetailsLastSeenAt,
-      edgeResponse.proxy_details?.last_seen_at ? sfDate(edgeResponse.proxy_details.last_seen_at) : undefined
-    )
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.ProxyDetailsProvider,
-      edgeResponse.proxy_details?.provider ? sfString(edgeResponse.proxy_details.provider) : undefined
-    )
-  } else {
-    deleteHeaders(requestHeaders, PROXY_HEADERS)
-  }
-
-  if (edgeResponse?.vpn) {
-    requestHeaders.set(EdgeHeaders.Vpn, sfBoolTrue)
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.VpnConfidence,
-      edgeResponse.vpn_confidence ? sfString(edgeResponse.vpn_confidence) : undefined
-    )
-    const methods = edgeResponse.vpn_methods
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.VpnMethodsTimezoneMismatch,
-      methods?.timezone_mismatch ? sfBoolTrue : undefined
-    )
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.VpnMethodsPublicVpn,
-      methods?.public_vpn ? sfBoolTrue : undefined
-    )
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.VpnMethodsAuxiliaryMobile,
-      methods?.auxiliary_mobile ? sfBoolTrue : undefined
-    )
-    setOrRemoveHeaderField(
-      requestHeaders,
-      EdgeHeaders.VpnMethodsOsMismatch,
-      methods?.os_mismatch ? sfBoolTrue : undefined
-    )
-    setOrRemoveHeaderField(requestHeaders, EdgeHeaders.VpnMethodsRelay, methods?.relay ? sfBoolTrue : undefined)
-  } else {
-    deleteHeaders(requestHeaders, VPN_HEADERS)
-  }
+  setBotInfoHeaders(requestHeaders, edgeResponse?.bot_info)
+  setProxyHeaders(requestHeaders, edgeResponse)
+  setVpnHeaders(requestHeaders, edgeResponse)
 
   setOrRemoveHeaderField(
     requestHeaders,
     EdgeHeaders.IpBlocklistTorNode,
     edgeResponse?.ip_blocklist?.tor_node ? sfBoolTrue : undefined
   )
+}
+
+function setBotInfoHeaders(headers: Headers, botInfo: EdgeResponse['bot_info']) {
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoCategory, botInfo?.category)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoProvider, botInfo?.provider)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoName, botInfo?.name)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoIdentity, botInfo?.identity)
+}
+
+function setProxyHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined) {
+  if (!edgeResponse?.proxy) {
+    deleteHeaders(headers, PROXY_HEADERS)
+    return
+  }
+
+  headers.set(EdgeHeaders.Proxy, sfBoolTrue)
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.ProxyConfidence,
+    edgeResponse.proxy_confidence ? sfString(edgeResponse.proxy_confidence) : undefined
+  )
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.ProxyDetailsProxyType,
+    edgeResponse.proxy_details?.proxy_type ? sfString(edgeResponse.proxy_details.proxy_type) : undefined
+  )
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.ProxyDetailsLastSeenAt,
+    edgeResponse.proxy_details?.last_seen_at ? sfDate(edgeResponse.proxy_details.last_seen_at) : undefined
+  )
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.ProxyDetailsProvider,
+    edgeResponse.proxy_details?.provider ? sfString(edgeResponse.proxy_details.provider) : undefined
+  )
+}
+
+function setVpnHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined) {
+  if (!edgeResponse?.vpn) {
+    deleteHeaders(headers, VPN_HEADERS)
+    return
+  }
+
+  headers.set(EdgeHeaders.Vpn, sfBoolTrue)
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.VpnConfidence,
+    edgeResponse.vpn_confidence ? sfString(edgeResponse.vpn_confidence) : undefined
+  )
+  const methods = edgeResponse.vpn_methods
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.VpnMethodsTimezoneMismatch,
+    methods?.timezone_mismatch ? sfBoolTrue : undefined
+  )
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsPublicVpn, methods?.public_vpn ? sfBoolTrue : undefined)
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.VpnMethodsAuxiliaryMobile,
+    methods?.auxiliary_mobile ? sfBoolTrue : undefined
+  )
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsOsMismatch, methods?.os_mismatch ? sfBoolTrue : undefined)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsRelay, methods?.relay ? sfBoolTrue : undefined)
 }
