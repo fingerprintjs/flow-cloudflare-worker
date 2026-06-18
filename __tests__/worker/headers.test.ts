@@ -246,8 +246,8 @@ describe('Headers', () => {
   })
 
   describe('sfDate', () => {
-    it('encodes a Date as @<unix-seconds>, truncating sub-second precision', () => {
-      expect(sfDate(new Date('2024-12-11T14:53:53.999Z'))).toEqual('@1733928833')
+    it('encodes a millisecond timestamp as @<unix-seconds>, truncating sub-second precision', () => {
+      expect(sfDate(1778604975494)).toEqual('@1778604975')
     })
   })
 })

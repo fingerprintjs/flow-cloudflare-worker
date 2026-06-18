@@ -139,10 +139,10 @@ export function sfString(value: string): string {
 }
 
 /**
- * Encode a unix-seconds timestamp as an RFC 9651 structured-field date: `@<seconds>`.
+ * Encode a unix-milliseconds timestamp as an RFC 9651 structured-field date: `@<seconds>
  */
-export function sfDate(date: Date): string {
-  return `@${Math.trunc(date.getTime() / 1000)}`
+export function sfDate(timestamp: number): string {
+  return `@${Math.trunc(timestamp / 1000)}`
 }
 
 // Represents `true` boolean value per RFC 9651

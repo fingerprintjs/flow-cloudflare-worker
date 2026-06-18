@@ -76,7 +76,7 @@ const Confidence = z.enum(['low', 'medium', 'high'])
 
 const ProxyDetails = z.object({
   proxy_type: z.string().optional(),
-  last_seen_at: z.coerce.date().optional(),
+  last_seen_at: z.number().optional(),
   provider: z.string().optional(),
 })
 

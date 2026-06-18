@@ -172,7 +172,7 @@ describe('Edge headers', () => {
     describe('proxy', () => {
       it('emits all proxy headers when proxy is detected', () => {
         const headers = new Headers()
-        const lastSeenAt = new Date('2024-12-11T14:53:53Z')
+        const lastSeenAt = 1778604975494
         setEdgeResponseHeaders(headers, {
           ip_info: { v4: { address: '1.2.3.4' } },
           proxy: true,
@@ -182,7 +182,7 @@ describe('Edge headers', () => {
         expect(headers.get(EdgeHeaders.Proxy)).toEqual('?1')
         expect(headers.get(EdgeHeaders.ProxyConfidence)).toEqual('"medium"')
         expect(headers.get(EdgeHeaders.ProxyDetailsProxyType)).toEqual('"residential"')
-        expect(headers.get(EdgeHeaders.ProxyDetailsLastSeenAt)).toEqual(`@${Math.trunc(lastSeenAt.getTime() / 1000)}`)
+        expect(headers.get(EdgeHeaders.ProxyDetailsLastSeenAt)).toEqual('@1778604975')
         expect(headers.get(EdgeHeaders.ProxyDetailsProvider)).toEqual('"Example"')
       })
 
