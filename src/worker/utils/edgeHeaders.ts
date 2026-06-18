@@ -151,7 +151,7 @@ function deleteHeaders(headers: Headers, names: readonly string[]) {
 /**
  * Set header fields that correspond to the properties from the `EdgeResponse` in the specified `requestHeaders`.
  *
- * Empty / null / `undefined` values are omitted. Structured-field values follow RFC 8941: strings are
+ * Empty / null / `undefined` values are omitted. Structured-field values follow RFC 9651: strings are
  * escaped, booleans are `?1` (false values are omitted entirely), and dates use `@<unix-seconds>`.
  * Proxy and VPN groups are gated on their parent boolean: when `proxy`/`vpn` is not detected, none of
  * their sub-headers are sent.

@@ -127,13 +127,13 @@ export function mergeHeaders(headers: Headers, ...otherHeaders: Headers[]): Head
   return result
 }
 /**
- * Encode a value as an RFC 8941 structured-field string: surrounded by double quotes, with `\` and
+ * Encode a value as an RFC 9651 structured-field string: surrounded by double quotes, with `\` and
  * `"` backslash-escaped. Consumers must unquote and unescape to recover the original value.
  */
 export function sfString(value: string): string {
   // The common case will be that no escaping is required so optimize for that
   if (!/[\\"]/.test(value)) {
-    return `"${value}"`;
+    return `"${value}"`
   }
   return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
 }
@@ -145,5 +145,5 @@ export function sfDate(date: Date): string {
   return `@${Math.trunc(date.getTime() / 1000)}`
 }
 
-// Represents `true` boolean value per RFC 8941
+// Represents `true` boolean value per RFC 9651
 export const sfBoolTrue = '?1'

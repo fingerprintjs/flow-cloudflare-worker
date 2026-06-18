@@ -240,7 +240,7 @@ describe('Headers', () => {
       expect(sfString('AWS')).toEqual('"AWS"')
     })
 
-    it('wraps and escapes backslashes and double quotes per RFC 8941', () => {
+    it('wraps and escapes backslashes and double quotes per RFC 9651', () => {
       expect(sfString('a "quoted" \\ value')).toEqual('"a \\"quoted\\" \\\\ value"')
     })
   })
