@@ -113,13 +113,13 @@ describe('Edge headers', () => {
         expect(headers.get(EdgeHeaders.IpV4GeolocationLongitude)).toEqual('"21.0122"')
         expect(headers.get(EdgeHeaders.IpV4GeolocationPostalCode)).toEqual('"00-001"')
         expect(headers.get(EdgeHeaders.IpV4GeolocationTimezone)).toEqual('"Europe/Warsaw"')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationCityName)).toEqual('"Warsaw"')
+        expect(headers.get(EdgeHeaders.IpV4GeolocationCityName)).toEqual('%"Warsaw"')
         expect(headers.get(EdgeHeaders.IpV4GeolocationCountryCode)).toEqual('"PL"')
         expect(headers.get(EdgeHeaders.IpV4GeolocationContinentCode)).toEqual('"EU"')
-        expect(headers.get(EdgeHeaders.IpV4AsnName)).toEqual('"Example ISP"')
+        expect(headers.get(EdgeHeaders.IpV4AsnName)).toEqual('%"Example ISP"')
         expect(headers.get(EdgeHeaders.IpV4AsnNetwork)).toEqual('"1.2.0.0/16"')
         expect(headers.get(EdgeHeaders.IpV4AsnType)).toEqual('"isp"')
-        expect(headers.get(EdgeHeaders.IpV4DatacenterName)).toEqual('"AWS"')
+        expect(headers.get(EdgeHeaders.IpV4DatacenterName)).toEqual('%"AWS"')
       })
 
       it('omits geolocation, asn, and datacenter headers when the fields are missing', () => {
@@ -142,8 +142,8 @@ describe('Edge headers', () => {
       it('clears stale v4 ip_info headers when v4 is absent', () => {
         const headers = new Headers({
           [EdgeHeaders.IpV4Address]: '1.2.3.4',
-          [EdgeHeaders.IpV4GeolocationCityName]: '"Warsaw"',
-          [EdgeHeaders.IpV4DatacenterName]: '"AWS"',
+          [EdgeHeaders.IpV4GeolocationCityName]: '%"Warsaw"',
+          [EdgeHeaders.IpV4DatacenterName]: '%"AWS"',
         })
         setEdgeResponseHeaders(headers, { ip_info: { v6: { address: '2001:db8::1' } } })
         expect(headers.has(EdgeHeaders.IpV4Address)).toEqual(false)
@@ -165,7 +165,7 @@ describe('Edge headers', () => {
         })
         expect(headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8::1')
         expect(headers.get(EdgeHeaders.IpV6GeolocationCountryCode)).toEqual('"DE"')
-        expect(headers.get(EdgeHeaders.IpV6AsnName)).toEqual('"V6 ISP"')
+        expect(headers.get(EdgeHeaders.IpV6AsnName)).toEqual('%"V6 ISP"')
       })
     })
 
@@ -183,7 +183,7 @@ describe('Edge headers', () => {
         expect(headers.get(EdgeHeaders.ProxyConfidence)).toEqual('"medium"')
         expect(headers.get(EdgeHeaders.ProxyDetailsProxyType)).toEqual('"residential"')
         expect(headers.get(EdgeHeaders.ProxyDetailsLastSeenAt)).toEqual('@1778604975')
-        expect(headers.get(EdgeHeaders.ProxyDetailsProvider)).toEqual('"Example"')
+        expect(headers.get(EdgeHeaders.ProxyDetailsProvider)).toEqual('%"Example"')
       })
 
       it('skips proxy sub-headers that have no value, even when proxy is detected', () => {
@@ -218,7 +218,7 @@ describe('Edge headers', () => {
         const headers = new Headers({
           [EdgeHeaders.Proxy]: '?1',
           [EdgeHeaders.ProxyConfidence]: '"medium"',
-          [EdgeHeaders.ProxyDetailsProvider]: '"Example"',
+          [EdgeHeaders.ProxyDetailsProvider]: '%"Example"',
         })
         setEdgeResponseHeaders(headers, { ip_info: { v4: { address: '1.2.3.4' } } })
         expect(headers.has(EdgeHeaders.Proxy)).toEqual(false)

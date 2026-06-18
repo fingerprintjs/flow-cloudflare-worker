@@ -159,6 +159,29 @@ export function sfString(value: string): string {
 }
 
 /**
+ * Encode a value as an RFC 9651 structured-field Display String: `%"<utf8-percent-encoded>"`. Use
+ * this instead of `sfString` when the value may contain non-ASCII characters (sf-string is
+ * restricted to printable ASCII). Bytes that are `%`, `"`, control characters, DEL, or non-ASCII
+ * are percent-encoded as lowercase `%xx`.
+ */
+export function sfDisplayString(value: string): string {
+  const utf8 = new TextEncoder().encode(value)
+  let out = '%"'
+  for (const byte of utf8) {
+    // unescaped per RFC 9651: %x20-21 / %x23-24 / %x26-7E (i.e. printable ASCII except `"` and `%`)
+    // - `byte < 0x20` matches all ASCII control characters (0x00..0x1F: NUL, tab, newline, …)
+    // - `byte > 0x7e` matches DEL (0x7F) and every non-ASCII byte (0x80..0xFF), which in UTF-8
+    //   are the continuation/high bytes of multibyte characters (e.g. `ü` → 0xC3 0xBC)
+    if (byte === 0x22 /* " */ || byte === 0x25 /* % */ || byte < 0x20 || byte > 0x7e) {
+      out += '%' + byte.toString(16).padStart(2, '0')
+    } else {
+      out += String.fromCharCode(byte)
+    }
+  }
+  return out + '"'
+}
+
+/**
  * Encode a unix-milliseconds timestamp as an RFC 9651 structured-field date: `@<seconds>
  */
 export function sfDate(timestamp: number): string {

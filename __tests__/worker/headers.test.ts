@@ -7,6 +7,7 @@ import {
   removeHeaderValue,
   setOrRemoveHeaderField,
   sfDate,
+  sfDisplayString,
   sfString,
   sfStringFromNumber,
 } from '../../src/worker/utils/headers'
@@ -263,6 +264,20 @@ describe('Headers', () => {
 
     it('wraps and escapes backslashes and double quotes per RFC 9651', () => {
       expect(sfString('a "quoted" \\ value')).toEqual('"a \\"quoted\\" \\\\ value"')
+    })
+  })
+
+  describe('sfDisplayString', () => {
+    it('wraps a plain ASCII value in %"…" without percent-encoding', () => {
+      expect(sfDisplayString('AWS')).toEqual('%"AWS"')
+    })
+
+    it('percent-encodes non-ASCII characters as their UTF-8 byte sequence (lowercase hex)', () => {
+      expect(sfDisplayString('München')).toEqual('%"M%c3%bcnchen"')
+    })
+
+    it('percent-encodes `%`, `"`, control characters, and DEL', () => {
+      expect(sfDisplayString('a%b"c')).toEqual('%"a%25b%22c%01%7f"')
     })
   })
 

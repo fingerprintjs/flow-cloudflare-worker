@@ -1,5 +1,13 @@
 import type { EdgeResponse } from '../fingerprint/identificationClientTypes'
-import { identity, setOrRemoveHeaderField, sfBoolTrue, sfDate, sfString, sfStringFromNumber } from './headers'
+import {
+  identity,
+  setOrRemoveHeaderField,
+  sfBoolTrue,
+  sfDate,
+  sfDisplayString,
+  sfString,
+  sfStringFromNumber,
+} from './headers'
 
 // Serializer for `setOrRemoveHeaderField` used with boolean-valued fields. The header is only set
 // when the value is truthy, so we always emit `?1` (RFC 9651 sf-boolean true).
@@ -129,13 +137,13 @@ function setIpVersionHeaders(
   setOrRemoveHeaderField(headers, longitudeHeader, sfStringFromNumber, geo?.longitude)
   setOrRemoveHeaderField(headers, postalCodeHeader, sfString, geo?.postal_code)
   setOrRemoveHeaderField(headers, timezoneHeader, sfString, geo?.timezone)
-  setOrRemoveHeaderField(headers, cityNameHeader, sfString, geo?.city_name)
+  setOrRemoveHeaderField(headers, cityNameHeader, sfDisplayString, geo?.city_name)
   setOrRemoveHeaderField(headers, countryCodeHeader, sfString, geo?.country_code)
   setOrRemoveHeaderField(headers, continentCodeHeader, sfString, geo?.continent_code)
-  setOrRemoveHeaderField(headers, asnNameHeader, sfString, info?.asn_name)
+  setOrRemoveHeaderField(headers, asnNameHeader, sfDisplayString, info?.asn_name)
   setOrRemoveHeaderField(headers, asnNetworkHeader, sfString, info?.asn_network)
   setOrRemoveHeaderField(headers, asnTypeHeader, sfString, info?.asn_type)
-  setOrRemoveHeaderField(headers, datacenterNameHeader, sfString, info?.datacenter_name)
+  setOrRemoveHeaderField(headers, datacenterNameHeader, sfDisplayString, info?.datacenter_name)
 }
 
 function deleteHeaders(headers: Headers, names: readonly string[]) {
@@ -189,7 +197,12 @@ function setProxyHeaders(headers: Headers, edgeResponse: EdgeResponse | undefine
   setOrRemoveHeaderField(headers, EdgeHeaders.ProxyConfidence, sfString, edgeResponse.proxy_confidence)
   setOrRemoveHeaderField(headers, EdgeHeaders.ProxyDetailsProxyType, sfString, edgeResponse.proxy_details?.proxy_type)
   setOrRemoveHeaderField(headers, EdgeHeaders.ProxyDetailsLastSeenAt, sfDate, edgeResponse.proxy_details?.last_seen_at)
-  setOrRemoveHeaderField(headers, EdgeHeaders.ProxyDetailsProvider, sfString, edgeResponse.proxy_details?.provider)
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.ProxyDetailsProvider,
+    sfDisplayString,
+    edgeResponse.proxy_details?.provider
+  )
 }
 
 function setVpnHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined) {
