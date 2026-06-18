@@ -70,19 +70,39 @@ export function removeHeaderValue(headers: Headers, name: string, value: string)
 }
 
 /**
- * If `value` is truthy, sets the header field to the value in the passed headers.
+ * If `value` is truthy, sets the header field to `serializer(value)` in the passed headers.
  * If `value` is falsy, removes the header field from the headers.
  *
  * @param headers the `Headers` to update
  * @param name the name of the header field
+ * @param serializer if the value is truthy, the function that will serialize the value to be set in the header
  * @param value the value of the header field or a falsy value if the header should not be set
  */
-export function setOrRemoveHeaderField(headers: Headers, name: string, value?: string) {
+export function setOrRemoveHeaderField<T>(
+  headers: Headers,
+  name: string,
+  serializer: (input: T) => string,
+  value: T | undefined
+) {
   if (value) {
-    headers.set(name, value)
+    headers.set(name, serializer(value))
   } else {
     headers.delete(name)
   }
+}
+
+/**
+ * Identity serializer for `setOrRemoveHeaderField` — passes the value through unchanged.
+ */
+export function identity(value: string): string {
+  return value
+}
+
+/**
+ * Serializer for `setOrRemoveHeaderField` that turns a number into an RFC 9651 sf-string.
+ */
+export function sfStringFromNumber(value: number): string {
+  return sfString(String(value))
 }
 
 /**

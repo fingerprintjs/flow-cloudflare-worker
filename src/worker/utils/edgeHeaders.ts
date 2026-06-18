@@ -1,5 +1,9 @@
 import type { EdgeResponse } from '../fingerprint/identificationClientTypes'
-import { setOrRemoveHeaderField, sfBoolTrue, sfDate, sfString } from './headers'
+import { identity, setOrRemoveHeaderField, sfBoolTrue, sfDate, sfString, sfStringFromNumber } from './headers'
+
+// Serializer for `setOrRemoveHeaderField` used with boolean-valued fields. The header is only set
+// when the value is truthy, so we always emit `?1` (RFC 9651 sf-boolean true).
+const sfBoolTrueIfPresent = () => sfBoolTrue
 
 export enum EdgeHeaders {
   IpV4Address = 'fp-ip-info-v4-address',
@@ -118,28 +122,20 @@ function setIpVersionHeaders(
     datacenterNameHeader,
   ] = names
 
-  setOrRemoveHeaderField(headers, addressHeader, info?.address)
+  setOrRemoveHeaderField(headers, addressHeader, identity, info?.address)
   const geo = info?.geolocation
-  setOrRemoveHeaderField(
-    headers,
-    accuracyRadiusHeader,
-    geo?.accuracy_radius != null ? sfString(String(geo.accuracy_radius)) : undefined
-  )
-  setOrRemoveHeaderField(headers, latitudeHeader, geo?.latitude != null ? sfString(String(geo.latitude)) : undefined)
-  setOrRemoveHeaderField(headers, longitudeHeader, geo?.longitude != null ? sfString(String(geo.longitude)) : undefined)
-  setOrRemoveHeaderField(headers, postalCodeHeader, geo?.postal_code ? sfString(geo.postal_code) : undefined)
-  setOrRemoveHeaderField(headers, timezoneHeader, geo?.timezone ? sfString(geo.timezone) : undefined)
-  setOrRemoveHeaderField(headers, cityNameHeader, geo?.city_name ? sfString(geo.city_name) : undefined)
-  setOrRemoveHeaderField(headers, countryCodeHeader, geo?.country_code ? sfString(geo.country_code) : undefined)
-  setOrRemoveHeaderField(headers, continentCodeHeader, geo?.continent_code ? sfString(geo.continent_code) : undefined)
-  setOrRemoveHeaderField(headers, asnNameHeader, info?.asn_name ? sfString(info.asn_name) : undefined)
-  setOrRemoveHeaderField(headers, asnNetworkHeader, info?.asn_network ? sfString(info.asn_network) : undefined)
-  setOrRemoveHeaderField(headers, asnTypeHeader, info?.asn_type ? sfString(info.asn_type) : undefined)
-  setOrRemoveHeaderField(
-    headers,
-    datacenterNameHeader,
-    info?.datacenter_name ? sfString(info.datacenter_name) : undefined
-  )
+  setOrRemoveHeaderField(headers, accuracyRadiusHeader, sfStringFromNumber, geo?.accuracy_radius)
+  setOrRemoveHeaderField(headers, latitudeHeader, sfStringFromNumber, geo?.latitude)
+  setOrRemoveHeaderField(headers, longitudeHeader, sfStringFromNumber, geo?.longitude)
+  setOrRemoveHeaderField(headers, postalCodeHeader, sfString, geo?.postal_code)
+  setOrRemoveHeaderField(headers, timezoneHeader, sfString, geo?.timezone)
+  setOrRemoveHeaderField(headers, cityNameHeader, sfString, geo?.city_name)
+  setOrRemoveHeaderField(headers, countryCodeHeader, sfString, geo?.country_code)
+  setOrRemoveHeaderField(headers, continentCodeHeader, sfString, geo?.continent_code)
+  setOrRemoveHeaderField(headers, asnNameHeader, sfString, info?.asn_name)
+  setOrRemoveHeaderField(headers, asnNetworkHeader, sfString, info?.asn_network)
+  setOrRemoveHeaderField(headers, asnTypeHeader, sfString, info?.asn_type)
+  setOrRemoveHeaderField(headers, datacenterNameHeader, sfString, info?.datacenter_name)
 }
 
 function deleteHeaders(headers: Headers, names: readonly string[]) {
@@ -171,15 +167,16 @@ export function setEdgeResponseHeaders(requestHeaders: Headers, edgeResponse?: E
   setOrRemoveHeaderField(
     requestHeaders,
     EdgeHeaders.IpBlocklistTorNode,
-    edgeResponse?.ip_blocklist?.tor_node ? sfBoolTrue : undefined
+    sfBoolTrueIfPresent,
+    edgeResponse?.ip_blocklist?.tor_node
   )
 }
 
 function setBotInfoHeaders(headers: Headers, botInfo: EdgeResponse['bot_info']) {
-  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoCategory, botInfo?.category)
-  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoProvider, botInfo?.provider)
-  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoName, botInfo?.name)
-  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoIdentity, botInfo?.identity)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoCategory, identity, botInfo?.category)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoProvider, identity, botInfo?.provider)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoName, identity, botInfo?.name)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoIdentity, identity, botInfo?.identity)
 }
 
 function setProxyHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined) {
@@ -189,26 +186,10 @@ function setProxyHeaders(headers: Headers, edgeResponse: EdgeResponse | undefine
   }
 
   headers.set(EdgeHeaders.Proxy, sfBoolTrue)
-  setOrRemoveHeaderField(
-    headers,
-    EdgeHeaders.ProxyConfidence,
-    edgeResponse.proxy_confidence ? sfString(edgeResponse.proxy_confidence) : undefined
-  )
-  setOrRemoveHeaderField(
-    headers,
-    EdgeHeaders.ProxyDetailsProxyType,
-    edgeResponse.proxy_details?.proxy_type ? sfString(edgeResponse.proxy_details.proxy_type) : undefined
-  )
-  setOrRemoveHeaderField(
-    headers,
-    EdgeHeaders.ProxyDetailsLastSeenAt,
-    edgeResponse.proxy_details?.last_seen_at ? sfDate(edgeResponse.proxy_details.last_seen_at) : undefined
-  )
-  setOrRemoveHeaderField(
-    headers,
-    EdgeHeaders.ProxyDetailsProvider,
-    edgeResponse.proxy_details?.provider ? sfString(edgeResponse.proxy_details.provider) : undefined
-  )
+  setOrRemoveHeaderField(headers, EdgeHeaders.ProxyConfidence, sfString, edgeResponse.proxy_confidence)
+  setOrRemoveHeaderField(headers, EdgeHeaders.ProxyDetailsProxyType, sfString, edgeResponse.proxy_details?.proxy_type)
+  setOrRemoveHeaderField(headers, EdgeHeaders.ProxyDetailsLastSeenAt, sfDate, edgeResponse.proxy_details?.last_seen_at)
+  setOrRemoveHeaderField(headers, EdgeHeaders.ProxyDetailsProvider, sfString, edgeResponse.proxy_details?.provider)
 }
 
 function setVpnHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined) {
@@ -218,23 +199,16 @@ function setVpnHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined)
   }
 
   headers.set(EdgeHeaders.Vpn, sfBoolTrue)
-  setOrRemoveHeaderField(
-    headers,
-    EdgeHeaders.VpnConfidence,
-    edgeResponse.vpn_confidence ? sfString(edgeResponse.vpn_confidence) : undefined
-  )
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnConfidence, sfString, edgeResponse.vpn_confidence)
   const methods = edgeResponse.vpn_methods
   setOrRemoveHeaderField(
     headers,
     EdgeHeaders.VpnMethodsTimezoneMismatch,
-    methods?.timezone_mismatch ? sfBoolTrue : undefined
+    sfBoolTrueIfPresent,
+    methods?.timezone_mismatch
   )
-  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsPublicVpn, methods?.public_vpn ? sfBoolTrue : undefined)
-  setOrRemoveHeaderField(
-    headers,
-    EdgeHeaders.VpnMethodsAuxiliaryMobile,
-    methods?.auxiliary_mobile ? sfBoolTrue : undefined
-  )
-  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsOsMismatch, methods?.os_mismatch ? sfBoolTrue : undefined)
-  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsRelay, methods?.relay ? sfBoolTrue : undefined)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsPublicVpn, sfBoolTrueIfPresent, methods?.public_vpn)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsAuxiliaryMobile, sfBoolTrueIfPresent, methods?.auxiliary_mobile)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsOsMismatch, sfBoolTrueIfPresent, methods?.os_mismatch)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsRelay, sfBoolTrueIfPresent, methods?.relay)
 }
