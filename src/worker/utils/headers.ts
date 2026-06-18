@@ -131,6 +131,10 @@ export function mergeHeaders(headers: Headers, ...otherHeaders: Headers[]): Head
  * `"` backslash-escaped. Consumers must unquote and unescape to recover the original value.
  */
 export function sfString(value: string): string {
+  // The common case will be that no escaping is required so optimize for that
+  if (!/[\\"]/.test(value)) {
+    return `"${value}"`;
+  }
   return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
 }
 
