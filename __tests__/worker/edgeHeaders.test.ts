@@ -4,10 +4,46 @@ import { EdgeResponse } from '../../src/worker/fingerprint/identificationClientT
 
 describe('Edge headers', () => {
   describe('setEdgeResponseHeaders', () => {
+    const ipV4Info = {
+      address: '1.2.3.4',
+      geolocation: {
+        accuracy_radius: 5000,
+        latitude: 52.2297,
+        longitude: 21.0122,
+        postal_code: '00-001',
+        timezone: 'Europe/Warsaw',
+        city_name: 'Warsaw',
+        country_code: 'PL',
+        continent_code: 'EU',
+      },
+      asn_name: 'Example ISP',
+      asn_network: '1.2.0.0/16',
+      asn_type: 'isp',
+      datacenter_name: 'AWS',
+    } as const
+
+    const ipV6Info = {
+      address: '2001:db8::1',
+      geolocation: {
+        accuracy_radius: 5000,
+        latitude: 52.2297,
+        longitude: 21.0122,
+        postal_code: '00-001',
+        timezone: 'Europe/Warsaw',
+        city_name: 'Warsaw',
+        country_code: 'PL',
+        continent_code: 'EU',
+      },
+      asn_name: 'Example ISP',
+      asn_network: '2001:db8::/32',
+      asn_type: 'isp',
+      datacenter_name: 'AWS',
+    } as const
+
     const fullEdgeResponse = {
       ip_info: {
-        v4: { address: '1.2.3.4' },
-        v6: { address: '2001:db8::1' },
+        v4: ipV4Info,
+        v6: ipV6Info,
       },
       bot_info: {
         category: 'search_engine',
@@ -16,35 +52,97 @@ describe('Edge headers', () => {
         identity: 'verified' as const,
         confidence: 'high' as const,
       },
+      proxy: true,
+      proxy_confidence: 'medium' as const,
+      proxy_details: {
+        proxy_type: 'residential',
+        last_seen_at: 1733928833000,
+        provider: 'Example Proxy',
+      },
+      vpn: true,
+      vpn_confidence: 'high' as const,
+      vpn_methods: {
+        timezone_mismatch: true,
+        public_vpn: true,
+        auxiliary_mobile: true,
+        os_mismatch: true,
+        relay: true,
+      },
+      ip_blocklist: { tor_node: true },
     } satisfies EdgeResponse
+
+    // Header / value pairs that the full EdgeResponse above is expected to produce.
+    const expectedFullHeaders: [EdgeHeaders, string][] = [
+      [EdgeHeaders.IpV4Address, '1.2.3.4'],
+      [EdgeHeaders.IpV4GeolocationAccuracyRadius, '"5000"'],
+      [EdgeHeaders.IpV4GeolocationLatitude, '"52.2297"'],
+      [EdgeHeaders.IpV4GeolocationLongitude, '"21.0122"'],
+      [EdgeHeaders.IpV4GeolocationPostalCode, '"00-001"'],
+      [EdgeHeaders.IpV4GeolocationTimezone, '"Europe/Warsaw"'],
+      [EdgeHeaders.IpV4GeolocationCityName, '%"Warsaw"'],
+      [EdgeHeaders.IpV4GeolocationCountryCode, '"PL"'],
+      [EdgeHeaders.IpV4GeolocationContinentCode, '"EU"'],
+      [EdgeHeaders.IpV4AsnName, '%"Example ISP"'],
+      [EdgeHeaders.IpV4AsnNetwork, '"1.2.0.0/16"'],
+      [EdgeHeaders.IpV4AsnType, '"isp"'],
+      [EdgeHeaders.IpV4DatacenterName, '%"AWS"'],
+      [EdgeHeaders.IpV6Address, '2001:db8::1'],
+      [EdgeHeaders.IpV6GeolocationAccuracyRadius, '"5000"'],
+      [EdgeHeaders.IpV6GeolocationLatitude, '"52.2297"'],
+      [EdgeHeaders.IpV6GeolocationLongitude, '"21.0122"'],
+      [EdgeHeaders.IpV6GeolocationPostalCode, '"00-001"'],
+      [EdgeHeaders.IpV6GeolocationTimezone, '"Europe/Warsaw"'],
+      [EdgeHeaders.IpV6GeolocationCityName, '%"Warsaw"'],
+      [EdgeHeaders.IpV6GeolocationCountryCode, '"PL"'],
+      [EdgeHeaders.IpV6GeolocationContinentCode, '"EU"'],
+      [EdgeHeaders.IpV6AsnName, '%"Example ISP"'],
+      [EdgeHeaders.IpV6AsnNetwork, '"2001:db8::/32"'],
+      [EdgeHeaders.IpV6AsnType, '"isp"'],
+      [EdgeHeaders.IpV6DatacenterName, '%"AWS"'],
+      [EdgeHeaders.BotInfoCategory, 'search_engine'],
+      [EdgeHeaders.BotInfoProvider, 'google'],
+      [EdgeHeaders.BotInfoName, 'test-bot'],
+      [EdgeHeaders.BotInfoIdentity, 'verified'],
+      [EdgeHeaders.Proxy, '?1'],
+      [EdgeHeaders.ProxyConfidence, '"medium"'],
+      [EdgeHeaders.ProxyDetailsProxyType, '"residential"'],
+      [EdgeHeaders.ProxyDetailsLastSeenAt, '@1733928833'],
+      [EdgeHeaders.ProxyDetailsProvider, '%"Example Proxy"'],
+      [EdgeHeaders.Vpn, '?1'],
+      [EdgeHeaders.VpnConfidence, '"high"'],
+      [EdgeHeaders.VpnMethodsTimezoneMismatch, '?1'],
+      [EdgeHeaders.VpnMethodsPublicVpn, '?1'],
+      [EdgeHeaders.VpnMethodsAuxiliaryMobile, '?1'],
+      [EdgeHeaders.VpnMethodsOsMismatch, '?1'],
+      [EdgeHeaders.VpnMethodsRelay, '?1'],
+      [EdgeHeaders.IpBlocklistTorNode, '?1'],
+    ]
+
+    function expectHeadersToMatch(headers: Headers, expected: [EdgeHeaders, string][]) {
+      for (const [name, value] of expected) {
+        expect(headers.get(name)).toEqual(value)
+      }
+    }
+
+    function expectHeadersToBeAbsent(headers: Headers, names: EdgeHeaders[]) {
+      for (const name of names) {
+        expect(headers.has(name)).toEqual(false)
+      }
+    }
 
     it('sets all edge response headers when a full EdgeResponse is provided', () => {
       const headers = new Headers()
       setEdgeResponseHeaders(headers, fullEdgeResponse)
-      expect(headers.get(EdgeHeaders.IpV4Address)).toEqual(fullEdgeResponse.ip_info.v4.address)
-      expect(headers.get(EdgeHeaders.IpV6Address)).toEqual(fullEdgeResponse.ip_info.v6.address)
-      expect(headers.get(EdgeHeaders.BotInfoCategory)).toEqual(fullEdgeResponse.bot_info.category)
-      expect(headers.get(EdgeHeaders.BotInfoProvider)).toEqual(fullEdgeResponse.bot_info.provider)
-      expect(headers.get(EdgeHeaders.BotInfoName)).toEqual(fullEdgeResponse.bot_info.name)
-      expect(headers.get(EdgeHeaders.BotInfoIdentity)).toEqual(fullEdgeResponse.bot_info.identity)
+      expectHeadersToMatch(headers, expectedFullHeaders)
     })
 
     it('removes all edge response headers when edgeResponse is undefined', () => {
-      const headers = new Headers({
-        [EdgeHeaders.IpV4Address]: fullEdgeResponse.ip_info.v4.address,
-        [EdgeHeaders.IpV6Address]: fullEdgeResponse.ip_info.v6.address,
-        [EdgeHeaders.BotInfoCategory]: fullEdgeResponse.bot_info.category,
-        [EdgeHeaders.BotInfoProvider]: fullEdgeResponse.bot_info.provider,
-        [EdgeHeaders.BotInfoName]: fullEdgeResponse.bot_info.name,
-        [EdgeHeaders.BotInfoIdentity]: fullEdgeResponse.bot_info.identity,
-      })
+      const headers = new Headers(Object.fromEntries(expectedFullHeaders))
       setEdgeResponseHeaders(headers, undefined)
-      expect(headers.has(EdgeHeaders.IpV4Address)).toEqual(false)
-      expect(headers.has(EdgeHeaders.IpV6Address)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoCategory)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoProvider)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoName)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoIdentity)).toEqual(false)
+      expectHeadersToBeAbsent(
+        headers,
+        expectedFullHeaders.map(([name]) => name)
+      )
     })
 
     it('removes the IPv4 header when ip_info.v4 is absent', () => {
@@ -69,10 +167,12 @@ describe('Edge headers', () => {
         [EdgeHeaders.BotInfoIdentity]: 'verified',
       })
       setEdgeResponseHeaders(headers, { ip_info: fullEdgeResponse.ip_info })
-      expect(headers.has(EdgeHeaders.BotInfoCategory)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoProvider)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoName)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoIdentity)).toEqual(false)
+      expectHeadersToBeAbsent(headers, [
+        EdgeHeaders.BotInfoCategory,
+        EdgeHeaders.BotInfoProvider,
+        EdgeHeaders.BotInfoName,
+        EdgeHeaders.BotInfoIdentity,
+      ])
     })
 
     it('mutates the passed-in headers object', () => {
@@ -82,59 +182,25 @@ describe('Edge headers', () => {
     })
 
     describe('ip', () => {
-      const fullV4: EdgeResponse = {
-        ip_info: {
-          v4: {
-            address: '1.2.3.4',
-            geolocation: {
-              accuracy_radius: 5000,
-              latitude: 52.2297,
-              longitude: 21.0122,
-              postal_code: '00-001',
-              timezone: 'Europe/Warsaw',
-              city_name: 'Warsaw',
-              country_code: 'PL',
-              continent_code: 'EU',
-            },
-            asn_name: 'Example ISP',
-            asn_network: '1.2.0.0/16',
-            asn_type: 'isp',
-            datacenter_name: 'AWS',
-          },
-        },
-      }
-
-      it('emits all v4 ip_info headers, with structured-field strings wrapped in quotes', () => {
-        const headers = new Headers()
-        setEdgeResponseHeaders(headers, fullV4)
-        expect(headers.get(EdgeHeaders.IpV4Address)).toEqual('1.2.3.4')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationAccuracyRadius)).toEqual('"5000"')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationLatitude)).toEqual('"52.2297"')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationLongitude)).toEqual('"21.0122"')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationPostalCode)).toEqual('"00-001"')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationTimezone)).toEqual('"Europe/Warsaw"')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationCityName)).toEqual('%"Warsaw"')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationCountryCode)).toEqual('"PL"')
-        expect(headers.get(EdgeHeaders.IpV4GeolocationContinentCode)).toEqual('"EU"')
-        expect(headers.get(EdgeHeaders.IpV4AsnName)).toEqual('%"Example ISP"')
-        expect(headers.get(EdgeHeaders.IpV4AsnNetwork)).toEqual('"1.2.0.0/16"')
-        expect(headers.get(EdgeHeaders.IpV4AsnType)).toEqual('"isp"')
-        expect(headers.get(EdgeHeaders.IpV4DatacenterName)).toEqual('%"AWS"')
-      })
-
       it('omits geolocation, asn, and datacenter headers when the fields are missing', () => {
         const headers = new Headers()
-        setEdgeResponseHeaders(headers, { ip_info: { v4: { address: '1.2.3.4' } } })
+        setEdgeResponseHeaders(headers, {
+          ...fullEdgeResponse,
+          ip_info: { v4: { address: ipV4Info.address } },
+        })
         expect(headers.get(EdgeHeaders.IpV4Address)).toEqual('1.2.3.4')
-        expect(headers.has(EdgeHeaders.IpV4GeolocationLatitude)).toEqual(false)
-        expect(headers.has(EdgeHeaders.IpV4AsnName)).toEqual(false)
-        expect(headers.has(EdgeHeaders.IpV4DatacenterName)).toEqual(false)
+        expectHeadersToBeAbsent(headers, [
+          EdgeHeaders.IpV4GeolocationLatitude,
+          EdgeHeaders.IpV4AsnName,
+          EdgeHeaders.IpV4DatacenterName,
+        ])
       })
 
       it('omits the datacenter header when datacenter is not detected', () => {
         const headers = new Headers()
         setEdgeResponseHeaders(headers, {
-          ip_info: { v4: { address: '1.2.3.4', asn_name: 'Example ISP' } },
+          ...fullEdgeResponse,
+          ip_info: { v4: { ...ipV4Info, datacenter_name: undefined } },
         })
         expect(headers.has(EdgeHeaders.IpV4DatacenterName)).toEqual(false)
       })
@@ -145,73 +211,39 @@ describe('Edge headers', () => {
           [EdgeHeaders.IpV4GeolocationCityName]: '%"Warsaw"',
           [EdgeHeaders.IpV4DatacenterName]: '%"AWS"',
         })
-        setEdgeResponseHeaders(headers, { ip_info: { v6: { address: '2001:db8::1' } } })
-        expect(headers.has(EdgeHeaders.IpV4Address)).toEqual(false)
-        expect(headers.has(EdgeHeaders.IpV4GeolocationCityName)).toEqual(false)
-        expect(headers.has(EdgeHeaders.IpV4DatacenterName)).toEqual(false)
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, ip_info: { v6: ipV6Info } })
+        expectHeadersToBeAbsent(headers, [
+          EdgeHeaders.IpV4Address,
+          EdgeHeaders.IpV4GeolocationCityName,
+          EdgeHeaders.IpV4DatacenterName,
+        ])
         expect(headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8::1')
-      })
-
-      it('emits v6 ip_info headers when v6 info is provided', () => {
-        const headers = new Headers()
-        setEdgeResponseHeaders(headers, {
-          ip_info: {
-            v6: {
-              address: '2001:db8::1',
-              geolocation: { country_code: 'DE' },
-              asn_name: 'V6 ISP',
-            },
-          },
-        })
-        expect(headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8::1')
-        expect(headers.get(EdgeHeaders.IpV6GeolocationCountryCode)).toEqual('"DE"')
-        expect(headers.get(EdgeHeaders.IpV6AsnName)).toEqual('%"V6 ISP"')
       })
     })
 
     describe('proxy', () => {
-      it('emits all proxy headers when proxy is detected', () => {
-        const headers = new Headers()
-        const lastSeenAt = 1778604975494
-        setEdgeResponseHeaders(headers, {
-          ip_info: { v4: { address: '1.2.3.4' } },
-          proxy: true,
-          proxy_confidence: 'medium',
-          proxy_details: { proxy_type: 'residential', last_seen_at: lastSeenAt, provider: 'Example' },
-        })
-        expect(headers.get(EdgeHeaders.Proxy)).toEqual('?1')
-        expect(headers.get(EdgeHeaders.ProxyConfidence)).toEqual('"medium"')
-        expect(headers.get(EdgeHeaders.ProxyDetailsProxyType)).toEqual('"residential"')
-        expect(headers.get(EdgeHeaders.ProxyDetailsLastSeenAt)).toEqual('@1778604975')
-        expect(headers.get(EdgeHeaders.ProxyDetailsProvider)).toEqual('%"Example"')
-      })
-
       it('skips proxy sub-headers that have no value, even when proxy is detected', () => {
         const headers = new Headers()
-        setEdgeResponseHeaders(headers, {
-          ip_info: { v4: { address: '1.2.3.4' } },
-          proxy: true,
-        })
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, proxy_confidence: undefined, proxy_details: undefined })
         expect(headers.get(EdgeHeaders.Proxy)).toEqual('?1')
-        expect(headers.has(EdgeHeaders.ProxyConfidence)).toEqual(false)
-        expect(headers.has(EdgeHeaders.ProxyDetailsProxyType)).toEqual(false)
-        expect(headers.has(EdgeHeaders.ProxyDetailsLastSeenAt)).toEqual(false)
-        expect(headers.has(EdgeHeaders.ProxyDetailsProvider)).toEqual(false)
+        expectHeadersToBeAbsent(headers, [
+          EdgeHeaders.ProxyConfidence,
+          EdgeHeaders.ProxyDetailsProxyType,
+          EdgeHeaders.ProxyDetailsLastSeenAt,
+          EdgeHeaders.ProxyDetailsProvider,
+        ])
       })
 
       it('does not emit any proxy headers when proxy is not detected', () => {
         const headers = new Headers()
-        setEdgeResponseHeaders(headers, {
-          ip_info: { v4: { address: '1.2.3.4' } },
-          proxy: false,
-          // these sub-fields must be ignored entirely when proxy is not detected
-          proxy_confidence: 'high',
-          proxy_details: { proxy_type: 'residential', provider: 'Example' },
-        })
-        expect(headers.has(EdgeHeaders.Proxy)).toEqual(false)
-        expect(headers.has(EdgeHeaders.ProxyConfidence)).toEqual(false)
-        expect(headers.has(EdgeHeaders.ProxyDetailsProxyType)).toEqual(false)
-        expect(headers.has(EdgeHeaders.ProxyDetailsProvider)).toEqual(false)
+        // proxy is false but the sub-fields are populated; none should be emitted
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, proxy: false })
+        expectHeadersToBeAbsent(headers, [
+          EdgeHeaders.Proxy,
+          EdgeHeaders.ProxyConfidence,
+          EdgeHeaders.ProxyDetailsProxyType,
+          EdgeHeaders.ProxyDetailsProvider,
+        ])
       })
 
       it('clears stale proxy headers when proxy becomes undetected', () => {
@@ -220,10 +252,12 @@ describe('Edge headers', () => {
           [EdgeHeaders.ProxyConfidence]: '"medium"',
           [EdgeHeaders.ProxyDetailsProvider]: '%"Example"',
         })
-        setEdgeResponseHeaders(headers, { ip_info: { v4: { address: '1.2.3.4' } } })
-        expect(headers.has(EdgeHeaders.Proxy)).toEqual(false)
-        expect(headers.has(EdgeHeaders.ProxyConfidence)).toEqual(false)
-        expect(headers.has(EdgeHeaders.ProxyDetailsProvider)).toEqual(false)
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, proxy: false })
+        expectHeadersToBeAbsent(headers, [
+          EdgeHeaders.Proxy,
+          EdgeHeaders.ProxyConfidence,
+          EdgeHeaders.ProxyDetailsProvider,
+        ])
       })
     })
 
@@ -231,9 +265,7 @@ describe('Edge headers', () => {
       it('emits only the true vpn method headers when vpn is detected', () => {
         const headers = new Headers()
         setEdgeResponseHeaders(headers, {
-          ip_info: { v4: { address: '1.2.3.4' } },
-          vpn: true,
-          vpn_confidence: 'high',
+          ...fullEdgeResponse,
           vpn_methods: {
             timezone_mismatch: true,
             public_vpn: false,
@@ -242,26 +274,23 @@ describe('Edge headers', () => {
             relay: true,
           },
         })
-        expect(headers.get(EdgeHeaders.Vpn)).toEqual('?1')
-        expect(headers.get(EdgeHeaders.VpnConfidence)).toEqual('"high"')
-        expect(headers.get(EdgeHeaders.VpnMethodsTimezoneMismatch)).toEqual('?1')
-        expect(headers.get(EdgeHeaders.VpnMethodsRelay)).toEqual('?1')
-        expect(headers.has(EdgeHeaders.VpnMethodsPublicVpn)).toEqual(false)
-        expect(headers.has(EdgeHeaders.VpnMethodsAuxiliaryMobile)).toEqual(false)
-        expect(headers.has(EdgeHeaders.VpnMethodsOsMismatch)).toEqual(false)
+        expectHeadersToMatch(headers, [
+          [EdgeHeaders.Vpn, '?1'],
+          [EdgeHeaders.VpnConfidence, '"high"'],
+          [EdgeHeaders.VpnMethodsTimezoneMismatch, '?1'],
+          [EdgeHeaders.VpnMethodsRelay, '?1'],
+        ])
+        expectHeadersToBeAbsent(headers, [
+          EdgeHeaders.VpnMethodsPublicVpn,
+          EdgeHeaders.VpnMethodsAuxiliaryMobile,
+          EdgeHeaders.VpnMethodsOsMismatch,
+        ])
       })
 
       it('does not emit any vpn headers when vpn is not detected', () => {
         const headers = new Headers()
-        setEdgeResponseHeaders(headers, {
-          ip_info: { v4: { address: '1.2.3.4' } },
-          vpn: false,
-          vpn_confidence: 'high',
-          vpn_methods: { relay: true },
-        })
-        expect(headers.has(EdgeHeaders.Vpn)).toEqual(false)
-        expect(headers.has(EdgeHeaders.VpnConfidence)).toEqual(false)
-        expect(headers.has(EdgeHeaders.VpnMethodsRelay)).toEqual(false)
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, vpn: false })
+        expectHeadersToBeAbsent(headers, [EdgeHeaders.Vpn, EdgeHeaders.VpnConfidence, EdgeHeaders.VpnMethodsRelay])
       })
 
       it('clears stale vpn headers when vpn becomes undetected', () => {
@@ -270,35 +299,27 @@ describe('Edge headers', () => {
           [EdgeHeaders.VpnConfidence]: '"high"',
           [EdgeHeaders.VpnMethodsRelay]: '?1',
         })
-        setEdgeResponseHeaders(headers, { ip_info: { v4: { address: '1.2.3.4' } } })
-        expect(headers.has(EdgeHeaders.Vpn)).toEqual(false)
-        expect(headers.has(EdgeHeaders.VpnConfidence)).toEqual(false)
-        expect(headers.has(EdgeHeaders.VpnMethodsRelay)).toEqual(false)
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, vpn: false })
+        expectHeadersToBeAbsent(headers, [EdgeHeaders.Vpn, EdgeHeaders.VpnConfidence, EdgeHeaders.VpnMethodsRelay])
       })
     })
 
     describe('ip_blocklist', () => {
-      it('emits tor_node header only when it is true', () => {
+      it('omits tor_node header when false', () => {
         const headers = new Headers()
-        setEdgeResponseHeaders(headers, {
-          ip_info: { v4: { address: '1.2.3.4' } },
-          ip_blocklist: { tor_node: true },
-        })
-        expect(headers.get(EdgeHeaders.IpBlocklistTorNode)).toEqual('?1')
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, ip_blocklist: { tor_node: false } })
+        expect(headers.has(EdgeHeaders.IpBlocklistTorNode)).toEqual(false)
       })
 
-      it('omits tor_node header when false or absent', () => {
+      it('omits tor_node header when blocklist is absent', () => {
         const headers = new Headers()
-        setEdgeResponseHeaders(headers, {
-          ip_info: { v4: { address: '1.2.3.4' } },
-          ip_blocklist: { tor_node: false },
-        })
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, ip_blocklist: undefined })
         expect(headers.has(EdgeHeaders.IpBlocklistTorNode)).toEqual(false)
       })
 
       it('clears stale tor_node header when blocklist is absent', () => {
         const headers = new Headers({ [EdgeHeaders.IpBlocklistTorNode]: '?1' })
-        setEdgeResponseHeaders(headers, { ip_info: { v4: { address: '1.2.3.4' } } })
+        setEdgeResponseHeaders(headers, { ...fullEdgeResponse, ip_blocklist: undefined })
         expect(headers.has(EdgeHeaders.IpBlocklistTorNode)).toEqual(false)
       })
     })
