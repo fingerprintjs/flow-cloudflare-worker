@@ -25,12 +25,12 @@ test.describe('Edge API in monitor mode', () => {
       await page.route('/', (route, request) => {
         const headers = {
           ...request.headers(),
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'verified',
-          'fp-bot-info-provider': 'Fingerprint',
-          'fp-ip-info-v4-address': '1.2.3.4',
-          'fp-ip-info-v6-address': '::1',
+          'fp-bot-info-category': '"ai_agent"',
+          'fp-bot-info-name': '%"Fingerprint Agent"',
+          'fp-bot-info-identity': '"verified"',
+          'fp-bot-info-provider': '%"Fingerprint"',
+          'fp-ip-info-v4-address': '"1.2.3.4"',
+          'fp-ip-info-v6-address': '"::1"',
         }
         route.continue({ headers })
       })
@@ -43,11 +43,11 @@ test.describe('Edge API in monitor mode', () => {
       const receivedHeaders = getReceivedHeaders(response)
       const ipv4AddressValue = receivedHeaders.get('fp-ip-info-v4-address')
       if (ipv4AddressValue) {
-        expect(ipv4AddressValue).not.toEqual('1.2.3.4')
+        expect(ipv4AddressValue).not.toEqual('"1.2.3.4"')
       }
       const ipv6AddressValue = receivedHeaders.get('fp-ip-info-v6-address')
       if (ipv6AddressValue) {
-        expect(ipv6AddressValue).not.toEqual('::1')
+        expect(ipv6AddressValue).not.toEqual('"::1"')
       }
     })
   })
@@ -116,12 +116,12 @@ test.describe('Edge API in monitor mode', () => {
       await page.goto('/', { waitUntil: 'networkidle' })
 
       const spoofedHeaders: Record<string, string> = {
-        'fp-bot-info-category': 'ai_agent',
-        'fp-bot-info-name': 'Fingerprint Agent',
-        'fp-bot-info-identity': 'verified',
-        'fp-bot-info-provider': 'Fingerprint',
-        'fp-ip-info-v4-address': '1.2.3.4',
-        'fp-ip-info-v6-address': '::1',
+        'fp-bot-info-category': '"ai_agent"',
+        'fp-bot-info-name': '%"Fingerprint Agent"',
+        'fp-bot-info-identity': '"verified"',
+        'fp-bot-info-provider': '%"Fingerprint"',
+        'fp-ip-info-v4-address': '"1.2.3.4"',
+        'fp-ip-info-v6-address': '"::1"',
       }
 
       await page.route('/test', (route, request) => {
@@ -179,10 +179,10 @@ test.describe('Edge API in monitor mode', () => {
         name: 'verified bot',
         noScriptRequest: {},
         expectedEdgeHeaders: {
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'verified',
-          'fp-bot-info-provider': 'Fingerprint',
+          'fp-bot-info-category': '"ai_agent"',
+          'fp-bot-info-name': '%"Fingerprint Agent"',
+          'fp-bot-info-identity': '"verified"',
+          'fp-bot-info-provider': '%"Fingerprint"',
         },
       },
 
@@ -192,10 +192,10 @@ test.describe('Edge API in monitor mode', () => {
           spoofOriginUrl: 'https://fingerprint.com',
         },
         expectedEdgeHeaders: {
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'spoofed',
-          'fp-bot-info-provider': 'Fingerprint',
+          'fp-bot-info-category': '"ai_agent"',
+          'fp-bot-info-name': '%"Fingerprint Agent"',
+          'fp-bot-info-identity': '"spoofed"',
+          'fp-bot-info-provider': '%"Fingerprint"',
         },
       },
 
@@ -205,10 +205,10 @@ test.describe('Edge API in monitor mode', () => {
           malformedModes: [MalformedModes.ExpiredSignature],
         },
         expectedEdgeHeaders: {
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'unknown',
-          'fp-bot-info-provider': 'Fingerprint',
+          'fp-bot-info-category': '"ai_agent"',
+          'fp-bot-info-name': '%"Fingerprint Agent"',
+          'fp-bot-info-identity': '"unknown"',
+          'fp-bot-info-provider': '%"Fingerprint"',
         },
       },
 
@@ -218,10 +218,10 @@ test.describe('Edge API in monitor mode', () => {
           malformedModes: [MalformedModes.MissingSignatureAgent],
         },
         expectedEdgeHeaders: {
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'unknown',
-          'fp-bot-info-provider': 'Fingerprint',
+          'fp-bot-info-category': '"ai_agent"',
+          'fp-bot-info-name': '%"Fingerprint Agent"',
+          'fp-bot-info-identity': '"unknown"',
+          'fp-bot-info-provider': '%"Fingerprint"',
         },
       },
 
@@ -231,10 +231,10 @@ test.describe('Edge API in monitor mode', () => {
           malformedModes: [MalformedModes.MissingAuthority],
         },
         expectedEdgeHeaders: {
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'unknown',
-          'fp-bot-info-provider': 'Fingerprint',
+          'fp-bot-info-category': '"ai_agent"',
+          'fp-bot-info-name': '%"Fingerprint Agent"',
+          'fp-bot-info-identity': '"unknown"',
+          'fp-bot-info-provider': '%"Fingerprint"',
         },
       },
 
@@ -244,10 +244,10 @@ test.describe('Edge API in monitor mode', () => {
           malformedModes: [MalformedModes.NotValidExpires],
         },
         expectedEdgeHeaders: {
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'unknown',
-          'fp-bot-info-provider': 'Fingerprint',
+          'fp-bot-info-category': '"ai_agent"',
+          'fp-bot-info-name': '%"Fingerprint Agent"',
+          'fp-bot-info-identity': '"unknown"',
+          'fp-bot-info-provider': '%"Fingerprint"',
         },
       },
 
@@ -257,10 +257,10 @@ test.describe('Edge API in monitor mode', () => {
           malformedModes: [MalformedModes.NotValidCreated],
         },
         expectedEdgeHeaders: {
-          'fp-bot-info-category': 'ai_agent',
-          'fp-bot-info-name': 'Fingerprint Agent',
-          'fp-bot-info-identity': 'unknown',
-          'fp-bot-info-provider': 'Fingerprint',
+          'fp-bot-info-category': '"ai_agent"',
+          'fp-bot-info-name': '%"Fingerprint Agent"',
+          'fp-bot-info-identity': '"unknown"',
+          'fp-bot-info-provider': '%"Fingerprint"',
         },
       },
     ]
