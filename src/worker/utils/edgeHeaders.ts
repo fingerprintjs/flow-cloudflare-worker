@@ -1,13 +1,5 @@
 import type { EdgeResponse } from '../fingerprint/identificationClientTypes'
-import {
-  identity,
-  setOrRemoveHeaderField,
-  sfBoolTrue,
-  sfDate,
-  sfDisplayString,
-  sfString,
-  sfStringFromNumber,
-} from './headers'
+import { setOrRemoveHeaderField, sfBoolTrue, sfDate, sfDisplayString, sfString, sfStringFromNumber } from './headers'
 
 // Serializer for `setOrRemoveHeaderField` used with boolean-valued fields. The header is only set
 // when the value is truthy, so we always emit `?1` (RFC 9651 sf-boolean true).
@@ -130,7 +122,7 @@ function setIpVersionHeaders(
     datacenterNameHeader,
   ] = names
 
-  setOrRemoveHeaderField(headers, addressHeader, identity, info?.address)
+  setOrRemoveHeaderField(headers, addressHeader, sfString, info?.address)
   const geo = info?.geolocation
   setOrRemoveHeaderField(headers, accuracyRadiusHeader, sfStringFromNumber, geo?.accuracy_radius)
   setOrRemoveHeaderField(headers, latitudeHeader, sfStringFromNumber, geo?.latitude)
@@ -181,10 +173,10 @@ export function setEdgeResponseHeaders(requestHeaders: Headers, edgeResponse?: E
 }
 
 function setBotInfoHeaders(headers: Headers, botInfo: EdgeResponse['bot_info']) {
-  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoCategory, identity, botInfo?.category)
-  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoProvider, identity, botInfo?.provider)
-  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoName, identity, botInfo?.name)
-  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoIdentity, identity, botInfo?.identity)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoCategory, sfString, botInfo?.category)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoProvider, sfDisplayString, botInfo?.provider)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoName, sfDisplayString, botInfo?.name)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoIdentity, sfString, botInfo?.identity)
 }
 
 function setProxyHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined) {

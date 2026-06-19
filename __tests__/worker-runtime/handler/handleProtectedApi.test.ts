@@ -898,11 +898,11 @@ describe('Protected API', () => {
       const originRequestHeaders = Array.from(originRequest.headers.entries())
       expect(originRequestHeaders).toEqual(
         expect.arrayContaining([
-          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
-          [EdgeHeaders.BotInfoIdentity, 'signed'],
-          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
-          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
-          [EdgeHeaders.IpV4Address, '94.142.239.124'],
+          [EdgeHeaders.BotInfoCategory, '"ai_agent"'],
+          [EdgeHeaders.BotInfoIdentity, '"signed"'],
+          [EdgeHeaders.BotInfoName, '%"Fingerprint Agent"'],
+          [EdgeHeaders.BotInfoProvider, '%"Fingerprint"'],
+          [EdgeHeaders.IpV4Address, '"94.142.239.124"'],
         ])
       )
       expect(originRequest.headers.has(EdgeHeaders.IpV6Address)).toBeFalsy()
@@ -977,11 +977,11 @@ describe('Protected API', () => {
       const originRequestHeaders = Array.from(originRequest.headers.entries())
       expect(originRequestHeaders).toEqual(
         expect.arrayContaining([
-          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
-          [EdgeHeaders.BotInfoIdentity, 'signed'],
-          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
-          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
-          [EdgeHeaders.IpV4Address, '94.142.239.124'],
+          [EdgeHeaders.BotInfoCategory, '"ai_agent"'],
+          [EdgeHeaders.BotInfoIdentity, '"signed"'],
+          [EdgeHeaders.BotInfoName, '%"Fingerprint Agent"'],
+          [EdgeHeaders.BotInfoProvider, '%"Fingerprint"'],
+          [EdgeHeaders.IpV4Address, '"94.142.239.124"'],
         ])
       )
       expect(originRequest.headers.has(EdgeHeaders.IpV6Address)).toBeFalsy()
@@ -1163,11 +1163,11 @@ describe('Protected API', () => {
       const originRequestHeaders = Array.from(originRequest.headers.entries())
       expect(originRequestHeaders).toEqual(
         expect.arrayContaining([
-          [EdgeHeaders.BotInfoCategory, 'ai_agent'],
-          [EdgeHeaders.BotInfoIdentity, 'signed'],
-          [EdgeHeaders.BotInfoName, 'Fingerprint Agent'],
-          [EdgeHeaders.BotInfoProvider, 'Fingerprint'],
-          [EdgeHeaders.IpV6Address, mockEdgeResponseIpV6.ip_info.v6!.address],
+          [EdgeHeaders.BotInfoCategory, '"ai_agent"'],
+          [EdgeHeaders.BotInfoIdentity, '"signed"'],
+          [EdgeHeaders.BotInfoName, '%"Fingerprint Agent"'],
+          [EdgeHeaders.BotInfoProvider, '%"Fingerprint"'],
+          [EdgeHeaders.IpV6Address, `"${mockEdgeResponseIpV6.ip_info.v6!.address}"`],
         ])
       )
       expect(originRequest.headers.has(EdgeHeaders.IpV4Address)).toBeFalsy()

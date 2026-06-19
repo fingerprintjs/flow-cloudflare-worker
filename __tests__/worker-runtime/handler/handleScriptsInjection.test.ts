@@ -132,12 +132,12 @@ describe('Scripts injection', () => {
 
       expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
 
-      expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('94.142.239.124')
+      expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
       expect(originRequest.headers.has(EdgeHeaders.IpV6Address)).toBeFalsy()
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('ai_agent')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('Fingerprint')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('Fingerprint Agent')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('signed')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('"ai_agent"')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('%"Fingerprint"')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('%"Fingerprint Agent"')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('"signed"')
 
       Object.values(EdgeHeaders).forEach((header) => {
         expect(response.headers.get(header)).toBeNull()
@@ -201,11 +201,11 @@ describe('Scripts injection', () => {
       expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
 
       expect(originRequest.headers.has(EdgeHeaders.IpV4Address)).toBeFalsy()
-      expect(originRequest.headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8:3333:4444:5555:6666:7777:8888')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('ai_agent')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('Fingerprint')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('Fingerprint Agent')
-      expect(originRequest.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('signed')
+      expect(originRequest.headers.get(EdgeHeaders.IpV6Address)).toEqual('"2001:db8:3333:4444:5555:6666:7777:8888"')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoCategory)).toEqual('"ai_agent"')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoProvider)).toEqual('%"Fingerprint"')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoName)).toEqual('%"Fingerprint Agent"')
+      expect(originRequest.headers.get(EdgeHeaders.BotInfoIdentity)).toEqual('"signed"')
     })
 
     it('with empty Edge response', async () => {
