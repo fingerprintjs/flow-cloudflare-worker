@@ -4,7 +4,7 @@ import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:
 import { CloudflareRequest } from '../request'
 import { mockEnv, mockWorkerBaseUrl } from '../../utils/mockEnv'
 import { mockEdgeResponseIpV4, mockEdgeResponseIpV6 } from '../../utils/mockEdge'
-import { EdgeHeaders } from '../../../src/worker/utils/headers'
+import { EdgeHeaders } from '../../../src/worker/utils/edgeHeaders'
 
 const sampleHtml = `
 <!doctype html>

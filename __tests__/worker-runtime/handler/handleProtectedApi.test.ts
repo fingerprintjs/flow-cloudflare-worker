@@ -10,7 +10,7 @@ import { mockEnv, mockUrl, mockWorkerBaseUrl } from '../../utils/mockEnv'
 import { TypedEnv } from '../../../src/worker/types'
 import { SendBody, SendResponse } from '../../../src/worker/fingerprint/identificationClientTypes'
 import { mockEdgeResponseIpV4, mockEdgeResponseIpV6 } from '../../utils/mockEdge'
-import { EdgeHeaders } from '../../../src/worker/utils/headers'
+import { EdgeHeaders } from '../../../src/worker/utils/edgeHeaders'
 
 type PrepareMockFetchParams = {
   mockIngressHandler: (request: Request) => Promise<Response>

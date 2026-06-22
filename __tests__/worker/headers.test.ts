@@ -1,17 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import {
-  hasContentType,
-  removeHeaderValue,
   appendHeaderValue,
+  hasContentType,
+  identity,
   mergeHeaders,
-  setEdgeResponseHeaders,
+  removeHeaderValue,
   setOrRemoveHeaderField,
-  EdgeHeaders,
+  sfDate,
+  sfDisplayString,
+  sfString,
+  sfStringFromNumber,
 } from '../../src/worker/utils/headers'
-import { EdgeResponse } from '../../src/worker/fingerprint/identificationClientTypes'
 
 describe('Headers', () => {
-  describe('Has content type', () => {
+  describe('hasContentType', () => {
     type TestCase = {
       headers: Headers
       contentType: string
@@ -199,119 +201,89 @@ describe('Headers', () => {
   })
 
   describe('setOrRemoveHeaderField', () => {
-    it('sets the header field when a value is provided', () => {
+    it('sets the header field to the serialized value when a value is provided', () => {
       const headers = new Headers()
-      setOrRemoveHeaderField(headers, 'X-Foo', 'bar')
+      setOrRemoveHeaderField(headers, 'X-Foo', identity, 'bar')
       expect(headers.get('X-Foo')).toEqual('bar')
+    })
+
+    it('passes the value through the serializer', () => {
+      const headers = new Headers()
+      setOrRemoveHeaderField(headers, 'X-Foo', sfStringFromNumber, 42)
+      expect(headers.get('X-Foo')).toEqual('"42"')
     })
 
     it('overwrites an existing header field when a value is provided', () => {
       const headers = new Headers({ 'X-Foo': 'original' })
-      setOrRemoveHeaderField(headers, 'X-Foo', 'updated')
+      setOrRemoveHeaderField(headers, 'X-Foo', identity, 'updated')
       expect(headers.get('X-Foo')).toEqual('updated')
     })
 
     it('removes the header field when value is undefined', () => {
       const headers = new Headers({ 'X-Foo': 'bar' })
-      setOrRemoveHeaderField(headers, 'X-Foo', undefined)
+      setOrRemoveHeaderField(headers, 'X-Foo', identity, undefined)
       expect(headers.has('X-Foo')).toEqual(false)
     })
 
     it('removes the header field when value is an empty string', () => {
       const headers = new Headers({ 'X-Foo': 'bar' })
-      setOrRemoveHeaderField(headers, 'X-Foo', '')
+      setOrRemoveHeaderField(headers, 'X-Foo', identity, '')
       expect(headers.has('X-Foo')).toEqual(false)
     })
 
     it('does nothing when removing a header that is not present', () => {
       const headers = new Headers()
-      expect(() => setOrRemoveHeaderField(headers, 'X-Foo', undefined)).not.toThrow()
+      expect(() => setOrRemoveHeaderField(headers, 'X-Foo', identity, undefined)).not.toThrow()
       expect(headers.has('X-Foo')).toEqual(false)
     })
 
     it('mutates the passed-in headers object', () => {
       const headers = new Headers()
-      setOrRemoveHeaderField(headers, 'X-Foo', 'bar')
+      setOrRemoveHeaderField(headers, 'X-Foo', identity, 'bar')
       expect(headers.get('X-Foo')).toEqual('bar')
     })
   })
 
-  describe('setEdgeResponseHeaders', () => {
-    const fullEdgeResponse = {
-      ip_info: {
-        v4: { address: '1.2.3.4' },
-        v6: { address: '2001:db8::1' },
-      },
-      bot_info: {
-        category: 'search_engine',
-        provider: 'google',
-        name: 'test-bot',
-        identity: 'verified' as const,
-        confidence: 'high' as const,
-      },
-    } satisfies EdgeResponse
+  describe('sfStringFromNumber', () => {
+    it('wraps a stringified number in sf-string quotes', () => {
+      expect(sfStringFromNumber(42)).toEqual('"42"')
+      expect(sfStringFromNumber(52.2297)).toEqual('"52.2297"')
+    })
+  })
 
-    it('sets all edge response headers when a full EdgeResponse is provided', () => {
-      const headers = new Headers()
-      setEdgeResponseHeaders(headers, fullEdgeResponse)
-      expect(headers.get(EdgeHeaders.IpV4Address)).toEqual(fullEdgeResponse.ip_info.v4.address)
-      expect(headers.get(EdgeHeaders.IpV6Address)).toEqual(fullEdgeResponse.ip_info.v6.address)
-      expect(headers.get(EdgeHeaders.BotInfoCategory)).toEqual(fullEdgeResponse.bot_info.category)
-      expect(headers.get(EdgeHeaders.BotInfoProvider)).toEqual(fullEdgeResponse.bot_info.provider)
-      expect(headers.get(EdgeHeaders.BotInfoName)).toEqual(fullEdgeResponse.bot_info.name)
-      expect(headers.get(EdgeHeaders.BotInfoIdentity)).toEqual(fullEdgeResponse.bot_info.identity)
+  describe('identity', () => {
+    it('returns the input unchanged', () => {
+      expect(identity('bar')).toEqual('bar')
+    })
+  })
+
+  describe('sfString', () => {
+    it('wraps a plain value in double quotes', () => {
+      expect(sfString('AWS')).toEqual('"AWS"')
     })
 
-    it('removes all edge response headers when edgeResponse is undefined', () => {
-      const headers = new Headers({
-        [EdgeHeaders.IpV4Address]: fullEdgeResponse.ip_info.v4.address,
-        [EdgeHeaders.IpV6Address]: fullEdgeResponse.ip_info.v6.address,
-        [EdgeHeaders.BotInfoCategory]: fullEdgeResponse.bot_info.category,
-        [EdgeHeaders.BotInfoProvider]: fullEdgeResponse.bot_info.provider,
-        [EdgeHeaders.BotInfoName]: fullEdgeResponse.bot_info.name,
-        [EdgeHeaders.BotInfoIdentity]: fullEdgeResponse.bot_info.identity,
-      })
-      setEdgeResponseHeaders(headers, undefined)
-      expect(headers.has(EdgeHeaders.IpV4Address)).toEqual(false)
-      expect(headers.has(EdgeHeaders.IpV6Address)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoCategory)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoProvider)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoName)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoIdentity)).toEqual(false)
+    it('wraps and escapes backslashes and double quotes per RFC 9651', () => {
+      expect(sfString('a "quoted" \\ value')).toEqual('"a \\"quoted\\" \\\\ value"')
+    })
+  })
+
+  describe('sfDisplayString', () => {
+    it('wraps a plain ASCII value in %"…" without percent-encoding', () => {
+      expect(sfDisplayString('AWS')).toEqual('%"AWS"')
     })
 
-    it('removes the IPv4 header when ip_info.v4 is absent', () => {
-      const headers = new Headers({ [EdgeHeaders.IpV4Address]: '1.2.3.4' })
-      setEdgeResponseHeaders(headers, { ...fullEdgeResponse, ip_info: { v6: fullEdgeResponse.ip_info.v6 } })
-      expect(headers.has(EdgeHeaders.IpV4Address)).toEqual(false)
-      expect(headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8::1')
+    it('percent-encodes non-ASCII characters as their UTF-8 byte sequence (lowercase hex)', () => {
+      expect(sfDisplayString('München')).toEqual('%"M%c3%bcnchen"')
     })
 
-    it('removes the IPv6 header when ip_info.v6 is absent', () => {
-      const headers = new Headers({ [EdgeHeaders.IpV6Address]: '2001:db8::1' })
-      setEdgeResponseHeaders(headers, { ...fullEdgeResponse, ip_info: { v4: fullEdgeResponse.ip_info.v4 } })
-      expect(headers.get(EdgeHeaders.IpV4Address)).toEqual('1.2.3.4')
-      expect(headers.has(EdgeHeaders.IpV6Address)).toEqual(false)
+    it('percent-encodes `%`, `"`, control characters, and DEL', () => {
+      expect(sfDisplayString('a%b"c')).toEqual('%"a%25b%22c%01%7f"')
     })
+  })
 
-    it('removes all bot headers when bot_info is absent', () => {
-      const headers = new Headers({
-        [EdgeHeaders.BotInfoCategory]: 'search_engine',
-        [EdgeHeaders.BotInfoProvider]: 'google',
-        [EdgeHeaders.BotInfoName]: 'test-bot',
-        [EdgeHeaders.BotInfoIdentity]: 'verified',
-      })
-      setEdgeResponseHeaders(headers, { ip_info: fullEdgeResponse.ip_info })
-      expect(headers.has(EdgeHeaders.BotInfoCategory)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoProvider)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoName)).toEqual(false)
-      expect(headers.has(EdgeHeaders.BotInfoIdentity)).toEqual(false)
-    })
-
-    it('mutates the passed-in headers object', () => {
-      const headers = new Headers()
-      setEdgeResponseHeaders(headers, fullEdgeResponse)
-      expect(headers.get(EdgeHeaders.IpV4Address)).toEqual(fullEdgeResponse.ip_info.v4.address)
+  describe('sfDate', () => {
+    it('encodes a millisecond timestamp as @<unix-seconds>, truncating sub-second precision', () => {
+      expect(sfDate(1778604975494)).toEqual('@1778604975')
     })
   })
 })

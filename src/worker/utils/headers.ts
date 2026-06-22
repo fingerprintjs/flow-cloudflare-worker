@@ -1,5 +1,4 @@
 import { HeaderMissingError } from '../errors'
-import { EdgeResponse } from '../fingerprint/identificationClientTypes'
 
 export function hasContentType(headers: Headers, ...expectedContentTypes: string[]) {
   const contentType = headers.get('Content-Type')?.toLowerCase()
@@ -70,44 +69,40 @@ export function removeHeaderValue(headers: Headers, name: string, value: string)
   }
 }
 
-export enum EdgeHeaders {
-  IpV4Address = 'fp-ip-info-v4-address',
-  IpV6Address = 'fp-ip-info-v6-address',
-  BotInfoCategory = 'fp-bot-info-category',
-  BotInfoProvider = 'fp-bot-info-provider',
-  BotInfoName = 'fp-bot-info-name',
-  BotInfoIdentity = 'fp-bot-info-identity',
-}
-
 /**
- * Set header fields that correspond to the properties from the `EdgeResponse` in the specified `requestHeaders`
- *
- * @param requestHeaders the `Headers` to update
- * @param edgeResponse the `EdgeResponse`
- */
-export function setEdgeResponseHeaders(requestHeaders: Headers, edgeResponse?: EdgeResponse) {
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.IpV4Address, edgeResponse?.ip_info.v4?.address)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.IpV6Address, edgeResponse?.ip_info.v6?.address)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoCategory, edgeResponse?.bot_info?.category)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoProvider, edgeResponse?.bot_info?.provider)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoName, edgeResponse?.bot_info?.name)
-  setOrRemoveHeaderField(requestHeaders, EdgeHeaders.BotInfoIdentity, edgeResponse?.bot_info?.identity)
-}
-
-/**
- * If `value` is truthy, sets the header field to the value in the passed headers.
+ * If `value` is truthy, sets the header field to `serializer(value)` in the passed headers.
  * If `value` is falsy, removes the header field from the headers.
  *
  * @param headers the `Headers` to update
  * @param name the name of the header field
+ * @param serializer if the value is truthy, the function that will serialize the value to be set in the header
  * @param value the value of the header field or a falsy value if the header should not be set
  */
-export function setOrRemoveHeaderField(headers: Headers, name: string, value?: string) {
+export function setOrRemoveHeaderField<T>(
+  headers: Headers,
+  name: string,
+  serializer: (input: T) => string,
+  value: T | undefined
+) {
   if (value) {
-    headers.set(name, value)
+    headers.set(name, serializer(value))
   } else {
     headers.delete(name)
   }
+}
+
+/**
+ * Identity serializer for `setOrRemoveHeaderField` — passes the value through unchanged.
+ */
+export function identity(value: string): string {
+  return value
+}
+
+/**
+ * Serializer for `setOrRemoveHeaderField` that turns a number into an RFC 9651 sf-string.
+ */
+export function sfStringFromNumber(value: number): string {
+  return sfString(String(value))
 }
 
 /**
@@ -151,3 +146,47 @@ export function mergeHeaders(headers: Headers, ...otherHeaders: Headers[]): Head
 
   return result
 }
+/**
+ * Encode a value as an RFC 9651 structured-field string: surrounded by double quotes, with `\` and
+ * `"` backslash-escaped. Consumers must unquote and unescape to recover the original value.
+ */
+export function sfString(value: string): string {
+  // The common case will be that no escaping is required so optimize for that
+  if (!/[\\"]/.test(value)) {
+    return `"${value}"`
+  }
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+}
+
+/**
+ * Encode a value as an RFC 9651 structured-field Display String: `%"<utf8-percent-encoded>"`. Use
+ * this instead of `sfString` when the value may contain non-ASCII characters (sf-string is
+ * restricted to printable ASCII). Bytes that are `%`, `"`, control characters, DEL, or non-ASCII
+ * are percent-encoded as lowercase `%xx`.
+ */
+export function sfDisplayString(value: string): string {
+  const utf8 = new TextEncoder().encode(value)
+  let out = '%"'
+  for (const byte of utf8) {
+    // unescaped per RFC 9651: %x20-21 / %x23-24 / %x26-7E (i.e. printable ASCII except `"` and `%`)
+    // - `byte < 0x20` matches all ASCII control characters (0x00..0x1F: NUL, tab, newline, …)
+    // - `byte > 0x7e` matches DEL (0x7F) and every non-ASCII byte (0x80..0xFF), which in UTF-8
+    //   are the continuation/high bytes of multibyte characters (e.g. `ü` → 0xC3 0xBC)
+    if (byte === 0x22 /* " */ || byte === 0x25 /* % */ || byte < 0x20 || byte > 0x7e) {
+      out += '%' + byte.toString(16).padStart(2, '0')
+    } else {
+      out += String.fromCharCode(byte)
+    }
+  }
+  return out + '"'
+}
+
+/**
+ * Encode a unix-milliseconds timestamp as an RFC 9651 structured-field date: `@<seconds>
+ */
+export function sfDate(timestamp: number): string {
+  return `@${Math.trunc(timestamp / 1000)}`
+}
+
+// Represents `true` boolean value per RFC 9651
+export const sfBoolTrue = '?1'

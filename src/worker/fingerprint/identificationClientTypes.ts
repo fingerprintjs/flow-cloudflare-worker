@@ -35,20 +35,61 @@ const BotInfo = z.object({
   confidence: z.enum(['low', 'medium', 'high']),
 })
 
+const Geolocation = z.object({
+  accuracy_radius: z.number().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  postal_code: z.string().optional(),
+  timezone: z.string().optional(),
+  city_name: z.string().optional(),
+  country_code: z.string().optional(),
+  continent_code: z.string().optional(),
+})
+
 // https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v4
 const IpV4Info = z.object({
   address: z.ipv4(),
+  geolocation: Geolocation.optional(),
+  asn_name: z.string().optional(),
+  asn_network: z.string().optional(),
+  asn_type: z.string().optional(),
+  datacenter_name: z.string().optional(),
 })
 
 // https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info-v6
 const IpV6Info = z.object({
   address: z.ipv6(),
+  geolocation: Geolocation.optional(),
+  asn_name: z.string().optional(),
+  asn_network: z.string().optional(),
+  asn_type: z.string().optional(),
+  datacenter_name: z.string().optional(),
 })
 
 // https://docs.fingerprint.com/reference/server-api-v4-get-event#response-ip-info
 const IpInfo = z.object({
   v4: IpV4Info.optional(),
   v6: IpV6Info.optional(),
+})
+
+const Confidence = z.enum(['low', 'medium', 'high'])
+
+const ProxyDetails = z.object({
+  proxy_type: z.string().optional(),
+  last_seen_at: z.number().optional(),
+  provider: z.string().optional(),
+})
+
+const VpnMethods = z.object({
+  timezone_mismatch: z.boolean().optional(),
+  public_vpn: z.boolean().optional(),
+  auxiliary_mobile: z.boolean().optional(),
+  os_mismatch: z.boolean().optional(),
+  relay: z.boolean().optional(),
+})
+
+const IpBlocklist = z.object({
+  tor_node: z.boolean().optional(),
 })
 
 export const IdentificationEvent = z.object({
@@ -58,6 +99,13 @@ export const IdentificationEvent = z.object({
   ip_address: z.ipv4().or(z.ipv6()),
   ip_info: IpInfo,
   bot_info: BotInfo.optional(),
+  proxy: z.boolean().optional(),
+  proxy_confidence: Confidence.optional(),
+  proxy_details: ProxyDetails.optional(),
+  vpn: z.boolean().optional(),
+  vpn_confidence: Confidence.optional(),
+  vpn_methods: VpnMethods.optional(),
+  ip_blocklist: IpBlocklist.optional(),
 })
 
 export type IdentificationEvent = z.infer<typeof IdentificationEvent>
@@ -127,6 +175,16 @@ export const EdgeRequest = z.object({
 
 export type EdgeRequest = z.infer<typeof EdgeRequest>
 
-export const EdgeResponse = IdentificationEvent.pick({ bot_info: true, ip_info: true })
+export const EdgeResponse = IdentificationEvent.pick({
+  bot_info: true,
+  ip_info: true,
+  proxy: true,
+  proxy_confidence: true,
+  proxy_details: true,
+  vpn: true,
+  vpn_confidence: true,
+  vpn_methods: true,
+  ip_blocklist: true,
+})
 
 export type EdgeResponse = z.infer<typeof EdgeResponse>
