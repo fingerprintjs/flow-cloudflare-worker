@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for worker/handlers/handleProtectedApi.ts</title>
+    <title>Code coverage report for worker/utils/edgeHeaders.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">worker/handlers</a> handleProtectedApi.ts</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">worker/utils</a> edgeHeaders.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>43/43</span>
+                <span class='fraction'>97/97</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>17/17</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>43/43</span>
+                <span class='fraction'>95/95</span>
             </div>
         
             
@@ -255,389 +255,494 @@
 <a name='L190'></a><a href='#L190'>190</a>
 <a name='L191'></a><a href='#L191'>191</a>
 <a name='L192'></a><a href='#L192'>192</a>
-<a name='L193'></a><a href='#L193'>193</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">38x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
-<span class="cline-any cline-yes">40x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">13x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13x</span>
-<span class="cline-any cline-yes">13x</span>
-<span class="cline-any cline-yes">13x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13x</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">23x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">25x</span>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a>
+<a name='L223'></a><a href='#L223'>223</a>
+<a name='L224'></a><a href='#L224'>224</a>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">80x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { AGENT_DATA_HEADER } from '../../shared/const'
-import { IdentificationClient } from '../fingerprint/identificationClient'
-import { processRuleset } from '../fingerprint/ruleset'
-import { hasContentType, isDocumentDestination } from '../utils/headers'
-import { injectAgentProcessorScript } from '../scripts'
-import { fetchOriginWithEdgeAPIHeaders } from '../utils/origin'
-import { TypedEnv } from '../types'
-import { getFallbackRuleAction, getRoutePrefix, isMonitorMode } from '../env'
-import { setCorsHeadersForInstrumentation } from '../utils/request'
-import { copyResponseWithNewHeaders } from '../utils/response'
-import { EdgeResponse, SendResult } from '../fingerprint/identificationClientTypes'
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">144x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { EdgeResponse } from '../fingerprint/identificationClientTypes'
+import {
+  identity,
+  setOrRemoveHeaderField,
+  sfBoolTrue,
+  sfDate,
+  sfDisplayString,
+  sfString,
+  sfStringFromNumber,
+} from './headers'
 &nbsp;
-/**
- * Parameters required for handling a protected API call.
- */
-export type HandleProtectedApiCallParams = {
-  /** The incoming HTTP request to be processed */
-  request: Request
-  /** Client for sending fingerprinting data to the ingress service */
-  identificationClient: IdentificationClient
-  /** The environment for the request*/
-  env: TypedEnv
+// Serializer for `setOrRemoveHeaderField` used with boolean-valued fields. The header is only set
+// when the value is truthy, so we always emit `?1` (RFC 9651 sf-boolean true).
+const sfBoolTrueIfPresent = () =&gt; sfBoolTrue
+&nbsp;
+export enum EdgeHeaders {
+  IpV4Address = 'fp-ip-info-v4-address',
+  IpV4GeolocationAccuracyRadius = 'fp-ip-info-v4-geolocation-accuracy-radius',
+  IpV4GeolocationLatitude = 'fp-ip-info-v4-geolocation-latitude',
+  IpV4GeolocationLongitude = 'fp-ip-info-v4-geolocation-longitude',
+  IpV4GeolocationPostalCode = 'fp-ip-info-v4-geolocation-postal-code',
+  IpV4GeolocationTimezone = 'fp-ip-info-v4-geolocation-timezone',
+  IpV4GeolocationCityName = 'fp-ip-info-v4-geolocation-city-name',
+  IpV4GeolocationCountryCode = 'fp-ip-info-v4-geolocation-country-code',
+  IpV4GeolocationContinentCode = 'fp-ip-info-v4-geolocation-continent-code',
+  IpV4AsnName = 'fp-ip-info-v4-asn-name',
+  IpV4AsnNetwork = 'fp-ip-info-v4-asn-network',
+  IpV4AsnType = 'fp-ip-info-v4-asn-type',
+  IpV4DatacenterName = 'fp-ip-info-v4-datacenter-name',
+  IpV6Address = 'fp-ip-info-v6-address',
+  IpV6GeolocationAccuracyRadius = 'fp-ip-info-v6-geolocation-accuracy-radius',
+  IpV6GeolocationLatitude = 'fp-ip-info-v6-geolocation-latitude',
+  IpV6GeolocationLongitude = 'fp-ip-info-v6-geolocation-longitude',
+  IpV6GeolocationPostalCode = 'fp-ip-info-v6-geolocation-postal-code',
+  IpV6GeolocationTimezone = 'fp-ip-info-v6-geolocation-timezone',
+  IpV6GeolocationCityName = 'fp-ip-info-v6-geolocation-city-name',
+  IpV6GeolocationCountryCode = 'fp-ip-info-v6-geolocation-country-code',
+  IpV6GeolocationContinentCode = 'fp-ip-info-v6-geolocation-continent-code',
+  IpV6AsnName = 'fp-ip-info-v6-asn-name',
+  IpV6AsnNetwork = 'fp-ip-info-v6-asn-network',
+  IpV6AsnType = 'fp-ip-info-v6-asn-type',
+  IpV6DatacenterName = 'fp-ip-info-v6-datacenter-name',
+  BotInfoCategory = 'fp-bot-info-category',
+  BotInfoProvider = 'fp-bot-info-provider',
+  BotInfoName = 'fp-bot-info-name',
+  BotInfoIdentity = 'fp-bot-info-identity',
+  Proxy = 'fp-proxy',
+  ProxyConfidence = 'fp-proxy-confidence',
+  ProxyDetailsProxyType = 'fp-proxy-details-proxy-type',
+  ProxyDetailsLastSeenAt = 'fp-proxy-details-last-seen-at',
+  ProxyDetailsProvider = 'fp-proxy-details-provider',
+  Vpn = 'fp-vpn',
+  VpnConfidence = 'fp-vpn-confidence',
+  VpnMethodsTimezoneMismatch = 'fp-vpn-methods-timezone-mismatch',
+  VpnMethodsPublicVpn = 'fp-vpn-methods-public-vpn',
+  VpnMethodsAuxiliaryMobile = 'fp-vpn-methods-auxiliary-mobile',
+  VpnMethodsOsMismatch = 'fp-vpn-methods-os-mismatch',
+  VpnMethodsRelay = 'fp-vpn-methods-relay',
+  IpBlocklistTorNode = 'fp-ip-blocklist-tor-node',
 }
 &nbsp;
-/**
- * Handles a protected API call by validating signals and processing the request.
- * For HTML responses, injects the agent processor script into the &lt;head&gt; element to process the agent data.
- */
-export async function handleProtectedApiCall({
-  request,
-  identificationClient,
-  env,
-}: HandleProtectedApiCallParams): Promise&lt;Response&gt; {
-  const [response, agentData] = await getResponseForProtectedCall({
-    request,
-    identificationClient,
-    env,
-  })
+const PROXY_HEADERS = [
+  EdgeHeaders.Proxy,
+  EdgeHeaders.ProxyConfidence,
+  EdgeHeaders.ProxyDetailsProxyType,
+  EdgeHeaders.ProxyDetailsLastSeenAt,
+  EdgeHeaders.ProxyDetailsProvider,
+] as const
 &nbsp;
-  /**
-   * For HTML responses, inject the agent processor script into the &lt;head&gt; element to process the agent data.
-   * */
-  if (
-    agentData &amp;&amp;
-    hasContentType(response.headers, 'text/html') &amp;&amp;
-    // This check protects against false-positive HTML requests triggered by a "fetch" call. (e.g. by htmx)
-    isDocumentDestination(request.headers)
-  ) {
-    console.info('Injecting agent processor script into HTML response.')
-    return injectAgentProcessorScript(response, agentData, getRoutePrefix(env))
-  }
+const VPN_HEADERS = [
+  EdgeHeaders.Vpn,
+  EdgeHeaders.VpnConfidence,
+  EdgeHeaders.VpnMethodsTimezoneMismatch,
+  EdgeHeaders.VpnMethodsPublicVpn,
+  EdgeHeaders.VpnMethodsAuxiliaryMobile,
+  EdgeHeaders.VpnMethodsOsMismatch,
+  EdgeHeaders.VpnMethodsRelay,
+] as const
 &nbsp;
-  return response
-}
+const IP_V4_INFO_HEADERS = [
+  EdgeHeaders.IpV4Address,
+  EdgeHeaders.IpV4GeolocationAccuracyRadius,
+  EdgeHeaders.IpV4GeolocationLatitude,
+  EdgeHeaders.IpV4GeolocationLongitude,
+  EdgeHeaders.IpV4GeolocationPostalCode,
+  EdgeHeaders.IpV4GeolocationTimezone,
+  EdgeHeaders.IpV4GeolocationCityName,
+  EdgeHeaders.IpV4GeolocationCountryCode,
+  EdgeHeaders.IpV4GeolocationContinentCode,
+  EdgeHeaders.IpV4AsnName,
+  EdgeHeaders.IpV4AsnNetwork,
+  EdgeHeaders.IpV4AsnType,
+  EdgeHeaders.IpV4DatacenterName,
+] as const
 &nbsp;
-/**
- * Handles a protected API call by validating signals and processing the request.
- *
- * This function performs the following operations:
- * 1. Validates that the request contains required fingerprinting signals
- * 2. Sends the request to both ingress and origin services
- * 3. Merges headers from the ingress response into the origin response
- * 4. Returns the combined response with updated headers
- *
- * @param params - Configuration object containing request, ingress client, and error response
- *
- * @returns the `Response` and optional data that needs to be sent back to the agent. The `Headers`
- *          on the `Response` are mutable.
- */
-async function getResponseForProtectedCall({
-  request,
-  identificationClient,
-  env,
-}: HandleProtectedApiCallParams): Promise&lt;[response: Response, agentData: string | null]&gt; {
-  let ingressResponse: SendResult
-  let originRequest: Request
-  let signals: string
-  let clientCookie: string | undefined
-  let removeCookies: boolean
+const IP_V6_INFO_HEADERS = [
+  EdgeHeaders.IpV6Address,
+  EdgeHeaders.IpV6GeolocationAccuracyRadius,
+  EdgeHeaders.IpV6GeolocationLatitude,
+  EdgeHeaders.IpV6GeolocationLongitude,
+  EdgeHeaders.IpV6GeolocationPostalCode,
+  EdgeHeaders.IpV6GeolocationTimezone,
+  EdgeHeaders.IpV6GeolocationCityName,
+  EdgeHeaders.IpV6GeolocationCountryCode,
+  EdgeHeaders.IpV6GeolocationContinentCode,
+  EdgeHeaders.IpV6AsnName,
+  EdgeHeaders.IpV6AsnNetwork,
+  EdgeHeaders.IpV6AsnType,
+  EdgeHeaders.IpV6DatacenterName,
+] as const
 &nbsp;
-  try {
-    const result = await IdentificationClient.parseIncomingRequest(request)
-    signals = result.signals
-    originRequest = result.originRequest
-    clientCookie = result.clientCookie
-    removeCookies = result.removeCookies
-  } catch (e) {
-    console.error('Failed to parse incoming request:', e)
-&nbsp;
-    // Importantly, the request, not the originRequest is used here because
-    // the unmodified request must be sent to the origin if the request
-    // was not a valid instrumented request and the environment configuration
-    // indicates the request should be forwarded on error
-    return [await handleFallbackRule(request, env), null]
-  }
-&nbsp;
-  try {
-    ingressResponse = await identificationClient.send(originRequest, signals, clientCookie)
-  } catch (error) {
-    console.error('Error sending request to ingress service:', error)
-    const response = await handleFallbackRule(originRequest, env)
-&nbsp;
-    // Make a copy of the headers because they are immutable
-    const originResponseHeaders = new Headers(response.headers)
-&nbsp;
-    // The identification could not be completed but the request was a
-    // valid instrumented request. As a result, the CORS headers
-    // need to be set appropriately in the response so the browser
-    // will not fail the request.
-    setCorsHeadersForInstrumentation(request, originResponseHeaders)
-&nbsp;
-    return [copyResponseWithNewHeaders(response, originResponseHeaders), null]
-  }
-&nbsp;
-  let originResponse: Response
-&nbsp;
-  if (isMonitorMode(env)) {
-    originResponse = await fetchOriginWithEdgeAPIHeaders(originRequest, env, ingressResponse.event)
-  } else {
-    if (ingressResponse.ruleAction) {
-      originResponse = await processRuleset(ingressResponse.ruleAction, originRequest, env, ingressResponse.event)
-    } else {
-      console.warn('No ruleset processor found for ingress response, using fallback rule.')
-      originResponse = await processRuleset(getFallbackRuleAction(env), originRequest, env, ingressResponse.event)
-    }
-  }
-&nbsp;
-  const originResponseHeaders = new Headers(originResponse.headers)
-  // For requests whose destination is a document (these are typically triggered by submitting a form or clicking a link)
-  // it doesn't make sense to set headers from ingress and edge, because the browser will discard them anyway
-  if (!isDocumentDestination(request.headers)) {
-    setHeadersFromIngressToOrigin(ingressResponse, originResponseHeaders, removeCookies)
-  }
-&nbsp;
-  setCorsHeadersForInstrumentation(request, originResponseHeaders)
-&nbsp;
-  // Re-create the response, because by default its headers are immutable, even if we were to use `originResponse.clone()`
-  return [copyResponseWithNewHeaders(originResponse, originResponseHeaders), ingressResponse.agentData]
-}
-&nbsp;
-/**
- * Merges headers from the ingress response into the origin response headers.
- *
- * This function extracts agent data and set-cookie headers from the ingress response
- * and adds them to the origin response headers. The agent data is set as a custom
- * header, while cookie headers are appended to preserve existing cookies.
- *
- * @param ingressResponse - Result from the ingress service containing agent data and cookies
- * @param originResponseHeaders - Mutable headers object from the origin response to be modified
- * @param removeCookies - true if Set-Cookie header fields need to be removed from the response
- *
- */
-function setHeadersFromIngressToOrigin(
-  ingressResponse: SendResult,
-  originResponseHeaders: Headers,
-  removeCookies: boolean
+function setIpVersionHeaders(
+  headers: Headers,
+  info: NonNullable&lt;EdgeResponse['ip_info']['v4'] | EdgeResponse['ip_info']['v6']&gt; | undefined,
+  names: typeof IP_V4_INFO_HEADERS | typeof IP_V6_INFO_HEADERS
 ) {
-  const { agentData, setCookieHeaders } = ingressResponse
-  console.debug('Adding agent data header', agentData)
-  originResponseHeaders.set(AGENT_DATA_HEADER, agentData)
+  const [
+    addressHeader,
+    accuracyRadiusHeader,
+    latitudeHeader,
+    longitudeHeader,
+    postalCodeHeader,
+    timezoneHeader,
+    cityNameHeader,
+    countryCodeHeader,
+    continentCodeHeader,
+    asnNameHeader,
+    asnNetworkHeader,
+    asnTypeHeader,
+    datacenterNameHeader,
+  ] = names
 &nbsp;
-  if (removeCookies) {
-    // Delete any cookies set by the origin, they would have been ignored
-    // by the browser if the request was not instrumented.
-    originResponseHeaders.delete('Set-Cookie')
-  }
+  setOrRemoveHeaderField(headers, addressHeader, identity, info?.address)
+  const geo = info?.geolocation
+  setOrRemoveHeaderField(headers, accuracyRadiusHeader, sfStringFromNumber, geo?.accuracy_radius)
+  setOrRemoveHeaderField(headers, latitudeHeader, sfStringFromNumber, geo?.latitude)
+  setOrRemoveHeaderField(headers, longitudeHeader, sfStringFromNumber, geo?.longitude)
+  setOrRemoveHeaderField(headers, postalCodeHeader, sfString, geo?.postal_code)
+  setOrRemoveHeaderField(headers, timezoneHeader, sfString, geo?.timezone)
+  setOrRemoveHeaderField(headers, cityNameHeader, sfDisplayString, geo?.city_name)
+  setOrRemoveHeaderField(headers, countryCodeHeader, sfString, geo?.country_code)
+  setOrRemoveHeaderField(headers, continentCodeHeader, sfString, geo?.continent_code)
+  setOrRemoveHeaderField(headers, asnNameHeader, sfDisplayString, info?.asn_name)
+  setOrRemoveHeaderField(headers, asnNetworkHeader, sfString, info?.asn_network)
+  setOrRemoveHeaderField(headers, asnTypeHeader, sfString, info?.asn_type)
+  setOrRemoveHeaderField(headers, datacenterNameHeader, sfDisplayString, info?.datacenter_name)
+}
 &nbsp;
-  if (setCookieHeaders?.length) {
-    console.debug('Adding set-cookie headers from ingress response', setCookieHeaders)
-    setCookieHeaders.forEach((cookie) =&gt; {
-      originResponseHeaders.append('Set-Cookie', cookie)
-    })
+function deleteHeaders(headers: Headers, names: readonly string[]) {
+  for (const name of names) {
+    headers.delete(name)
   }
 }
 &nbsp;
 /**
- * Handles the fallback rule for the given request based on the mode.
- * If `isMonitorMode` is true, the function fetches data from the origin.
- * Otherwise, it processes the ruleset using the provided fallback rule.
+ * Set header fields that correspond to the properties from the `EdgeResponse` in the specified `requestHeaders`.
  *
- * @param {Request} request - The incoming request object to be processed.
- * @param {TypedEnv} env - The environment for the request
- * @param {EdgeResponse} edgeResponse - The edge response object
- * @return {Promise&lt;Response&gt;} A promise that resolves to the response after processing the request.
+ * Empty / null / `undefined` values are omitted. Structured-field values follow RFC 9651: strings are
+ * escaped, booleans are `?1` (false values are omitted entirely), and dates use `@&lt;unix-seconds&gt;`.
+ * Proxy and VPN groups are gated on their parent boolean: when `proxy`/`vpn` is not detected, none of
+ * their sub-headers are sent.
+ *
+ * @param requestHeaders the `Headers` to update
+ * @param edgeResponse the `EdgeResponse`
  */
-function handleFallbackRule(request: Request, env: TypedEnv, edgeResponse?: EdgeResponse): Promise&lt;Response&gt; {
-  if (isMonitorMode(env)) {
-    return fetchOriginWithEdgeAPIHeaders(request, env, edgeResponse)
+export function setEdgeResponseHeaders(requestHeaders: Headers, edgeResponse?: EdgeResponse) {
+  // Handle both v4 and v6 formats, the implementation will automatically set only the appropriate headers for correct IP version and remove the others
+  setIpVersionHeaders(requestHeaders, edgeResponse?.ip_info.v4, IP_V4_INFO_HEADERS)
+  setIpVersionHeaders(requestHeaders, edgeResponse?.ip_info.v6, IP_V6_INFO_HEADERS)
+&nbsp;
+  setBotInfoHeaders(requestHeaders, edgeResponse?.bot_info)
+  setProxyHeaders(requestHeaders, edgeResponse)
+  setVpnHeaders(requestHeaders, edgeResponse)
+&nbsp;
+  setOrRemoveHeaderField(
+    requestHeaders,
+    EdgeHeaders.IpBlocklistTorNode,
+    sfBoolTrueIfPresent,
+    edgeResponse?.ip_blocklist?.tor_node
+  )
+}
+&nbsp;
+function setBotInfoHeaders(headers: Headers, botInfo: EdgeResponse['bot_info']) {
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoCategory, identity, botInfo?.category)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoProvider, identity, botInfo?.provider)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoName, identity, botInfo?.name)
+  setOrRemoveHeaderField(headers, EdgeHeaders.BotInfoIdentity, identity, botInfo?.identity)
+}
+&nbsp;
+function setProxyHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined) {
+  if (!edgeResponse?.proxy) {
+    deleteHeaders(headers, PROXY_HEADERS)
+    return
   }
 &nbsp;
-  return processRuleset(getFallbackRuleAction(env), request, env, edgeResponse)
+  headers.set(EdgeHeaders.Proxy, sfBoolTrue)
+  setOrRemoveHeaderField(headers, EdgeHeaders.ProxyConfidence, sfString, edgeResponse.proxy_confidence)
+  setOrRemoveHeaderField(headers, EdgeHeaders.ProxyDetailsProxyType, sfString, edgeResponse.proxy_details?.proxy_type)
+  setOrRemoveHeaderField(headers, EdgeHeaders.ProxyDetailsLastSeenAt, sfDate, edgeResponse.proxy_details?.last_seen_at)
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.ProxyDetailsProvider,
+    sfDisplayString,
+    edgeResponse.proxy_details?.provider
+  )
+}
+&nbsp;
+function setVpnHeaders(headers: Headers, edgeResponse: EdgeResponse | undefined) {
+  if (!edgeResponse?.vpn) {
+    deleteHeaders(headers, VPN_HEADERS)
+    return
+  }
+&nbsp;
+  headers.set(EdgeHeaders.Vpn, sfBoolTrue)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnConfidence, sfString, edgeResponse.vpn_confidence)
+  const methods = edgeResponse.vpn_methods
+  setOrRemoveHeaderField(
+    headers,
+    EdgeHeaders.VpnMethodsTimezoneMismatch,
+    sfBoolTrueIfPresent,
+    methods?.timezone_mismatch
+  )
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsPublicVpn, sfBoolTrueIfPresent, methods?.public_vpn)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsAuxiliaryMobile, sfBoolTrueIfPresent, methods?.auxiliary_mobile)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsOsMismatch, sfBoolTrueIfPresent, methods?.os_mismatch)
+  setOrRemoveHeaderField(headers, EdgeHeaders.VpnMethodsRelay, sfBoolTrueIfPresent, methods?.relay)
 }
 &nbsp;</pre></td></tr></table></pre>
 
