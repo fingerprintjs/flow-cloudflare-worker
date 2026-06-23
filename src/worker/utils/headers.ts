@@ -92,13 +92,6 @@ export function setOrRemoveHeaderField<T>(
 }
 
 /**
- * Identity serializer for `setOrRemoveHeaderField` — passes the value through unchanged.
- */
-export function identity(value: string): string {
-  return value
-}
-
-/**
  * Serializer for `setOrRemoveHeaderField` that turns a number into an RFC 9651 sf-string.
  */
 export function sfStringFromNumber(value: number): string {

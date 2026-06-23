@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   appendHeaderValue,
   hasContentType,
-  identity,
   mergeHeaders,
   removeHeaderValue,
   setOrRemoveHeaderField,
@@ -11,6 +10,8 @@ import {
   sfString,
   sfStringFromNumber,
 } from '../../src/worker/utils/headers'
+
+const passthrough = (v: string): string => v
 
 describe('Headers', () => {
   describe('hasContentType', () => {
@@ -203,7 +204,7 @@ describe('Headers', () => {
   describe('setOrRemoveHeaderField', () => {
     it('sets the header field to the serialized value when a value is provided', () => {
       const headers = new Headers()
-      setOrRemoveHeaderField(headers, 'X-Foo', identity, 'bar')
+      setOrRemoveHeaderField(headers, 'X-Foo', passthrough, 'bar')
       expect(headers.get('X-Foo')).toEqual('bar')
     })
 
@@ -215,31 +216,31 @@ describe('Headers', () => {
 
     it('overwrites an existing header field when a value is provided', () => {
       const headers = new Headers({ 'X-Foo': 'original' })
-      setOrRemoveHeaderField(headers, 'X-Foo', identity, 'updated')
+      setOrRemoveHeaderField(headers, 'X-Foo', passthrough, 'updated')
       expect(headers.get('X-Foo')).toEqual('updated')
     })
 
     it('removes the header field when value is undefined', () => {
       const headers = new Headers({ 'X-Foo': 'bar' })
-      setOrRemoveHeaderField(headers, 'X-Foo', identity, undefined)
+      setOrRemoveHeaderField(headers, 'X-Foo', passthrough, undefined)
       expect(headers.has('X-Foo')).toEqual(false)
     })
 
     it('removes the header field when value is an empty string', () => {
       const headers = new Headers({ 'X-Foo': 'bar' })
-      setOrRemoveHeaderField(headers, 'X-Foo', identity, '')
+      setOrRemoveHeaderField(headers, 'X-Foo', passthrough, '')
       expect(headers.has('X-Foo')).toEqual(false)
     })
 
     it('does nothing when removing a header that is not present', () => {
       const headers = new Headers()
-      expect(() => setOrRemoveHeaderField(headers, 'X-Foo', identity, undefined)).not.toThrow()
+      expect(() => setOrRemoveHeaderField(headers, 'X-Foo', passthrough, undefined)).not.toThrow()
       expect(headers.has('X-Foo')).toEqual(false)
     })
 
     it('mutates the passed-in headers object', () => {
       const headers = new Headers()
-      setOrRemoveHeaderField(headers, 'X-Foo', identity, 'bar')
+      setOrRemoveHeaderField(headers, 'X-Foo', passthrough, 'bar')
       expect(headers.get('X-Foo')).toEqual('bar')
     })
   })
@@ -248,12 +249,6 @@ describe('Headers', () => {
     it('wraps a stringified number in sf-string quotes', () => {
       expect(sfStringFromNumber(42)).toEqual('"42"')
       expect(sfStringFromNumber(52.2297)).toEqual('"52.2297"')
-    })
-  })
-
-  describe('identity', () => {
-    it('returns the input unchanged', () => {
-      expect(identity('bar')).toEqual('bar')
     })
   })
 

@@ -73,7 +73,7 @@ describe('Edge headers', () => {
 
     // Header / value pairs that the full EdgeResponse above is expected to produce.
     const expectedFullHeaders: [EdgeHeaders, string][] = [
-      [EdgeHeaders.IpV4Address, '1.2.3.4'],
+      [EdgeHeaders.IpV4Address, '"1.2.3.4"'],
       [EdgeHeaders.IpV4GeolocationAccuracyRadius, '"5000"'],
       [EdgeHeaders.IpV4GeolocationLatitude, '"52.2297"'],
       [EdgeHeaders.IpV4GeolocationLongitude, '"21.0122"'],
@@ -86,7 +86,7 @@ describe('Edge headers', () => {
       [EdgeHeaders.IpV4AsnNetwork, '"1.2.0.0/16"'],
       [EdgeHeaders.IpV4AsnType, '"isp"'],
       [EdgeHeaders.IpV4DatacenterName, '%"AWS"'],
-      [EdgeHeaders.IpV6Address, '2001:db8::1'],
+      [EdgeHeaders.IpV6Address, '"2001:db8::1"'],
       [EdgeHeaders.IpV6GeolocationAccuracyRadius, '"5000"'],
       [EdgeHeaders.IpV6GeolocationLatitude, '"52.2297"'],
       [EdgeHeaders.IpV6GeolocationLongitude, '"21.0122"'],
@@ -99,10 +99,10 @@ describe('Edge headers', () => {
       [EdgeHeaders.IpV6AsnNetwork, '"2001:db8::/32"'],
       [EdgeHeaders.IpV6AsnType, '"isp"'],
       [EdgeHeaders.IpV6DatacenterName, '%"AWS"'],
-      [EdgeHeaders.BotInfoCategory, 'search_engine'],
-      [EdgeHeaders.BotInfoProvider, 'google'],
-      [EdgeHeaders.BotInfoName, 'test-bot'],
-      [EdgeHeaders.BotInfoIdentity, 'verified'],
+      [EdgeHeaders.BotInfoCategory, '"search_engine"'],
+      [EdgeHeaders.BotInfoProvider, '%"google"'],
+      [EdgeHeaders.BotInfoName, '%"test-bot"'],
+      [EdgeHeaders.BotInfoIdentity, '"verified"'],
       [EdgeHeaders.Proxy, '?1'],
       [EdgeHeaders.ProxyConfidence, '"medium"'],
       [EdgeHeaders.ProxyDetailsProxyType, '"residential"'],
@@ -146,16 +146,16 @@ describe('Edge headers', () => {
     })
 
     it('removes the IPv4 header when ip_info.v4 is absent', () => {
-      const headers = new Headers({ [EdgeHeaders.IpV4Address]: '1.2.3.4' })
+      const headers = new Headers({ [EdgeHeaders.IpV4Address]: '"1.2.3.4"' })
       setEdgeResponseHeaders(headers, { ...fullEdgeResponse, ip_info: { v6: fullEdgeResponse.ip_info.v6 } })
       expect(headers.has(EdgeHeaders.IpV4Address)).toEqual(false)
-      expect(headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8::1')
+      expect(headers.get(EdgeHeaders.IpV6Address)).toEqual('"2001:db8::1"')
     })
 
     it('removes the IPv6 header when ip_info.v6 is absent', () => {
-      const headers = new Headers({ [EdgeHeaders.IpV6Address]: '2001:db8::1' })
+      const headers = new Headers({ [EdgeHeaders.IpV6Address]: '"2001:db8::1"' })
       setEdgeResponseHeaders(headers, { ...fullEdgeResponse, ip_info: { v4: fullEdgeResponse.ip_info.v4 } })
-      expect(headers.get(EdgeHeaders.IpV4Address)).toEqual('1.2.3.4')
+      expect(headers.get(EdgeHeaders.IpV4Address)).toEqual('"1.2.3.4"')
       expect(headers.has(EdgeHeaders.IpV6Address)).toEqual(false)
     })
 
@@ -178,7 +178,7 @@ describe('Edge headers', () => {
     it('mutates the passed-in headers object', () => {
       const headers = new Headers()
       setEdgeResponseHeaders(headers, fullEdgeResponse)
-      expect(headers.get(EdgeHeaders.IpV4Address)).toEqual(fullEdgeResponse.ip_info.v4.address)
+      expect(headers.get(EdgeHeaders.IpV4Address)).toEqual(`"${fullEdgeResponse.ip_info.v4.address}"`)
     })
 
     describe('ip', () => {
@@ -188,7 +188,7 @@ describe('Edge headers', () => {
           ...fullEdgeResponse,
           ip_info: { v4: { address: ipV4Info.address } },
         })
-        expect(headers.get(EdgeHeaders.IpV4Address)).toEqual('1.2.3.4')
+        expect(headers.get(EdgeHeaders.IpV4Address)).toEqual('"1.2.3.4"')
         expectHeadersToBeAbsent(headers, [
           EdgeHeaders.IpV4GeolocationLatitude,
           EdgeHeaders.IpV4AsnName,
@@ -207,7 +207,7 @@ describe('Edge headers', () => {
 
       it('clears stale v4 ip_info headers when v4 is absent', () => {
         const headers = new Headers({
-          [EdgeHeaders.IpV4Address]: '1.2.3.4',
+          [EdgeHeaders.IpV4Address]: '"1.2.3.4"',
           [EdgeHeaders.IpV4GeolocationCityName]: '%"Warsaw"',
           [EdgeHeaders.IpV4DatacenterName]: '%"AWS"',
         })
@@ -217,7 +217,7 @@ describe('Edge headers', () => {
           EdgeHeaders.IpV4GeolocationCityName,
           EdgeHeaders.IpV4DatacenterName,
         ])
-        expect(headers.get(EdgeHeaders.IpV6Address)).toEqual('2001:db8::1')
+        expect(headers.get(EdgeHeaders.IpV6Address)).toEqual('"2001:db8::1"')
       })
     })
 
