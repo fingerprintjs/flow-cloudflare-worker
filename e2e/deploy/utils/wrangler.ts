@@ -60,15 +60,17 @@ function captureOutput(process: ChildProcess) {
   }
 }
 
+const WRANGLER_LOGS_WRITTEN_REGEX: RegExp = /Logs were written to "(?<wranglerLogPath>[^"]+)"/
+
 async function logWranglerLogs(stdout?: string, stderr?: string) {
   let wranglerLogPath: string | undefined
   if (stdout) {
-    const stdoutResult = /Logs were written to "(?<wranglerLogPath>[^"]+)"/.exec(stdout)
+    const stdoutResult = WRANGLER_LOGS_WRITTEN_REGEX.exec(stdout)
     wranglerLogPath = stdoutResult?.groups?.wranglerLogPath
   }
 
   if (!wranglerLogPath && stderr) {
-    const stderrResult = /Logs were written to "(?<wranglerLogPath>[^"]+)"/.exec(stderr)
+    const stderrResult = WRANGLER_LOGS_WRITTEN_REGEX.exec(stderr)
     wranglerLogPath = stderrResult?.groups?.wranglerLogPath
   }
 
@@ -76,7 +78,7 @@ async function logWranglerLogs(stdout?: string, stderr?: string) {
     try {
       const logFileContents = await fs.readFile(wranglerLogPath, 'utf-8')
       console.log(
-        `\n\n-----START wrangler logs${wranglerLogPath}-----\n\n${logFileContents}\n\n-----END wrangler logs-----`
+        `-----START wrangler logs from "${wranglerLogPath}"-----\n\n${logFileContents}\n\n-----END wrangler logs-----`
       )
     } catch (e) {
       console.error(`Failed to read wrangler logs file "${wranglerLogPath}": ${e}`)
@@ -89,64 +91,52 @@ export async function wranglerDeploy(cwd: string, args: string[] = []): Promise<
     return
   }
 
-  return new Promise<void>((resolve, reject) => {
-    const process = spawn('npx', ['wrangler', 'deploy', ...args], { cwd, stdio: 'pipe' })
-    const { getOutput } = captureOutput(process)
+  return spawnWrangler({ operationName: 'Deployment', cwd, args: ['deploy', ...args] })
+}
 
-    process.on('close', (code) => {
+export async function wranglerDelete(cwd: string = process.cwd(), args: string[] = []): Promise<boolean> {
+  if (shouldSkip()) {
+    return false
+  }
+
+  await spawnWrangler({ operationName: 'Worker removal', cwd, ignoreWorkerNotFound: true, args: ['delete', ...args] })
+  return true
+}
+
+async function spawnWrangler(params: {
+  operationName: string
+  cwd: string
+  ignoreWorkerNotFound?: boolean
+  args: string[]
+}) {
+  return new Promise<void>((resolve, reject) => {
+    const { operationName, cwd, ignoreWorkerNotFound = false, args } = params
+    const wranglerProcess = spawn('npx', ['wrangler', ...args], {
+      cwd,
+      stdio: 'pipe',
+    })
+    const { getOutput } = captureOutput(wranglerProcess)
+
+    wranglerProcess.on('close', (code) => {
       const { stdout, stderr } = getOutput()
 
       if (code === 0) {
         resolve()
       } else {
         if (stdout) {
-          console.log(stdout)
-        }
-        if (stderr) {
-          console.error(stderr)
-        }
-        logWranglerLogs(stdout, stderr).catch((e) => {
-          console.error(`Failed to log wrangler logs: ${e}`)
-        })
-        reject(new Error(`Deployment failed with code ${code}`))
-      }
-    })
-  })
-}
-
-export async function wranglerDelete(cwd: string = process.cwd(), args: string[] = []) {
-  if (shouldSkip()) {
-    return false
-  }
-
-  return new Promise<boolean>((resolve, reject) => {
-    const process = spawn('npx', ['wrangler', 'delete', ...args], {
-      cwd,
-      stdio: 'pipe',
-    })
-    const { getOutput } = captureOutput(process)
-
-    process.on('close', (code) => {
-      const { stdout, stderr } = getOutput()
-
-      if (code === 0) {
-        resolve(true)
-      } else {
-        if (stdout) {
-          if (stdout.includes('This Worker does not exist on your account')) {
-            return resolve(false)
+          if (ignoreWorkerNotFound && stdout.includes('This Worker does not exist on your account')) {
+            return resolve()
           }
-
-          console.log(stdout)
+          console.log(`-----START wrangler stdout-----\n\n${stdout}\n\n-----END wrangler stdout-----`)
         }
         if (stderr) {
-          console.error(stderr)
+          console.log(`-----START wrangler stderr-----\n\n${stderr}\n\n-----END wrangler stderr-----`)
         }
 
         logWranglerLogs(stdout, stderr).catch((e) => {
           console.error(`Failed to log wrangler logs: ${e}`)
         })
-        reject(new Error(`Worker removal failed with code ${code}`))
+        reject(new Error(`${operationName} failed with code ${code}`))
       }
     })
   })
