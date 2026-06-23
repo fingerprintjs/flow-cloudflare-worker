@@ -60,32 +60,6 @@ function captureOutput(process: ChildProcess) {
   }
 }
 
-const WRANGLER_LOGS_WRITTEN_REGEX: RegExp = /Logs were written to "(?<wranglerLogPath>[^"]+)"/
-
-async function logWranglerLogs(stdout?: string, stderr?: string) {
-  let wranglerLogPath: string | undefined
-  if (stdout) {
-    const stdoutResult = WRANGLER_LOGS_WRITTEN_REGEX.exec(stdout)
-    wranglerLogPath = stdoutResult?.groups?.wranglerLogPath
-  }
-
-  if (!wranglerLogPath && stderr) {
-    const stderrResult = WRANGLER_LOGS_WRITTEN_REGEX.exec(stderr)
-    wranglerLogPath = stderrResult?.groups?.wranglerLogPath
-  }
-
-  if (wranglerLogPath) {
-    try {
-      const logFileContents = await fs.readFile(wranglerLogPath, 'utf-8')
-      console.log(
-        `-----START wrangler logs from "${wranglerLogPath}"-----\n\n${logFileContents}\n\n-----END wrangler logs-----`
-      )
-    } catch (e) {
-      console.error(`Failed to read wrangler logs file "${wranglerLogPath}": ${e}`)
-    }
-  }
-}
-
 export async function wranglerDeploy(cwd: string, args: string[] = []): Promise<void> {
   if (shouldSkip()) {
     return
@@ -117,7 +91,7 @@ async function spawnWrangler(params: {
     })
     const { getOutput } = captureOutput(wranglerProcess)
 
-    wranglerProcess.on('close', (code) => {
+    wranglerProcess.on('close', async (code) => {
       const { stdout, stderr } = getOutput()
 
       if (code === 0) {
@@ -133,11 +107,35 @@ async function spawnWrangler(params: {
           console.log(`-----START wrangler stderr-----\n\n${stderr}\n\n-----END wrangler stderr-----`)
         }
 
-        logWranglerLogs(stdout, stderr).catch((e) => {
+        try {
+          await logWranglerLogs(stdout, stderr)
+        } catch (e) {
           console.error(`Failed to log wrangler logs: ${e}`)
-        })
+        }
         reject(new Error(`${operationName} failed with code ${code}`))
       }
     })
   })
+}
+
+const WRANGLER_LOGS_WRITTEN_REGEX: RegExp = /Logs were written to "(?<wranglerLogPath>[^"]+)"/
+
+async function logWranglerLogs(stdout?: string, stderr?: string) {
+  let wranglerLogPath: string | undefined
+  if (stdout) {
+    const stdoutResult = WRANGLER_LOGS_WRITTEN_REGEX.exec(stdout)
+    wranglerLogPath = stdoutResult?.groups?.wranglerLogPath
+  }
+
+  if (!wranglerLogPath && stderr) {
+    const stderrResult = WRANGLER_LOGS_WRITTEN_REGEX.exec(stderr)
+    wranglerLogPath = stderrResult?.groups?.wranglerLogPath
+  }
+
+  if (wranglerLogPath) {
+    const logFileContents = await fs.readFile(wranglerLogPath, 'utf-8')
+    console.log(
+      `-----START wrangler logs from "${wranglerLogPath}"-----\n\n${logFileContents}\n\n-----END wrangler logs-----`
+    )
+  }
 }
