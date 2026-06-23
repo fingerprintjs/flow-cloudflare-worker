@@ -60,6 +60,30 @@ function captureOutput(process: ChildProcess) {
   }
 }
 
+async function logWranglerLogs(stdout?: string, stderr?: string) {
+  let wranglerLogPath: string | undefined
+  if (stdout) {
+    const stdoutResult = /Logs were written to "(?<wranglerLogPath>[^"]+)"/.exec(stdout)
+    wranglerLogPath = stdoutResult?.groups?.wranglerLogPath
+  }
+
+  if (!wranglerLogPath && stderr) {
+    const stderrResult = /Logs were written to "(?<wranglerLogPath>[^"]+)"/.exec(stderr)
+    wranglerLogPath = stderrResult?.groups?.wranglerLogPath
+  }
+
+  if (wranglerLogPath) {
+    try {
+      const logFileContents = await fs.readFile(wranglerLogPath, 'utf-8')
+      console.log(
+        `\n\n-----START wrangler logs${wranglerLogPath}-----\n\n${logFileContents}\n\n-----END wrangler logs-----`
+      )
+    } catch (e) {
+      console.error(`Failed to read wrangler logs file "${wranglerLogPath}": ${e}`)
+    }
+  }
+}
+
 export async function wranglerDeploy(cwd: string, args: string[] = []): Promise<void> {
   if (shouldSkip()) {
     return
@@ -81,6 +105,9 @@ export async function wranglerDeploy(cwd: string, args: string[] = []): Promise<
         if (stderr) {
           console.error(stderr)
         }
+        logWranglerLogs(stdout, stderr).catch((e) => {
+          console.error(`Failed to log wrangler logs: ${e}`)
+        })
         reject(new Error(`Deployment failed with code ${code}`))
       }
     })
@@ -116,6 +143,9 @@ export async function wranglerDelete(cwd: string = process.cwd(), args: string[]
           console.error(stderr)
         }
 
+        logWranglerLogs(stdout, stderr).catch((e) => {
+          console.error(`Failed to log wrangler logs: ${e}`)
+        })
         reject(new Error(`Worker removal failed with code ${code}`))
       }
     })
