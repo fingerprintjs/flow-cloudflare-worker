@@ -65,7 +65,7 @@ export async function wranglerDeploy(cwd: string, args: string[] = []): Promise<
     return
   }
 
-  return spawnWrangler({ operationName: 'Deployment', cwd, args: ['deploy', ...args] })
+  await spawnWrangler({ operationName: 'Deployment', cwd, args: ['deploy', ...args] })
 }
 
 export async function wranglerDelete(cwd: string = process.cwd(), args: string[] = []): Promise<boolean> {
@@ -73,17 +73,28 @@ export async function wranglerDelete(cwd: string = process.cwd(), args: string[]
     return false
   }
 
-  await spawnWrangler({ operationName: 'Worker removal', cwd, ignoreWorkerNotFound: true, args: ['delete', ...args] })
-  return true
+  return await spawnWrangler({
+    operationName: 'Worker removal',
+    cwd,
+    ignoreWorkerNotFound: true,
+    args: ['delete', ...args],
+  })
 }
 
+/**
+ * Invokes wrangler using spawn and outputs debugging logs from wrangler when execution fails
+ *
+ * @param params the parameters for invoking wrangler
+ * @returns true, if the execution succeeded; false if params.ignoreWorkerNotFound was true and the worker was not found.
+ * @throws if wrangler execution fails
+ */
 async function spawnWrangler(params: {
   operationName: string
   cwd: string
   ignoreWorkerNotFound?: boolean
   args: string[]
 }) {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<boolean>((resolve, reject) => {
     const { operationName, cwd, ignoreWorkerNotFound = false, args } = params
     const wranglerProcess = spawn('npx', ['wrangler', ...args], {
       cwd,
@@ -95,11 +106,11 @@ async function spawnWrangler(params: {
       const { stdout, stderr } = getOutput()
 
       if (code === 0) {
-        resolve()
+        resolve(true)
       } else {
         if (stdout) {
           if (ignoreWorkerNotFound && stdout.includes('This Worker does not exist on your account')) {
-            return resolve()
+            return resolve(false)
           }
           console.log(`-----START wrangler stdout-----\n\n${stdout}\n\n-----END wrangler stdout-----`)
         }
@@ -114,6 +125,9 @@ async function spawnWrangler(params: {
         }
         reject(new Error(`${operationName} failed with code ${code}`))
       }
+    })
+    wranglerProcess.on('error', (e) => {
+      reject(e)
     })
   })
 }
