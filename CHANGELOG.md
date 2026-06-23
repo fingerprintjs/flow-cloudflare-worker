@@ -1,5 +1,21 @@
 # flow-cloudflare-worker
 
+## 0.7.0
+
+### Minor Changes
+
+- Encode the existing edge headers (`fp-ip-info-v{4,6}-address` and `fp-bot-info-*`) using [RFC 9651](https://www.rfc-editor.org/info/rfc9651/) structured fields so they match the format of the IP-intelligence headers.
+
+  IPs and enum-like values (`fp-bot-info-category`, `fp-bot-info-identity`) use sf-strings (e.g. `"94.142.239.124"`, `"verified"`); free-form values (`fp-bot-info-provider`, `fp-bot-info-name`) use sf-display-strings (e.g. `%"Fingerprint"`).
+
+  Consumers will need to unquote / percent-decode these header values. ([f733ccf](https://github.com/fingerprintjs/flow-cloudflare-worker/commit/f733ccf535d788adb0da3835d190e4d248093ee0))
+
+- Forward the full Automation Intelligence API IP intelligence to the protected origin.
+
+  Requests now include `fp-ip-info-v{4,6}-*` headers for geolocation, ASN, and datacenter; `fp-proxy*` headers when a proxy is detected; `fp-vpn*` headers when a VPN is detected; and `fp-ip-blocklist-tor-node` when the IP is a Tor exit.
+
+  String, date, and boolean values follow [RFC 9651](https://www.rfc-editor.org/info/rfc9651/) structured fields, and headers for absent, empty, or false values are omitted. ([21ad71e](https://github.com/fingerprintjs/flow-cloudflare-worker/commit/21ad71e7d2c880cd283ef77a9470e4fd3af481e9))
+
 ## 0.6.1
 
 ### Patch Changes
