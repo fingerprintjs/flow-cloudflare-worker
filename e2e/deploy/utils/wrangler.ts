@@ -91,6 +91,7 @@ export async function wranglerDelete(cwd: string = process.cwd(), args: string[]
 async function spawnWrangler(params: {
   operationName: string
   cwd: string
+  /** true if the "worker not found" error returned by wrangler for a nonexistent worker should not be treated as a failure */
   ignoreWorkerNotFound?: boolean
   args: string[]
 }) {
