@@ -65,59 +65,92 @@ export async function wranglerDeploy(cwd: string, args: string[] = []): Promise<
     return
   }
 
-  return new Promise<void>((resolve, reject) => {
-    const process = spawn('npx', ['wrangler', 'deploy', ...args], { cwd, stdio: 'pipe' })
-    const { getOutput } = captureOutput(process)
-
-    process.on('close', (code) => {
-      const { stdout, stderr } = getOutput()
-
-      if (code === 0) {
-        resolve()
-      } else {
-        if (stdout) {
-          console.log(stdout)
-        }
-        if (stderr) {
-          console.error(stderr)
-        }
-        reject(new Error(`Deployment failed with code ${code}`))
-      }
-    })
-  })
+  await spawnWrangler({ operationName: 'Deployment', cwd, args: ['deploy', ...args] })
 }
 
-export async function wranglerDelete(cwd: string = process.cwd(), args: string[] = []) {
+export async function wranglerDelete(cwd: string = process.cwd(), args: string[] = []): Promise<boolean> {
   if (shouldSkip()) {
     return false
   }
 
+  return await spawnWrangler({
+    operationName: 'Worker removal',
+    cwd,
+    ignoreWorkerNotFound: true,
+    args: ['delete', ...args],
+  })
+}
+
+/**
+ * Invokes wrangler using spawn and outputs debugging logs from wrangler when execution fails
+ *
+ * @param params the parameters for invoking wrangler
+ * @returns true, if the execution succeeded; false if params.ignoreWorkerNotFound was true and the worker was not found.
+ * @throws if wrangler execution fails
+ */
+async function spawnWrangler(params: {
+  operationName: string
+  cwd: string
+  /** true if the "worker not found" error returned by wrangler for a nonexistent worker should not be treated as a failure */
+  ignoreWorkerNotFound?: boolean
+  args: string[]
+}) {
   return new Promise<boolean>((resolve, reject) => {
-    const process = spawn('npx', ['wrangler', 'delete', ...args], {
+    const { operationName, cwd, ignoreWorkerNotFound = false, args } = params
+    const wranglerProcess = spawn('npx', ['wrangler', ...args], {
       cwd,
       stdio: 'pipe',
     })
-    const { getOutput } = captureOutput(process)
+    const { getOutput } = captureOutput(wranglerProcess)
 
-    process.on('close', (code) => {
+    wranglerProcess.on('close', async (code) => {
       const { stdout, stderr } = getOutput()
 
       if (code === 0) {
         resolve(true)
       } else {
         if (stdout) {
-          if (stdout.includes('This Worker does not exist on your account')) {
+          if (ignoreWorkerNotFound && stdout.includes('This Worker does not exist on your account')) {
             return resolve(false)
           }
-
-          console.log(stdout)
+          console.log(`-----START wrangler stdout-----\n\n${stdout}\n\n-----END wrangler stdout-----`)
         }
         if (stderr) {
-          console.error(stderr)
+          console.log(`-----START wrangler stderr-----\n\n${stderr}\n\n-----END wrangler stderr-----`)
         }
 
-        reject(new Error(`Worker removal failed with code ${code}`))
+        try {
+          await logWranglerLogs(stdout, stderr)
+        } catch (e) {
+          console.error(`Failed to log wrangler logs: ${e}`)
+        }
+        reject(new Error(`${operationName} failed with code ${code}`))
       }
     })
+    wranglerProcess.on('error', (e) => {
+      reject(e)
+    })
   })
+}
+
+const WRANGLER_LOGS_WRITTEN_REGEX: RegExp = /Logs were written to "(?<wranglerLogPath>[^"]+)"/
+
+async function logWranglerLogs(stdout?: string, stderr?: string) {
+  let wranglerLogPath: string | undefined
+  if (stdout) {
+    const stdoutResult = WRANGLER_LOGS_WRITTEN_REGEX.exec(stdout)
+    wranglerLogPath = stdoutResult?.groups?.wranglerLogPath
+  }
+
+  if (!wranglerLogPath && stderr) {
+    const stderrResult = WRANGLER_LOGS_WRITTEN_REGEX.exec(stderr)
+    wranglerLogPath = stderrResult?.groups?.wranglerLogPath
+  }
+
+  if (wranglerLogPath) {
+    const logFileContents = await fs.readFile(wranglerLogPath, 'utf-8')
+    console.log(
+      `-----START wrangler logs from "${wranglerLogPath}"-----\n\n${logFileContents}\n\n-----END wrangler logs-----`
+    )
+  }
 }
