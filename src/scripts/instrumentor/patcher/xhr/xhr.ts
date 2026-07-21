@@ -2,6 +2,7 @@ import { logger } from '../../../shared/logger'
 import { PatcherContext } from '../context'
 import { createPatchedOpen } from './open'
 import { createPatchedSend } from './send'
+import { createPatchedSetRequestHeader } from './setRequestHeader'
 
 /**
  * Patches the global XMLHttpRequest to automatically add Fingerprint signals
@@ -17,6 +18,7 @@ export function patchXHR(ctx: PatcherContext) {
 
   XHR.prototype.open = createPatchedOpen(ctx)
   XHR.prototype.send = createPatchedSend(ctx)
+  XHR.prototype.setRequestHeader = createPatchedSetRequestHeader()
 
   logger.debug('XMLHttpRequest patched successfully.')
 }

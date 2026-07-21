@@ -77,6 +77,7 @@ async function getResponseForProtectedCall({
   let signals: string
   let clientCookie: string | undefined
   let removeCookies: boolean
+  let businessContext: { tag?: unknown; linkedId?: string } | undefined
 
   try {
     const result = await IdentificationClient.parseIncomingRequest(request)
@@ -84,6 +85,7 @@ async function getResponseForProtectedCall({
     originRequest = result.originRequest
     clientCookie = result.clientCookie
     removeCookies = result.removeCookies
+    businessContext = result.businessContext
   } catch (e) {
     console.error('Failed to parse incoming request:', e)
 
@@ -95,7 +97,7 @@ async function getResponseForProtectedCall({
   }
 
   try {
-    ingressResponse = await identificationClient.send(originRequest, signals, clientCookie)
+    ingressResponse = await identificationClient.send(originRequest, signals, clientCookie, businessContext)
   } catch (error) {
     console.error('Error sending request to ingress service:', error)
     const response = await handleFallbackRule(originRequest, env)

@@ -2,8 +2,10 @@ import { PatcherContext } from '../context'
 import { ProtectedApi } from '../../../../shared/types'
 import { collectSignalsForProtectedUrl, injectSignalsIntoRequest } from '../signalsInjection'
 import { resolvePatcherRequest } from './patcherRequest'
+import { getHeadersFromFetchParams } from './getHeadersFromFetchParams'
 import { AGENT_DATA_HEADER } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
+import { injectWindowBusinessContextAsHeaders } from '../businessContext'
 
 /**
  * Parameters required for patching the fetch API.
@@ -49,6 +51,11 @@ export function patchFetch(ctx: PatcherContext) {
         signals = await collectSignalsForProtectedUrl({ request, ctx })
         if (signals) {
           injectSignalsIntoRequest(request, signals)
+          try {
+            injectWindowBusinessContextAsHeaders(request, getHeadersFromFetchParams(params))
+          } catch (error) {
+            logger.error('Error injecting window business context into fetch headers:', error)
+          }
           actualParams = updatedParams
         }
       }

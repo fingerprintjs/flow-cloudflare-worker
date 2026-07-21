@@ -16,6 +16,14 @@ import {
   SendResult,
 } from './identificationClientTypes'
 import { getIpType } from '../utils/ip'
+import {
+  BusinessContext,
+  extractAndStripBusinessContextFromForm,
+  extractAndStripBusinessContextFromHeaders,
+  normalizeBusinessContext,
+  resolveBusinessContext,
+  tryExtractBusinessContextFromBody,
+} from './businessContext'
 
 /**
  * Client for communicating with the identification service.
@@ -64,11 +72,17 @@ export class IdentificationClient {
    * @param clientRequest - The incoming client request containing fingerprint data and headers
    * @param signals - Fingerprint signals extracted from the request
    * @param clientCookie - The optional client cookie to send along with the fingerprint data
+   * @param businessContext - SPIKE: optional tag / linkedId for proposed top-level /send fields
    * @returns Promise resolving to SendResult containing agent data and cookie headers
    * @throws {SignalsNotAvailableError} When fingerprint signals are missing from the request
    * @throws {IdentificationRequestFailedError} When the identification service request fails or returns invalid data
    */
-  async send(clientRequest: Request, signals: string, clientCookie?: string): Promise<SendResult> {
+  async send(
+    clientRequest: Request,
+    signals: string,
+    clientCookie?: string,
+    businessContext?: BusinessContext
+  ): Promise<SendResult> {
     const clientIP = await getIp(clientRequest.headers)
     const clientHost = getHeaderOrThrow(clientRequest.headers, 'host')
     const clientUserAgent = getHeaderOrThrow(clientRequest.headers, 'user-agent')
@@ -90,6 +104,14 @@ export class IdentificationClient {
 
     if (clientCookie) {
       sendBody.client_cookie = clientCookie
+    }
+
+    const normalizedContext = businessContext ? normalizeBusinessContext(businessContext) : undefined
+    if (normalizedContext?.tag !== undefined) {
+      sendBody.tag = normalizedContext.tag
+    }
+    if (normalizedContext?.linkedId !== undefined) {
+      sendBody.linked_id = normalizedContext.linkedId
     }
 
     const clientHeadersEntries = Array.from(clientHeaders.entries())
@@ -300,16 +322,31 @@ export class IdentificationClient {
         requestHeaders.delete('Cookie')
       }
 
+      const headerContext = extractAndStripBusinessContextFromHeaders(requestHeaders)
+      const bodyExtract = await tryExtractBusinessContextFromBody(request)
+      if (bodyExtract?.clearContentType) {
+        requestHeaders.delete('content-type')
+      }
+
+      const businessContext = normalizeBusinessContext(
+        resolveBusinessContext({
+          body: bodyExtract?.context,
+          headers: headerContext,
+        })
+      )
+
       const clientCookie = findClientCookie(cookie)
 
       return {
         clientCookie,
         signals: parsedSignals,
         removeCookies,
+        businessContext,
         originRequest: copyRequest({
           request,
           init: {
             headers: requestHeaders,
+            ...(bodyExtract?.body !== undefined ? { body: bodyExtract.body } : {}),
           },
         }),
       }
@@ -330,6 +367,8 @@ export class IdentificationClient {
           data.delete(SIGNALS_KEY)
 
           const requestHeaders = new Headers(request.headers)
+          const headerContext = extractAndStripBusinessContextFromHeaders(requestHeaders)
+          const { context: bodyContext } = extractAndStripBusinessContextFromForm(data)
 
           if (multipartForm) {
             // When modifying FormData for multipart/form-data, we also need to remove the old Content-Type header. Otherwise, the boundary will be different and the request will fail.
@@ -344,10 +383,18 @@ export class IdentificationClient {
           // to be removed.
           const removeCookies = false
 
+          const businessContext = normalizeBusinessContext(
+            resolveBusinessContext({
+              body: bodyContext,
+              headers: headerContext,
+            })
+          )
+
           return {
             clientCookie: findClientCookie(request.headers.get('Cookie')),
             signals,
             removeCookies,
+            businessContext,
             originRequest: copyRequest({
               request,
               init: {
