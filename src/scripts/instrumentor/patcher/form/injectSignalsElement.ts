@@ -1,6 +1,12 @@
 import { PatcherContext } from '../context'
 import { SIGNALS_KEY } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
+import {
+  extractBusinessContextFromForm,
+  extractBusinessContextFromWindow,
+  resolveBusinessContext,
+  toCollectOptions,
+} from '../businessContext'
 
 const REMOVE_LISTENER_SYMBOL = Symbol('removeListener')
 
@@ -30,7 +36,14 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
       return
     }
 
-    const signals = await ctx.getSignals()
+    const businessContext = resolveBusinessContext({
+      body: extractBusinessContextFromForm(form),
+      // Native form submissions cannot set custom HTTP headers
+      headers: {},
+      window: extractBusinessContextFromWindow(),
+    })
+
+    const signals = await ctx.getSignals(toCollectOptions(businessContext))
 
     try {
       if (!signals) {

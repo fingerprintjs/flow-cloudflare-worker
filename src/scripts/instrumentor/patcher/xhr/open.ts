@@ -1,19 +1,12 @@
-import { PatcherContext } from '../context'
 import { FingerprintContextSymbol, XHRFingerprintMetadata, XHRContext, XHRWithFingerprintContext } from './types'
-import { collectSignalsForProtectedUrl } from '../signalsInjection'
 import { createPatcherRequest } from './patcherRequest'
 import { logger } from '../../../shared/logger'
 
 /**
- * Creates a patched version of the `XMLHttpRequest.prototype.open` method to capture request metadata,
- * apply signal handling, and provide additional context for fingerprinting.
- *
- * @param {PatcherContext} ctx - The context object used for configuring and managing the patching process
- *                              and interacting with signal handling mechanisms.
- * @return {function} Returns a new function that wraps the original `XMLHttpRequest.open` method and includes
- *                    additional behavior for metadata collection and signal injection.
+ * Creates a patched version of the `XMLHttpRequest.prototype.open` method to capture request metadata
+ * and prepare context for signal injection at `send` time (when headers and body are available).
  */
-export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.prototype.open {
+export function createPatchedOpen(): typeof XMLHttpRequest.prototype.open {
   const originalOpen = XMLHttpRequest.prototype.open
 
   return function patchedOpen(
@@ -27,7 +20,9 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
     const callOpen = () => originalOpen.call(this, method, url, async, username, password)
 
     if (!async) {
-      // Sync requests are not supported for now
+      // Sync requests are not supported — clear any leftover async fingerprint context
+      // so a reused XHR instance does not defer send into a microtask.
+      delete this[FingerprintContextSymbol]
       return callOpen()
     }
 
@@ -51,18 +46,10 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
 
     try {
       const request = createPatcherRequest(this, metadata)
-      // Start gathering signals as soon as possible.
-      const signalsCollectionPromise = collectSignalsForProtectedUrl({
-        request,
-        ctx,
-      }).catch((error) => {
-        logger.error('Error injecting signals:', error)
-        return undefined
-      })
 
       const nextFingerprintContext: XHRContext = {
         preservedWithCredentials: this[FingerprintContextSymbol]?.preservedWithCredentials,
-        signalsCollectionPromise,
+        requestHeaders: new Map(),
         request,
       }
       Object.assign(this, {

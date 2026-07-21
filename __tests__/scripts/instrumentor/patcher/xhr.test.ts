@@ -35,6 +35,7 @@ function withAgentData() {
 describe('XMLHttpRequest Patcher', () => {
   const originalOpen = XMLHttpRequest.prototype.open
   const originalSend = XMLHttpRequest.prototype.send
+  const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader
 
   let mockContext: PatcherContext
   let mockProtectedApis: ProtectedApi[]
@@ -76,6 +77,7 @@ describe('XMLHttpRequest Patcher', () => {
     Object.assign(XMLHttpRequest.prototype, {
       open: originalOpen,
       send: originalSend,
+      setRequestHeader: originalSetRequestHeader,
     })
   })
 
