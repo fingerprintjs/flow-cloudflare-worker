@@ -28,7 +28,7 @@ describe('instrumentor window → transport injection', () => {
 
     it('ignores prototype-inherited linkedId', () => {
       const proto = { __fp_linked_id: 'inherited' }
-      const target = Object.create(proto) as object
+      const target: object = Object.create(proto)
       expect(extractBusinessContextFromWindow(target)).toEqual({})
     })
   })
