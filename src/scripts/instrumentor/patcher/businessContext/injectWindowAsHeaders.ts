@@ -10,7 +10,7 @@ import { extractBusinessContextFromWindow } from './fromWindow'
  */
 export function injectWindowBusinessContextAsHeaders(
   request: PatcherRequest,
-  existingHeaders: Headers | Map<string, string> | Record<string, string> | undefined
+  existingHeaders: Headers | Map<string, string> | undefined
 ): void {
   const windowContext = extractBusinessContextFromWindow()
 
@@ -23,35 +23,11 @@ export function injectWindowBusinessContextAsHeaders(
   }
 }
 
-function hasHeader(headers: Headers | Map<string, string> | Record<string, string> | undefined, name: string): boolean {
+function hasHeader(headers: Headers | Map<string, string> | undefined, name: string): boolean {
   if (!headers) {
     return false
   }
 
-  const value = getHeader(headers, name)
-  return value !== undefined && value !== ''
-}
-
-function getHeader(headers: Headers | Map<string, string> | Record<string, string>, name: string): string | undefined {
-  if (headers instanceof Headers) {
-    return headers.get(name) ?? undefined
-  }
-
-  if (headers instanceof Map) {
-    return headers.get(name.toLowerCase()) ?? headers.get(name) ?? undefined
-  }
-
-  const direct = headers[name] ?? headers[name.toLowerCase()]
-  if (direct !== undefined) {
-    return direct
-  }
-
-  const lowerName = name.toLowerCase()
-  for (const [key, value] of Object.entries(headers)) {
-    if (key.toLowerCase() === lowerName) {
-      return value
-    }
-  }
-
-  return undefined
+  const value = headers instanceof Headers ? headers.get(name) : (headers.get(name.toLowerCase()) ?? headers.get(name))
+  return value !== undefined && value !== null && value !== ''
 }

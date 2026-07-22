@@ -2,26 +2,20 @@ import { BusinessContext, BusinessContextSource } from './types'
 
 /**
  * Merges business context from body and headers.
- * Precedence is per field, independently: body > headers.
+ * Precedence is per field, independently: body > headers, where an empty
+ * body field (undefined / null / '') falls through to the header field.
  * (Window arrives as headers via instrumentor injection.)
+ *
+ * Returns undefined when neither field is present.
  */
 export function resolveBusinessContext(sources: {
   body?: BusinessContextSource | undefined
   headers?: BusinessContextSource | undefined
-}): BusinessContext {
-  const result: BusinessContext = {}
-
-  const tag = firstPresent(sources.body?.tag, sources.headers?.tag)
-  if (tag !== undefined) {
-    result.tag = tag
-  }
-
-  const linkedId = firstPresentLinkedId(sources.body?.linkedId, sources.headers?.linkedId)
-  if (linkedId !== undefined) {
-    result.linkedId = linkedId
-  }
-
-  return result
+}): BusinessContext | undefined {
+  return normalizeBusinessContext({
+    tag: presentTag(sources.body?.tag) ?? presentTag(sources.headers?.tag),
+    linkedId: presentLinkedId(sources.body?.linkedId) ?? presentLinkedId(sources.headers?.linkedId),
+  })
 }
 
 /** Returns undefined when both fields are absent after normalization. */
@@ -39,26 +33,6 @@ export function normalizeBusinessContext(context: BusinessContext): BusinessCont
     return undefined
   }
   return result
-}
-
-function firstPresent(...values: Array<unknown>): unknown | undefined {
-  for (const value of values) {
-    const present = presentTag(value)
-    if (present !== undefined) {
-      return present
-    }
-  }
-  return undefined
-}
-
-function firstPresentLinkedId(...values: Array<string | undefined>): string | undefined {
-  for (const value of values) {
-    const present = presentLinkedId(value)
-    if (present !== undefined) {
-      return present
-    }
-  }
-  return undefined
 }
 
 /** Tag is absent when undefined, null, or empty string. */

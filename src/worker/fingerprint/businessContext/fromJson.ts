@@ -11,7 +11,6 @@ export function extractAndStripBusinessContextFromJsonObject(value: unknown):
   | {
       context: BusinessContextSource
       body: Record<string, unknown>
-      didStrip: boolean
     }
   | undefined {
   if (!isPlainObject(value)) {
@@ -44,7 +43,7 @@ export function extractAndStripBusinessContextFromJsonObject(value: unknown):
     return undefined
   }
 
-  return { context: result, body, didStrip }
+  return { context: result, body }
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

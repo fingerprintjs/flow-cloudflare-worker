@@ -328,12 +328,10 @@ export class IdentificationClient {
         requestHeaders.delete('content-type')
       }
 
-      const businessContext = normalizeBusinessContext(
-        resolveBusinessContext({
-          body: bodyExtract?.context,
-          headers: headerContext,
-        })
-      )
+      const businessContext = resolveBusinessContext({
+        body: bodyExtract?.context,
+        headers: headerContext,
+      })
 
       const clientCookie = findClientCookie(cookie)
 
@@ -383,12 +381,10 @@ export class IdentificationClient {
           // to be removed.
           const removeCookies = false
 
-          const businessContext = normalizeBusinessContext(
-            resolveBusinessContext({
-              body: bodyContext,
-              headers: headerContext,
-            })
-          )
+          const businessContext = resolveBusinessContext({
+            body: bodyContext,
+            headers: headerContext,
+          })
 
           return {
             clientCookie: findClientCookie(request.headers.get('Cookie')),
