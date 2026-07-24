@@ -1,3 +1,4 @@
+import { BusinessContext } from '../../shared/businessContext'
 import { AGENT_DATA_HEADER } from '../../shared/const'
 import { IdentificationClient } from '../fingerprint/identificationClient'
 import { processRuleset } from '../fingerprint/ruleset'
@@ -77,7 +78,7 @@ async function getResponseForProtectedCall({
   let signals: string
   let clientCookie: string | undefined
   let removeCookies: boolean
-  let businessContext: { tag?: unknown; linkedId?: string } | undefined
+  let businessContext: BusinessContext | undefined
 
   try {
     const result = await IdentificationClient.parseIncomingRequest(request)

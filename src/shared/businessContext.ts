@@ -13,6 +13,17 @@ export const WINDOW_TAG_KEY = '__fp_tag'
 export const WINDOW_LINKED_ID_KEY = '__fp_linked_id'
 
 /**
+ * Business context for Rules Engine (`tag` / `linked_id`).
+ * Same shape whether sourced from window, headers, or body.
+ */
+export type BusinessContext = {
+  /** Same semantics as JS agent / event tags */
+  tag?: unknown
+  /** Customer linked id */
+  linkedId?: string
+}
+
+/**
  * Flow-owned request headers that instrumentation may inject.
  * Must be allowed/stripped in CORS preflight handling like `fp-data`.
  */
@@ -24,6 +35,42 @@ export const FLOW_OWNED_REQUEST_HEADERS = [SIGNALS_KEY, HEADER_TAG_KEY, HEADER_L
  * so protected API uploads keep streaming. Tag itself is capped at 16KB by agent docs.
  */
 export const BUSINESS_CONTEXT_BODY_MAX_BYTES = 256 * 1024
+
+/** Tag is absent when undefined, null, or empty string. */
+export function presentTag(value: unknown): unknown | undefined {
+  if (value === undefined || value === null) {
+    return undefined
+  }
+  if (typeof value === 'string' && value === '') {
+    return undefined
+  }
+  return value
+}
+
+/** linkedId must be a non-empty string. */
+export function presentLinkedId(value: unknown): string | undefined {
+  if (typeof value !== 'string' || value === '') {
+    return undefined
+  }
+  return value
+}
+
+/** Returns undefined when both fields are absent after normalization. */
+export function normalizeBusinessContext(context: BusinessContext): BusinessContext | undefined {
+  const result: BusinessContext = {}
+  const tag = presentTag(context.tag)
+  if (tag !== undefined) {
+    result.tag = tag
+  }
+  const linkedId = presentLinkedId(context.linkedId)
+  if (linkedId !== undefined) {
+    result.linkedId = linkedId
+  }
+  if (result.tag === undefined && result.linkedId === undefined) {
+    return undefined
+  }
+  return result
+}
 
 /**
  * Header / form wire values are strings. Instrumentor always JSON-encodes tags so

@@ -1,3 +1,4 @@
+import { BusinessContext } from '../../shared/businessContext'
 import { RuleAction } from './ruleset'
 import { z } from 'zod/v4'
 
@@ -171,12 +172,7 @@ export type ParsedIncomingRequest = {
    * SPIKE: business context extracted from the protected API request
    * (headers + body), ready to inject as top-level `/v4/send` fields.
    */
-  businessContext?:
-    | {
-        tag?: unknown
-        linkedId?: string
-      }
-    | undefined
+  businessContext?: BusinessContext | undefined
 }
 
 const EdgeRequestHeader = z.object({

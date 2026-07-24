@@ -20,7 +20,6 @@ import {
   BusinessContext,
   extractAndStripBusinessContextFromForm,
   extractAndStripBusinessContextFromHeaders,
-  normalizeBusinessContext,
   resolveBusinessContext,
   tryExtractBusinessContextFromBody,
 } from './businessContext'
@@ -106,12 +105,11 @@ export class IdentificationClient {
       sendBody.client_cookie = clientCookie
     }
 
-    const normalizedContext = businessContext ? normalizeBusinessContext(businessContext) : undefined
-    if (normalizedContext?.tag !== undefined) {
-      sendBody.tag = normalizedContext.tag
+    if (businessContext?.tag !== undefined) {
+      sendBody.tag = businessContext.tag
     }
-    if (normalizedContext?.linkedId !== undefined) {
-      sendBody.linked_id = normalizedContext.linkedId
+    if (businessContext?.linkedId !== undefined) {
+      sendBody.linked_id = businessContext.linkedId
     }
 
     const clientHeadersEntries = Array.from(clientHeaders.entries())
