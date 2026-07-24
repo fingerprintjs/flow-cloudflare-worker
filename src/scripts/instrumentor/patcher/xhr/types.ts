@@ -5,10 +5,10 @@ export type XHRFingerprintMetadata = { method: string; url: string }
 export type XHRContext = {
   request: PatcherRequest
   /**
-   * Request headers recorded via patched `setRequestHeader`.
-   * XHR does not expose a way to read request headers back.
+   * Relevant request headers recorded via patched `setRequestHeader`.
+   * XHR does not expose a way to read them back.
    */
-  requestHeaders: Map<string, string>
+  requestHeaders: Headers
   /** Stores the original withCredentials value set by the app after the signals injection happens
    * before the send. This is cleared when the XHR instance is re-opened for further use */
   preservedWithCredentials: boolean | undefined

@@ -5,7 +5,6 @@ import { resolvePatcherRequest } from './patcherRequest'
 import { AGENT_DATA_HEADER } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
 import {
-  extractBusinessContextFromBody,
   extractBusinessContextFromHeaders,
   extractBusinessContextFromRequest,
   extractBusinessContextFromWindow,
@@ -50,13 +49,13 @@ export function patchFetch(ctx: PatcherContext) {
       const result = resolvePatcherRequest(params)
 
       if (result) {
-        const [request, updatedParams] = result
+        const { request, effectiveRequest, updatedParams } = result
 
         logger.debug('Resolved fetch request and updated params:', request, updatedParams)
 
         // Resolve business context only for protected URLs — body parsing can be expensive
         if (ctx.isProtectedUrl(request.url, request.method)) {
-          const businessContext = await resolveFetchBusinessContext(params)
+          const businessContext = await resolveFetchBusinessContext(effectiveRequest)
           signals = await collectSignalsForProtectedUrl({ request, ctx, businessContext })
           if (signals) {
             injectSignalsIntoRequest(request, signals)
@@ -91,38 +90,12 @@ export function patchFetch(ctx: PatcherContext) {
 }
 
 /**
- * Resolves business context from fetch arguments.
- *
- * For `fetch(Request, init)`, `init` overrides the Request the same way the Fetch API does:
- * init.headers replace Request headers when present; init.body replaces Request body when `body` is set.
+ * Resolves business context from the effective fetch Request.
  */
-async function resolveFetchBusinessContext(params: Parameters<typeof fetch>) {
-  const windowSource = extractBusinessContextFromWindow()
-  const input = params[0]
-  const init = params[1]
-
-  if (input instanceof Request) {
-    const headers = init?.headers != null ? new Headers(init.headers) : input.headers
-    const headersSource = extractBusinessContextFromHeaders(headers)
-    const bodySource =
-      init != null && 'body' in init
-        ? await extractBusinessContextFromBody(init.body, headers.get('content-type'))
-        : await extractBusinessContextFromRequest(input)
-
-    return resolveBusinessContext({
-      body: bodySource,
-      headers: headersSource,
-      window: windowSource,
-    })
-  }
-
-  const headers = init?.headers != null ? new Headers(init.headers) : undefined
-  const headersSource = extractBusinessContextFromHeaders(headers)
-  const bodySource = await extractBusinessContextFromBody(init?.body, headers?.get('content-type'))
-
+async function resolveFetchBusinessContext(request: Request) {
   return resolveBusinessContext({
-    body: bodySource,
-    headers: headersSource,
-    window: windowSource,
+    body: await extractBusinessContextFromRequest(request),
+    headers: extractBusinessContextFromHeaders(request.headers),
+    window: extractBusinessContextFromWindow(),
   })
 }

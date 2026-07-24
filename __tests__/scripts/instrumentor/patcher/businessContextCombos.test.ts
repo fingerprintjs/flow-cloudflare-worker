@@ -138,6 +138,14 @@ describe('Business context transport combinations', () => {
         tag: 'init-body-tag',
         linkedId: 'init-linked-id',
       })
+
+      const [forwardedRequest] = mockedFetch.mock.calls[0]
+      expect(forwardedRequest).toBeInstanceOf(Request)
+      if (!(forwardedRequest instanceof Request)) {
+        throw new Error('Expected fetch to receive a Request')
+      }
+      expect(forwardedRequest.headers.get('fp-tag')).toBe('init-tag')
+      await expect(forwardedRequest.clone().json()).resolves.toEqual({ fp_tag: 'init-body-tag' })
     })
   })
 
@@ -181,7 +189,14 @@ describe('Business context transport combinations', () => {
           ],
         },
       ],
-      ['body', () => undefined, { body: JSON.stringify({ fp_tag: 'body-tag', fp_linked_id: 'body-linked-id' }) }],
+      [
+        'body',
+        () => undefined,
+        {
+          headers: [['content-type', 'application/json']],
+          body: JSON.stringify({ fp_tag: 'body-tag', fp_linked_id: 'body-linked-id' }),
+        },
+      ],
     ])('passes %s context to getSignals', async (_source, setup, options) => {
       setup()
       patchXHR(context)
@@ -201,6 +216,19 @@ describe('Business context transport combinations', () => {
           ? { tag: 'header-tag', linkedId: 'header-linked-id' }
           : { tag: `${_source}-tag`, linkedId: `${_source}-linked-id` }
       expect(context.getSignals).toHaveBeenCalledWith(expectedContext)
+    })
+
+    it('preserves repeated business context header values', async () => {
+      patchXHR(context)
+
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', server.getUrl('/protected/endpoint'))
+      xhr.setRequestHeader('fp-tag', 'first')
+      xhr.setRequestHeader('FP-TAG', 'second')
+      xhr.send()
+      await new Promise<void>((resolve) => xhr.addEventListener('load', () => resolve(), { once: true }))
+
+      expect(context.getSignals).toHaveBeenCalledWith({ tag: 'first, second' })
     })
 
     it('clears fingerprint context when reopening as sync after async', async () => {

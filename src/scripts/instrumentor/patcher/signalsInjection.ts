@@ -2,7 +2,7 @@ import { PatcherRequest } from './types'
 import { PatcherContext } from './context'
 import { logger } from '../../shared/logger'
 import { APP_INCLUDED_CREDENTIALS_FLAG, SIGNALS_KEY } from '../../../shared/const'
-import { BusinessContext, toCollectOptions } from './businessContext'
+import { BusinessContext } from './businessContext'
 
 /**
  * Parameters required for handling signals injection into requests.
@@ -39,7 +39,7 @@ export async function collectSignalsForProtectedUrl({
 
   logger.debug('Injecting signals:', request.url, businessContext)
 
-  const signals = await ctx.getSignals(businessContext ? toCollectOptions(businessContext) : undefined)
+  const signals = await ctx.getSignals(businessContext)
 
   if (!signals) {
     logger.warn('No signals data found.')

@@ -1,11 +1,11 @@
 import { WINDOW_LINKED_ID_KEY, WINDOW_TAG_KEY } from './const'
-import { BusinessContextSource } from './types'
+import { BusinessContext } from '../../../shared/fingerprint/types'
 
 /**
  * Reads business context from window globals `__fp_tag` and `__fp_linked_id`.
  */
-export function extractBusinessContextFromWindow(target: object = globalThis): BusinessContextSource {
-  const result: BusinessContextSource = {}
+export function extractBusinessContextFromWindow(target: object = globalThis): BusinessContext {
+  const result: BusinessContext = {}
 
   if (Object.prototype.hasOwnProperty.call(target, WINDOW_TAG_KEY)) {
     const tag = Reflect.get(target, WINDOW_TAG_KEY)

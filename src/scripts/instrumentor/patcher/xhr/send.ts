@@ -50,7 +50,7 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
       try {
         const contentType = fingerprintContext.requestHeaders.get('content-type')
         const businessContext = resolveBusinessContext({
-          body: await extractBusinessContextFromBody(body, contentType),
+          body: extractBusinessContextFromBody(body, contentType),
           headers: extractBusinessContextFromHeaders(fingerprintContext.requestHeaders),
           window: extractBusinessContextFromWindow(),
         })

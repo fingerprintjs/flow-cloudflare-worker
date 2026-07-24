@@ -2,5 +2,5 @@ export { BODY_LINKED_ID_KEY, BODY_TAG_KEY, HEADER_LINKED_ID_KEY, HEADER_TAG_KEY,
 export { extractBusinessContextFromBody, extractBusinessContextFromForm, extractBusinessContextFromRequest } from './fromBody'
 export { extractBusinessContextFromHeaders } from './fromHeaders'
 export { extractBusinessContextFromWindow } from './fromWindow'
-export { resolveBusinessContext, toCollectOptions } from './resolve'
-export type { BusinessContext, BusinessContextSource } from './types'
+export { resolveBusinessContext } from './resolve'
+export type { BusinessContext } from '../../../shared/fingerprint/types'

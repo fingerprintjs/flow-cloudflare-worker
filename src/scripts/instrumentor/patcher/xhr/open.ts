@@ -49,7 +49,7 @@ export function createPatchedOpen(): typeof XMLHttpRequest.prototype.open {
 
       const nextFingerprintContext: XHRContext = {
         preservedWithCredentials: this[FingerprintContextSymbol]?.preservedWithCredentials,
-        requestHeaders: new Map(),
+        requestHeaders: new Headers(),
         request,
       }
       Object.assign(this, {

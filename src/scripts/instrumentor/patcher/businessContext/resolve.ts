@@ -1,4 +1,4 @@
-import { BusinessContext, BusinessContextSource } from './types'
+import { BusinessContext } from '../../../shared/fingerprint/types'
 
 /**
  * Merges business context from body, headers, and window.
@@ -7,10 +7,10 @@ import { BusinessContext, BusinessContextSource } from './types'
  * Mixing sources is intentional (e.g. tag from body + linkedId from window).
  */
 export function resolveBusinessContext(sources: {
-  body?: BusinessContextSource
-  headers?: BusinessContextSource
-  window?: BusinessContextSource
-}): BusinessContext {
+  body?: BusinessContext
+  headers?: BusinessContext
+  window?: BusinessContext
+}): BusinessContext | undefined {
   const result: BusinessContext = {}
 
   const tag = firstPresent(sources.body?.tag, sources.headers?.tag, sources.window?.tag)
@@ -27,31 +27,10 @@ export function resolveBusinessContext(sources: {
     result.linkedId = linkedId
   }
 
-  return result
-}
-
-/**
- * Returns collect() options only when at least one usable field is present.
- * Treats null and empty string as absent.
- */
-export function toCollectOptions(context: BusinessContext): BusinessContext | undefined {
-  const normalized = normalizeBusinessContext(context)
-  if (normalized.tag === undefined && normalized.linkedId === undefined) {
+  if (result.tag === undefined && result.linkedId === undefined) {
     return undefined
   }
-  return normalized
-}
 
-export function normalizeBusinessContext(context: BusinessContext): BusinessContext {
-  const result: BusinessContext = {}
-  const tag = presentTag(context.tag)
-  if (tag !== undefined) {
-    result.tag = tag
-  }
-  const linkedId = presentLinkedId(context.linkedId)
-  if (linkedId !== undefined) {
-    result.linkedId = linkedId
-  }
   return result
 }
 
