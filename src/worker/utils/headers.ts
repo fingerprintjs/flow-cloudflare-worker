@@ -23,6 +23,13 @@ export async function getIp(headers: Headers): Promise<string> {
   const ip = headers.get('cf-connecting-ip')
 
   if (ip) {
+    // Cloudflare's Pseudo IPv4 (https://developers.cloudflare.com/network/pseudo-ipv4/) set to
+    // `Overwrite headers` replaces `cf-connecting-ip` with a synthesized class E IPv4 address.
+    // In that case the real client address is only available in `cf-connecting-ipv6`.
+    if (headers.get('cf-pseudo-ipv4') === ip) {
+      return headers.get('cf-connecting-ipv6') || ip
+    }
+
     return ip
   }
 
