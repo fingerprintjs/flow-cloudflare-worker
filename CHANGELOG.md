@@ -1,5 +1,11 @@
 # flow-cloudflare-worker
 
+## 0.7.1
+
+### Patch Changes
+
+- Resolve the real client IP when Cloudflare's Pseudo IPv4 is set to `Overwrite headers`. ([5963dbf](https://github.com/fingerprintjs/flow-cloudflare-worker/commit/5963dbf4e8f54eb021c1f4d74ed7e9299f1f30d2))
+
 ## 0.7.0
 
 ### Minor Changes
