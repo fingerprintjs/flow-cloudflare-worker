@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   appendHeaderValue,
+  getIp,
   hasContentType,
   mergeHeaders,
   removeHeaderValue,
@@ -62,6 +63,48 @@ describe('Headers', () => {
       it(`should check for header type #${index}`, () => {
         expect(hasContentType(testCase.headers, testCase.contentType)).toEqual(testCase.expected)
       })
+    })
+  })
+
+  describe('getIp', () => {
+    const ipv4 = '198.51.100.7'
+    const ipv6 = '2001:db8::1'
+    const pseudoIpv4 = '240.1.2.3'
+
+    it('returns the cf-connecting-ip value', async () => {
+      const headers = new Headers({ 'cf-connecting-ip': ipv4 })
+      await expect(getIp(headers)).resolves.toEqual(ipv4)
+    })
+
+    it('returns the cf-connecting-ip value when it is an IPv6 address', async () => {
+      const headers = new Headers({ 'cf-connecting-ip': ipv6 })
+      await expect(getIp(headers)).resolves.toEqual(ipv6)
+    })
+
+    it('returns the real IPv6 address when Pseudo IPv4 overwrote cf-connecting-ip', async () => {
+      const headers = new Headers({
+        'cf-connecting-ip': pseudoIpv4,
+        'cf-pseudo-ipv4': pseudoIpv4,
+        'cf-connecting-ipv6': ipv6,
+      })
+      await expect(getIp(headers)).resolves.toEqual(ipv6)
+    })
+
+    it('falls back to cf-connecting-ip when Pseudo IPv4 overwrote it but cf-connecting-ipv6 is missing', async () => {
+      const headers = new Headers({
+        'cf-connecting-ip': pseudoIpv4,
+        'cf-pseudo-ipv4': pseudoIpv4,
+      })
+      await expect(getIp(headers)).resolves.toEqual(pseudoIpv4)
+    })
+
+    it('keeps cf-connecting-ip when Pseudo IPv4 only added a header', async () => {
+      const headers = new Headers({
+        'cf-connecting-ip': ipv6,
+        'cf-pseudo-ipv4': pseudoIpv4,
+        'cf-connecting-ipv6': ipv6,
+      })
+      await expect(getIp(headers)).resolves.toEqual(ipv6)
     })
   })
 
