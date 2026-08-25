@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { getCrossOriginUrl, setCorsHeadersForInstrumentation } from '../../src/worker/utils/request'
-import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../src/shared/const'
+import { AGENT_DATA_HEADER } from '../../src/shared/const'
+import { FLOW_OWNED_REQUEST_HEADERS } from '../../src/shared/businessContext'
 
 describe('Request', () => {
   describe('getCrossOriginUrl', () => {
@@ -217,7 +218,9 @@ describe('Request', () => {
       expect(headers.get('Access-Control-Allow-Origin')).toBe('https://allowed.example.com')
       expect(headers.get('Access-Control-Allow-Credentials')).toBe('true')
       expect(headers.get('Access-Control-Expose-Headers')).toBeNull()
-      expect(headers.get('Access-Control-Allow-Headers')).toEqual(`content-type,${SIGNALS_KEY}`)
+      expect(headers.get('Access-Control-Allow-Headers')).toEqual(
+        `content-type,${FLOW_OWNED_REQUEST_HEADERS.join(',')}`
+      )
     })
   })
 })
