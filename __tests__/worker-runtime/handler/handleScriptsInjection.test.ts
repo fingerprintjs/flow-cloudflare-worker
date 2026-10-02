@@ -416,7 +416,7 @@ describe('Scripts injection', () => {
         expect(html).toContain('<script defer src="/scripts/instrumentor.iife.js"></script>')
       })
 
-      it('calls Edge API for static asset when skipping is disabled', async () => {
+      it('calls Edge API for static asset when static assets are included', async () => {
         vi.mocked(fetch).mockResolvedValueOnce(
           new Response(JSON.stringify(mockEdgeResponseIpV4), {
             headers: {
@@ -432,7 +432,7 @@ describe('Scripts injection', () => {
         request.headers.set('Sec-Fetch-Dest', 'script')
         const ctx = createExecutionContext()
 
-        await handler.fetch(request, { ...edgeEnv, FP_EDGE_SKIP_STATIC_ASSETS: 'false' }, ctx)
+        await handler.fetch(request, { ...edgeEnv, FP_EDGE_INCLUDE_STATIC_ASSETS: 'true' }, ctx)
         await waitOnExecutionContext(ctx)
 
         expect(fetch).toHaveBeenCalledTimes(2)

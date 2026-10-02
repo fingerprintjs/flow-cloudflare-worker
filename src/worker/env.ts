@@ -93,16 +93,10 @@ export function isEdgeApiEnabled(env: TypedEnv) {
 }
 
 /**
- * Determines if Edge API calls are skipped for static asset requests. Enabled unless set to a value other than 'true'.
+ * Determines if static asset requests call the Edge API. By default they don't.
  */
-export function isEdgeStaticAssetSkipEnabled(env: TypedEnv) {
-  // Wrangler vars may be JSON booleans despite the generated string type
-  const value: unknown = env.FP_EDGE_SKIP_STATIC_ASSETS
-  if (value === undefined || value === null || value === '') {
-    return true
-  }
-
-  return String(value) === 'true'
+export function isEdgeStaticAssetsIncluded(env: TypedEnv) {
+  return env.FP_EDGE_INCLUDE_STATIC_ASSETS === 'true'
 }
 
 export function getFpRegion(env: TypedEnv): Region {

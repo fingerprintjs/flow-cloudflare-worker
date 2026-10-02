@@ -45,14 +45,12 @@ describe('shouldSkipEdgeRequest', () => {
   it.each([
     ['unset', undefined, true],
     ['empty', '', true],
-    ['true', 'true', true],
-    ['false', 'false', false],
-    ['boolean true', true, true],
-    ['boolean false', false, false],
-    ['invalid', 'yes', false],
-  ])('FP_EDGE_SKIP_STATIC_ASSETS %s', (_, value, expected) => {
+    ['false', 'false', true],
+    ['invalid', 'yes', true],
+    ['true', 'true', false],
+  ])('FP_EDGE_INCLUDE_STATIC_ASSETS %s', (_, value, expected) => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const env = { ...mockEnv, FP_EDGE_SKIP_STATIC_ASSETS: value } as TypedEnv
+    const env = { ...mockEnv, FP_EDGE_INCLUDE_STATIC_ASSETS: value } as TypedEnv
 
     expect(shouldSkipEdgeRequest(createRequest('GET', 'script'), env)).toBe(expected)
   })

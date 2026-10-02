@@ -1,9 +1,9 @@
 import { TypedEnv } from '../types'
-import { isEdgeStaticAssetSkipEnabled } from '../env'
+import { isEdgeStaticAssetsIncluded } from '../env'
 
 /**
  * `Sec-Fetch-Dest` values that browsers send for static asset loads.
- * Requests with these destinations don't call the Edge API.
+ * Requests with these destinations don't call the Edge API by default to avoid unnecessary calls.
  *
  * Not listed, so always sent to the Edge API: `document`, `iframe`, `frame`, `embed`, `object`,
  * `empty` (fetch/XHR), a missing header, and any unknown value.
@@ -38,7 +38,7 @@ const SKIPPABLE_METHODS = new Set(['GET', 'HEAD'])
  * Edge API call. Client-supplied `fp-*` headers are still stripped before the request reaches the origin.
  */
 export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean {
-  if (!isEdgeStaticAssetSkipEnabled(env)) {
+  if (isEdgeStaticAssetsIncluded(env)) {
     return false
   }
 
