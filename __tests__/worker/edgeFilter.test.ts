@@ -47,6 +47,8 @@ describe('shouldSkipEdgeRequest', () => {
     ['empty', '', true],
     ['true', 'true', true],
     ['false', 'false', false],
+    ['boolean true', true, true],
+    ['boolean false', false, false],
     ['invalid', 'yes', false],
   ])('FP_EDGE_SKIP_STATIC_ASSETS %s', (_, value, expected) => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

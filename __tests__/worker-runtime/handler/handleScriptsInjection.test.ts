@@ -470,6 +470,9 @@ describe('Scripts injection', () => {
         await waitOnExecutionContext(ctx)
 
         expect(fetch).toHaveBeenCalledTimes(2)
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const originRequest = vi.mocked(fetch).mock.calls[1][0] as Request
+        expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
       })
     })
   })
