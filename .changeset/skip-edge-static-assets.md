@@ -1,0 +1,9 @@
+---
+'flow-cloudflare-worker': minor
+---
+
+Skip the Automation Intelligence API call for static asset requests.
+
+`GET` and `HEAD` requests with a static asset `Sec-Fetch-Dest` (`script`, `style`, `image`, `font`, and similar) go straight to the origin. Client-supplied `fp-*` headers are still removed. Page loads, fetch/XHR calls, and requests without `Sec-Fetch-Dest` call the API as before.
+
+Set `FP_EDGE_SKIP_STATIC_ASSETS` to `false` to call the API for every request.

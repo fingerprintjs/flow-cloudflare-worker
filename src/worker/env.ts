@@ -92,6 +92,15 @@ export function isEdgeApiEnabled(env: TypedEnv) {
   return env.FP_EDGE_API === 'true'
 }
 
+/**
+ * Determines if Edge API calls are skipped for static asset requests. Enabled unless set to a value other than 'true'.
+ */
+export function isEdgeStaticAssetSkipEnabled(env: TypedEnv) {
+  const value = env.FP_EDGE_SKIP_STATIC_ASSETS
+
+  return !value || value === 'true'
+}
+
 export function getFpRegion(env: TypedEnv): Region {
   const region = env.FP_REGION
   if (region) {

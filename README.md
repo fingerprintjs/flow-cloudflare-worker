@@ -46,6 +46,9 @@ The worker is configured using a `wrangler.jsonc` file. An example file `wrangle
     - Example: `[ { method: 'POST', url: 'https://example.com/sign-up/*' }]`
 -   `IDENTIFICATION_PAGE_URLS`: An array of url patterns that cannot be relative but can contain wildcards where the Fingerprint identification script should be injected. 
     - Example: `[ 'https://example.com/login', 'https://example.com/signup/*' ]` 
+-   `FP_EDGE_API`: Set to `true` to call the Automation Intelligence API for requests to `IDENTIFICATION_PAGE_URLS` and forward the result to the origin as `fp-*` headers.
+-   `FP_EDGE_SKIP_STATIC_ASSETS`: Defaults to `true`. Skips the Automation Intelligence API call for `GET` and `HEAD` requests whose `Sec-Fetch-Dest` header marks a static asset (for example `script`, `style`, `image`, `font`). Set to `false` to call it for every request.
+    - Clients can set `Sec-Fetch-Dest` themselves. Treat a request without `fp-ip-info-v4-address` or `fp-ip-info-v6-address` as one where the API was not consulted.
 
 ## Architecture
 

@@ -1,6 +1,6 @@
-import { expect, Response } from '@playwright/test'
+import { APIResponse, expect, Response } from '@playwright/test'
 
-export const getReceivedHeaders = (response: Response) => {
+export const getReceivedHeaders = (response: Response | APIResponse) => {
   const rawData: string = response.headers()['x-received-headers']
   const parsedData: Array<{ name: string; value: string }> = JSON.parse(rawData)
 

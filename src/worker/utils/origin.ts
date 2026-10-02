@@ -4,6 +4,7 @@ import { setEdgeResponseHeaders } from './edgeHeaders'
 import { isEdgeApiEnabled } from '../env'
 import { copyRequest } from './request'
 import { EdgeResponse } from '../fingerprint/identificationClientTypes'
+import { shouldSkipEdgeRequest } from './edgeFilter'
 
 export function fetchOrigin(request: Request) {
   const origin = import.meta.env.VITE_ORIGIN
@@ -44,6 +45,13 @@ export async function fetchOriginWithEdgeAPIRequest(
 ): Promise<Response> {
   if (!isEdgeApiEnabled(env)) {
     return fetchOrigin(request)
+  }
+
+  if (shouldSkipEdgeRequest(request, env)) {
+    console.debug('Skipping Edge API request for static asset:', request.url)
+
+    // Still strips client-supplied Edge headers
+    return fetchOriginWithEdgeAPIHeaders(request, env, undefined)
   }
 
   const edgeResponse = await identificationClient.safeEdge(request)

@@ -16,6 +16,7 @@ declare namespace Cloudflare {
 		FP_PUBLIC_KEY: string;
 		FP_LOG_LEVEL: string;
 		FP_EDGE_API: string;
+		FP_EDGE_SKIP_STATIC_ASSETS: string;
 		PROTECTED_APIS: object[];
 		IDENTIFICATION_PAGE_URLS: string[];
 	}
