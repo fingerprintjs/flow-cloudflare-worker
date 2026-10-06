@@ -35,23 +35,32 @@ const SKIPPABLE_METHODS = new Set(['GET', 'HEAD'])
 
 /**
  * Returns true when the request is a browser static asset load that should not call the Edge API.
+ * For example, `https://example.com/assets/app.js`
  *
- * The check relies on `Sec-Fetch-Dest`, which clients can forge. A forged value only skips the
- * Edge API call. Client-supplied `fp-*` headers are still stripped before the request reaches the origin.
+ * The check relies on `Sec-Fetch-Dest`, which clients can forge.
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest
+ * A forged value only skips the Edge API call.
+ * Client-supplied `fp-*` headers are still stripped before the request reaches the origin.
  *
- * Only applies to requests that matched a wildcard identification page pattern (ending with `*`),
- * where static assets are routed through the worker. Exact patterns always call the Edge API,
- * so customers can list pages explicitly to stop a forged `Sec-Fetch-Dest` from skipping it.
+ * - Only skip non-root GET/HEAD static asset requests that matched a wildcard identification page pattern (ending with `*`),
+ * - Requests matching root or exact (no `*`) page patterns always call the Edge API,
+ *   so customers can list pages explicitly to stop a forged `Sec-Fetch-Dest` from skipping them.
+ *
+ * The root page is a special case that intentionally _always_ calls the Edge API because it is usually the first request to a site, and customers
+ * commonly use a pattern like `https://example.com/*` which matches it.
  */
 export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean {
   if (edgeApiAlwaysChecksStaticAssets(env)) {
     return false
   }
 
+  const url = new URL(request.url)
+
   return (
     SKIPPABLE_METHODS.has(request.method) &&
     isStaticAssetDestination(request.headers.get('Sec-Fetch-Dest')) &&
-    onlyMatchesWildcardIdentificationPage(new URL(request.url), env)
+    url.pathname !== '/' &&
+    onlyMatchesWildcardIdentificationPage(url, env)
   )
 }
 

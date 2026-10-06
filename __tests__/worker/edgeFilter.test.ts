@@ -56,8 +56,11 @@ describe('shouldSkipEdgeRequest', () => {
     ['exact path', ['/assets/app.js'], '/assets/app.js', false],
     ['exact path over wildcard', ['/*', '/login'], '/login', false],
     ['exact path with query string over wildcard', ['/*', '/login'], '/login?next=/account', false],
-    ['exact root with query string over wildcard', ['/*', '/'], '/?utm_source=ad', false],
     ['wildcard in fragment', ['/page#*'], '/page', false],
+
+    // Calls edge: the root page, even when only a wildcard matches
+    ['root page under wildcard', ['/*'], '/', false],
+    ['root page with query string under wildcard', ['/*'], '/?utm_source=ad', false],
   ])('identification page pattern: %s', (_, patterns, path, expected) => {
     const env: TypedEnv = { ...mockEnv, IDENTIFICATION_PAGE_URLS: patterns.map(mockUrl) }
 
@@ -71,12 +74,6 @@ describe('shouldSkipEdgeRequest', () => {
     const env: TypedEnv = { ...mockEnv, IDENTIFICATION_PAGE_URLS: patterns }
 
     expect(shouldSkipEdgeRequest(createRequest('GET', 'script', '/login'), env)).toBe(false)
-  })
-
-  it('does not skip for bare host wildcard', () => {
-    const env: TypedEnv = { ...mockEnv, IDENTIFICATION_PAGE_URLS: ['https://*'] }
-
-    expect(shouldSkipEdgeRequest(createRequest('GET', 'script', '/'), env)).toBe(false)
   })
 
   describe('FP_EDGE_INCLUDE_STATIC_ASSETS', () => {

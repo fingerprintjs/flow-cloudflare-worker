@@ -404,7 +404,7 @@ describe('Scripts injection', () => {
           })
         )
 
-        const request = new CloudflareRequest(mockWorkerBaseUrl)
+        const request = new CloudflareRequest(`${mockWorkerBaseUrl}/page`)
         request.headers.set('Sec-Fetch-Dest', 'image')
         const ctx = createExecutionContext()
 
@@ -441,6 +441,38 @@ describe('Scripts injection', () => {
         expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
       })
 
+      it('calls Edge API for root page with static asset Sec-Fetch-Dest under wildcard', async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+          new Response(JSON.stringify(mockEdgeResponseIpV4), {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            status: 200,
+          })
+        )
+        vi.mocked(fetch).mockResolvedValueOnce(
+          new Response(sampleHtml, {
+            headers: {
+              'Content-Type': 'text/html',
+            },
+            status: 200,
+          })
+        )
+
+        const request = new CloudflareRequest(`${mockWorkerBaseUrl}/?utm_source=ad`)
+        request.headers.set('cf-connecting-ip', '94.142.239.124')
+        request.headers.set('Sec-Fetch-Dest', 'image')
+        const ctx = createExecutionContext()
+
+        await handler.fetch(request, edgeEnv, ctx)
+        await waitOnExecutionContext(ctx)
+
+        expect(fetch).toHaveBeenCalledTimes(2)
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const originRequest = vi.mocked(fetch).mock.calls[1][0] as Request
+        expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
+      })
+
       it('calls Edge API for static asset on exact identification page pattern', async () => {
         vi.mocked(fetch).mockResolvedValueOnce(
           new Response(JSON.stringify(mockEdgeResponseIpV4), {
@@ -459,12 +491,12 @@ describe('Scripts injection', () => {
           })
         )
 
-        const request = new CloudflareRequest(mockWorkerBaseUrl)
+        const request = new CloudflareRequest(`${mockWorkerBaseUrl}/page`)
         request.headers.set('cf-connecting-ip', '94.142.239.124')
         request.headers.set('Sec-Fetch-Dest', 'script')
         const ctx = createExecutionContext()
 
-        await handler.fetch(request, { ...edgeEnv, IDENTIFICATION_PAGE_URLS: [mockWorkerBaseUrl] }, ctx)
+        await handler.fetch(request, { ...edgeEnv, IDENTIFICATION_PAGE_URLS: [`${mockWorkerBaseUrl}/page`] }, ctx)
         await waitOnExecutionContext(ctx)
 
         expect(fetch).toHaveBeenCalledTimes(2)

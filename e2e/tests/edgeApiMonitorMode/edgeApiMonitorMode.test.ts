@@ -56,7 +56,7 @@ test.describe('Edge API in monitor mode', () => {
     test('should skip Edge API on wildcard page, strip spoofed Edge headers and still inject scripts', async ({
       request,
     }) => {
-      const response = await request.get('/wildcard/page', {
+      const response = await request.get('/shop/page', {
         headers: {
           'Sec-Fetch-Dest': 'script',
           'fp-ip-info-v4-address': '"1.2.3.4"',
@@ -74,7 +74,7 @@ test.describe('Edge API in monitor mode', () => {
     })
 
     test('should call Edge API on exact page even with static asset Sec-Fetch-Dest', async ({ request }) => {
-      const response = await request.get('/', {
+      const response = await request.get('/shop/exact', {
         headers: {
           'Sec-Fetch-Dest': 'script',
         },
