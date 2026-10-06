@@ -1,5 +1,5 @@
 import { getReceivedHeaders } from '../tests/shared/utils'
-import { expect, Response } from '@playwright/test'
+import { APIResponse, expect, Response } from '@playwright/test'
 
 // Mirrors EdgeHeaders enum from flow worker, as we can't import it directly here
 export const ipV4EdgeHeaders = [
@@ -104,7 +104,7 @@ export function checkEdgeBotHeaders(response: Response) {
   checkEdgeIpHeader(receivedHeaders)
 }
 
-export function checkEdgeNoBotHeaders(response: Response) {
+export function checkEdgeNoBotHeaders(response: Response | APIResponse) {
   const receivedHeaders = getReceivedHeaders(response)
   for (const botHeaderKey of botHeaderKeys) {
     expect(receivedHeaders.has(botHeaderKey)).toBeFalsy()

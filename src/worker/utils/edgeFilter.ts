@@ -1,5 +1,6 @@
+import { findMatchingRoute, parseRoutes } from '@fingerprintjs/url-matcher'
 import { TypedEnv } from '../types'
-import { isEdgeStaticAssetsIncluded } from '../env'
+import { getIdentificationPageUrls, edgeApiAlwaysChecksStaticAssets } from '../env'
 
 /**
  * `Sec-Fetch-Dest` values that browsers send for static asset loads.
@@ -36,9 +37,13 @@ const SKIPPABLE_METHODS = new Set(['GET', 'HEAD'])
  *
  * The check relies on `Sec-Fetch-Dest`, which clients can forge. A forged value only skips the
  * Edge API call. Client-supplied `fp-*` headers are still stripped before the request reaches the origin.
+ *
+ * Only applies to requests that matched a wildcard identification page pattern (ending with `*`),
+ * where static assets are routed through the worker. Exact patterns always call the Edge API,
+ * so customers can list pages explicitly to stop a forged `Sec-Fetch-Dest` from skipping it.
  */
 export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean {
-  if (isEdgeStaticAssetsIncluded(env)) {
+  if (edgeApiAlwaysChecksStaticAssets(env)) {
     return false
   }
 
@@ -47,6 +52,24 @@ export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean 
   }
 
   const destination = request.headers.get('Sec-Fetch-Dest')
+  if (destination === null || !STATIC_ASSET_DESTINATIONS.has(destination)) {
+    return false
+  }
 
-  return destination !== null && STATIC_ASSET_DESTINATIONS.has(destination)
+  if (matchesExactPathIdentificationPage(new URL(request.url), env)) {
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Returns true when the URL matches an identification page pattern without a path wildcard.
+ * Exact paths win regardless of url-matcher specificity, e.g. `/login` over `/login*`.
+ * The caller only handles identification pages, so no exact match means a wildcard matched.
+ */
+function matchesExactPathIdentificationPage(url: URL, env: TypedEnv): boolean {
+  const exactPathRoutes = parseRoutes(getIdentificationPageUrls(env)).filter((route) => !route.wildcardPathSuffix)
+
+  return findMatchingRoute(url, exactPathRoutes) !== undefined
 }

@@ -441,6 +441,38 @@ describe('Scripts injection', () => {
         expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
       })
 
+      it('calls Edge API for static asset on exact identification page pattern', async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+          new Response(JSON.stringify(mockEdgeResponseIpV4), {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            status: 200,
+          })
+        )
+        vi.mocked(fetch).mockResolvedValueOnce(
+          new Response(sampleHtml, {
+            headers: {
+              'Content-Type': 'text/html',
+            },
+            status: 200,
+          })
+        )
+
+        const request = new CloudflareRequest(mockWorkerBaseUrl)
+        request.headers.set('cf-connecting-ip', '94.142.239.124')
+        request.headers.set('Sec-Fetch-Dest', 'script')
+        const ctx = createExecutionContext()
+
+        await handler.fetch(request, { ...edgeEnv, IDENTIFICATION_PAGE_URLS: [mockWorkerBaseUrl] }, ctx)
+        await waitOnExecutionContext(ctx)
+
+        expect(fetch).toHaveBeenCalledTimes(2)
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const originRequest = vi.mocked(fetch).mock.calls[1][0] as Request
+        expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
+      })
+
       it.each(['document', 'empty', undefined])('calls Edge API for Sec-Fetch-Dest %s', async (destination) => {
         vi.mocked(fetch).mockResolvedValueOnce(
           new Response(JSON.stringify(mockEdgeResponseIpV4), {

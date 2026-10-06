@@ -95,7 +95,7 @@ export function isEdgeApiEnabled(env: TypedEnv) {
 /**
  * Determines if static asset requests call the Edge API. By default they don't.
  */
-export function isEdgeStaticAssetsIncluded(env: TypedEnv) {
+export function edgeApiAlwaysChecksStaticAssets(env: TypedEnv) {
   return env.FP_EDGE_INCLUDE_STATIC_ASSETS === 'true'
 }
 
