@@ -79,16 +79,18 @@ describe('shouldSkipEdgeRequest', () => {
     expect(shouldSkipEdgeRequest(createRequest('GET', 'script', '/'), env)).toBe(false)
   })
 
-  it.each([
-    ['unset', undefined, true],
-    ['empty', '', true],
-    ['false', 'false', true],
-    ['invalid', 'yes', true],
-    ['true', 'true', false],
-  ])('FP_EDGE_INCLUDE_STATIC_ASSETS %s', (_, value, expected) => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const env = { ...wildcardEnv, FP_EDGE_INCLUDE_STATIC_ASSETS: value } as TypedEnv
+  describe('FP_EDGE_INCLUDE_STATIC_ASSETS', () => {
+    function envWithIncludeStaticAssets(value: string | undefined): TypedEnv {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      return { ...wildcardEnv, FP_EDGE_INCLUDE_STATIC_ASSETS: value } as TypedEnv
+    }
 
-    expect(shouldSkipEdgeRequest(createRequest('GET', 'script'), env)).toBe(expected)
+    it.each([undefined, '', 'false', 'yes'])('skips when set to %j', (value) => {
+      expect(shouldSkipEdgeRequest(createRequest('GET', 'script'), envWithIncludeStaticAssets(value))).toBe(true)
+    })
+
+    it('does not skip when set to "true"', () => {
+      expect(shouldSkipEdgeRequest(createRequest('GET', 'script'), envWithIncludeStaticAssets('true'))).toBe(false)
+    })
   })
 })
