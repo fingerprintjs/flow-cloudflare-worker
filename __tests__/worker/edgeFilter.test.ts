@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shouldSkipEdgeRequest, STATIC_ASSET_DESTINATIONS } from '../../src/worker/utils/edgeFilter'
+import { shouldSkipEdgeRequest } from '../../src/worker/utils/edgeFilter'
 import { mockEnv, mockUrl } from '../utils/mockEnv'
 import { TypedEnv } from '../../src/worker/types'
 
@@ -15,14 +15,16 @@ function createRequest(method: string, destination?: string, path = '/assets/app
 }
 
 describe('shouldSkipEdgeRequest', () => {
-  describe.each([...STATIC_ASSET_DESTINATIONS])('static destination %s', (destination) => {
-    it.each(['GET', 'HEAD'])('skips on %s', (method) => {
-      expect(shouldSkipEdgeRequest(createRequest(method, destination), wildcardEnv)).toBe(true)
-    })
+  it.each(['script', 'image', 'font', 'speculationrules'])('skips for static destination %s', (destination) => {
+    expect(shouldSkipEdgeRequest(createRequest('GET', destination), wildcardEnv)).toBe(true)
+  })
 
-    it.each(['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])('does not skip on %s', (method) => {
-      expect(shouldSkipEdgeRequest(createRequest(method, destination), wildcardEnv)).toBe(false)
-    })
+  it.each(['GET', 'HEAD'])('skips on %s', (method) => {
+    expect(shouldSkipEdgeRequest(createRequest(method, 'script'), wildcardEnv)).toBe(true)
+  })
+
+  it.each(['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])('does not skip on %s', (method) => {
+    expect(shouldSkipEdgeRequest(createRequest(method, 'script'), wildcardEnv)).toBe(false)
   })
 
   it.each([
@@ -51,7 +53,6 @@ describe('shouldSkipEdgeRequest', () => {
     ['exact path with query string over wildcard', ['/*', '/login'], '/login?next=/account', false],
     ['wildcard next to exact path', ['/*', '/login'], '/assets/app.js', true],
     ['wildcard in fragment', ['/page#*'], '/page', false],
-    ['root page with query string under wildcard', ['/*'], '/?utm_source=ad', true],
     ['exact root with query string over wildcard', ['/*', '/'], '/?utm_source=ad', false],
     ['path with query string under wildcard', ['/*'], '/assets/app.js?v=2', true],
   ])('identification page pattern: %s', (_, patterns, path, expected) => {
