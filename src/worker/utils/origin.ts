@@ -47,14 +47,13 @@ export async function fetchOriginWithEdgeAPIRequest(
     return fetchOrigin(request)
   }
 
+  // A skipped request has no Edge response, so client-supplied Edge headers are still stripped
+  let edgeResponse: EdgeResponse | undefined
   if (shouldSkipEdgeRequest(request, env)) {
     console.debug('Skipping Edge API request for static asset:', request.url)
-
-    // Still strips client-supplied Edge headers
-    return fetchOriginWithEdgeAPIHeaders(request, env, undefined)
+  } else {
+    edgeResponse = await identificationClient.safeEdge(request)
   }
-
-  const edgeResponse = await identificationClient.safeEdge(request)
 
   return fetchOriginWithEdgeAPIHeaders(request, env, edgeResponse)
 }
