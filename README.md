@@ -48,7 +48,7 @@ The worker is configured using a `wrangler.jsonc` file. An example file `wrangle
     - Example: `[ 'https://example.com/login', 'https://example.com/signup/*' ]` 
 -   `FP_EDGE_API`: Set to `true` to forward IP and bot intelligence to the origin as `fp-*` headers. Requests to `IDENTIFICATION_PAGE_URLS` call the Automation Intelligence API to get it.
 -   `FP_EDGE_INCLUDE_STATIC_ASSETS`: Defaults to `false`. When `FP_EDGE_API` is on, requests matching an `IDENTIFICATION_PAGE_URLS` pattern that ends with `*` (for example `https://example.com/*`) that use `GET` or `HEAD` and whose `Sec-Fetch-Dest` header marks a static asset (for example `script`, `style`, `image`, `font`) skip the Automation Intelligence API call. Set to `true` to call the API for those requests too.
-    - Clients can set `Sec-Fetch-Dest` themselves. Exact patterns (for example `https://example.com/login`) always call the API, so list pages explicitly if a client abuses this. The root page with a query string (for example `https://example.com/?utm_source=ad`) also always calls the API. Treat a request without `fp-ip-info-v4-address` or `fp-ip-info-v6-address` as one with no Edge result: the call was skipped or failed.
+    - Clients can set `Sec-Fetch-Dest` themselves. Exact patterns (for example `https://example.com/login`) always call the API, so list pages explicitly if a client abuses this. Treat a request without `fp-ip-info-v4-address` or `fp-ip-info-v6-address` as one with no Edge result: the call was skipped or failed.
 
 ## Architecture
 

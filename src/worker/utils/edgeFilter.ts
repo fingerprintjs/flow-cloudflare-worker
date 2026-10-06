@@ -57,14 +57,7 @@ export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean 
     return false
   }
 
-  const url = new URL(request.url)
-
-  // Root page with a query string, e.g. a landing page with tracking parameters
-  if (url.pathname === '/' && url.search !== '') {
-    return false
-  }
-
-  if (matchesExactPathIdentificationPage(url, env)) {
+  if (matchesExactPathIdentificationPage(new URL(request.url), env)) {
     return false
   }
 
