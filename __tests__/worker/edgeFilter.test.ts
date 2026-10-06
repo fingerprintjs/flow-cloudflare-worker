@@ -48,6 +48,7 @@ describe('shouldSkipEdgeRequest', () => {
     ['path wildcard', ['/*'], '/assets/app.js', true],
     ['exact path', ['/assets/app.js'], '/assets/app.js', false],
     ['exact path over wildcard', ['/*', '/login'], '/login', false],
+    ['exact path with query string over wildcard', ['/*', '/login'], '/login?next=/account', false],
     ['wildcard next to exact path', ['/*', '/login'], '/assets/app.js', true],
     ['wildcard in fragment', ['/page#*'], '/page', false],
   ])('identification page pattern: %s', (_, patterns, path, expected) => {

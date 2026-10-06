@@ -67,9 +67,12 @@ export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean 
  * Returns true when the URL matches an identification page pattern without a path wildcard.
  * Exact paths win regardless of url-matcher specificity, e.g. `/login` over `/login*`.
  * The caller only handles identification pages, so no exact match means a wildcard matched.
+ * The query string is ignored, as url-matcher would otherwise not match `/login?next=` to `/login`.
  */
 function matchesExactPathIdentificationPage(url: URL, env: TypedEnv): boolean {
   const exactPathRoutes = parseRoutes(getIdentificationPageUrls(env)).filter((route) => !route.wildcardPathSuffix)
+  const urlWithoutQuery = new URL(url)
+  urlWithoutQuery.search = ''
 
-  return findMatchingRoute(url, exactPathRoutes) !== undefined
+  return findMatchingRoute(urlWithoutQuery, exactPathRoutes) !== undefined
 }
