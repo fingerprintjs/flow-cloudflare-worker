@@ -28,6 +28,7 @@ export const STATIC_ASSET_DESTINATIONS: ReadonlySet<string> = new Set([
   'xslt',
   'report',
   'json',
+  'speculationrules',
 ])
 
 const SKIPPABLE_METHODS = new Set(['GET', 'HEAD'])
