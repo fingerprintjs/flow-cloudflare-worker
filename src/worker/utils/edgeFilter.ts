@@ -48,32 +48,27 @@ export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean 
     return false
   }
 
-  if (!SKIPPABLE_METHODS.has(request.method)) {
-    return false
-  }
+  return (
+    SKIPPABLE_METHODS.has(request.method) &&
+    isStaticAssetDestination(request.headers.get('Sec-Fetch-Dest')) &&
+    onlyMatchesWildcardIdentificationPage(new URL(request.url), env)
+  )
+}
 
-  const destination = request.headers.get('Sec-Fetch-Dest')
-  if (destination === null || !STATIC_ASSET_DESTINATIONS.has(destination)) {
-    return false
-  }
-
-  if (matchesExactPathIdentificationPage(new URL(request.url), env)) {
-    return false
-  }
-
-  return true
+function isStaticAssetDestination(destination: string | null): boolean {
+  return destination !== null && STATIC_ASSET_DESTINATIONS.has(destination)
 }
 
 /**
- * Returns true when the URL matches an identification page pattern without a path wildcard.
+ * Returns true when the URL matches no identification page pattern without a path wildcard.
+ * The caller only handles identification pages, so no exact match means only a wildcard matched.
  * Exact paths win regardless of url-matcher specificity, e.g. `/login` over `/login*`.
- * The caller only handles identification pages, so no exact match means a wildcard matched.
  * The query string is ignored, as url-matcher would otherwise not match `/login?next=` to `/login`.
  */
-function matchesExactPathIdentificationPage(url: URL, env: TypedEnv): boolean {
+function onlyMatchesWildcardIdentificationPage(url: URL, env: TypedEnv): boolean {
   const exactPathRoutes = parseRoutes(getIdentificationPageUrls(env)).filter((route) => !route.wildcardPathSuffix)
   const urlWithoutQuery = new URL(url)
   urlWithoutQuery.search = ''
 
-  return findMatchingRoute(urlWithoutQuery, exactPathRoutes) !== undefined
+  return findMatchingRoute(urlWithoutQuery, exactPathRoutes) === undefined
 }
