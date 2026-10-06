@@ -47,8 +47,9 @@ The worker is configured using a `wrangler.jsonc` file. An example file `wrangle
 -   `IDENTIFICATION_PAGE_URLS`: An array of url patterns that cannot be relative but can contain wildcards where the Fingerprint identification script should be injected. 
     - Example: `[ 'https://example.com/login', 'https://example.com/signup/*' ]` 
 -   `FP_EDGE_API`: Set to `true` to forward IP and bot intelligence to the origin as `fp-*` headers. Requests to `IDENTIFICATION_PAGE_URLS` call the Automation Intelligence API to get it.
--   `FP_EDGE_INCLUDE_STATIC_ASSETS`: Defaults to `false`. When `FP_EDGE_API` is on, requests matching an `IDENTIFICATION_PAGE_URLS` pattern that ends with `*` (for example `https://example.com/*`) that use `GET` or `HEAD` and whose `Sec-Fetch-Dest` header marks a static asset (for example `script`, `style`, `image`, `font`) skip the Automation Intelligence API call. Set to `true` to call the API for those requests too.
-    - Clients can set `Sec-Fetch-Dest` themselves to skip the API call. The root page (for example `https://example.com/` or `https://example.com/?utm_source=ad`) always calls the API. To protect another page, add an exact pattern next to the wildcard (for example `https://example.com/checkout` next to `https://example.com/*`). Keep the wildcard: an exact pattern on its own doesn't match URLs with a query string. Treat a request without `fp-ip-info-v4-address` or `fp-ip-info-v6-address` as one with no Edge result: the call was skipped or failed.
+-   `FP_EDGE_INCLUDE_STATIC_ASSETS`: Defaults to `false`. When `FP_EDGE_API` is on, static asset requests skip the Automation Intelligence API call if they only match a pattern ending with `*`, like `https://example.com/*`. A static asset request is a `GET` or `HEAD` with a `Sec-Fetch-Dest` header like `script`, `style`, `image`, or `font`. Set to `true` to call the API for these requests too.
+    - Clients can forge `Sec-Fetch-Dest` to skip the API call. The root page always calls the API. To protect another page, add it as an exact pattern next to the wildcard, like `https://example.com/checkout`.
+    - A request without `fp-ip-info-v4-address` or `fp-ip-info-v6-address` headers has no Edge result: the call was skipped or failed.
 
 ## Architecture
 
