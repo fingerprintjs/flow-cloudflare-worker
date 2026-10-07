@@ -1,6 +1,6 @@
-import { findMatchingRoute, parseRoutes } from '@fingerprintjs/url-matcher'
+import { Route } from '@fingerprintjs/url-matcher'
 import { TypedEnv } from '../types'
-import { getIdentificationPageUrls, edgeApiAlwaysChecksStaticAssets } from '../env'
+import { edgeApiAlwaysChecksStaticAssets } from '../env'
 
 /**
  * `Sec-Fetch-Dest` values that browsers send for static asset loads.
@@ -42,14 +42,13 @@ const SKIPPABLE_METHODS = new Set(['GET', 'HEAD'])
  * A forged value only skips the Edge API call.
  * Client-supplied `fp-*` headers are still stripped before the request reaches the origin.
  *
- * - Only skip GET/HEAD static asset requests that matched a wildcard identification page pattern (ending with `*`),
- * - Requests matching exact (no `*`) page patterns always call the Edge API,
- *   so customers can list pages explicitly to stop a forged `Sec-Fetch-Dest` from skipping them.
+ * Only skips GET/HEAD static asset requests whose path differs from the matched route's path.
+ * That only happens under a wildcard pattern (ending with `*`), excluding its base path,
+ * e.g. `/base/` for `https://example.com/base/*` and `/` for `https://example.com/*`.
  *
- * A wildcard pattern's base path, e.g. `/base/` for `https://example.com/base/*`, intentionally _always_ calls the Edge API.
- * It is usually the page itself, e.g. the root page for `https://example.com/*`, which is often the first request to a site.
+ * @param route - The identification page route that matched the request.
  */
-export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean {
+export function shouldSkipEdgeRequest(request: Request, env: TypedEnv, route: Route<unknown>): boolean {
   if (edgeApiAlwaysChecksStaticAssets(env)) {
     return false
   }
@@ -59,28 +58,10 @@ export function shouldSkipEdgeRequest(request: Request, env: TypedEnv): boolean 
   return (
     SKIPPABLE_METHODS.has(request.method) &&
     isStaticAssetDestination(request.headers.get('Sec-Fetch-Dest')) &&
-    onlyMatchesWildcardIdentificationPage(url, env)
+    url.pathname !== route.path
   )
 }
 
 function isStaticAssetDestination(destination: string | null): boolean {
   return destination !== null && STATIC_ASSET_DESTINATIONS.has(destination)
-}
-
-/**
- * Returns true when the URL matches no identification page pattern without a path wildcard.
- * The caller only handles identification pages, so no exact match means only a wildcard matched.
- * Exact paths win regardless of url-matcher specificity, e.g. `/login` over `/login*`.
- * A wildcard pattern's base path counts as exact, e.g. `/base/` for `/base/*` and `/` for `/*`.
- * The query string is ignored, as url-matcher would otherwise not match `/login?next=` to `/login`.
- */
-function onlyMatchesWildcardIdentificationPage(url: URL, env: TypedEnv): boolean {
-  const exactPathRoutes = parseRoutes(getIdentificationPageUrls(env)).map((route) => ({
-    ...route,
-    wildcardPathSuffix: false,
-  }))
-  const urlWithoutQuery = new URL(url)
-  urlWithoutQuery.search = ''
-
-  return findMatchingRoute(urlWithoutQuery, exactPathRoutes) === undefined
 }

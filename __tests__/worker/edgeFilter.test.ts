@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { shouldSkipEdgeRequest } from '../../src/worker/utils/edgeFilter'
+import { shouldSkipEdgeRequest as shouldSkipEdgeRequestForRoute } from '../../src/worker/utils/edgeFilter'
+import { matchRoute } from '../../src/worker/urlMatching'
 import { mockEnv, mockUrl } from '../utils/mockEnv'
 import { TypedEnv } from '../../src/worker/types'
+
+// Matches the route like the handler does before calling the filter
+function shouldSkipEdgeRequest(request: Request, env: TypedEnv) {
+  const route = matchRoute(new URL(request.url), request.method, env)
+  expect(route?.metadata?.type).toBe('identification')
+
+  return shouldSkipEdgeRequestForRoute(request, env, route!)
+}
 
 const wildcardEnv: TypedEnv = { ...mockEnv, IDENTIFICATION_PAGE_URLS: [mockUrl('/*')] }
 

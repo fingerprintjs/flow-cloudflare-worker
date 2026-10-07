@@ -1,5 +1,5 @@
 import { TypedEnv } from './types'
-import { matchUrl } from './urlMatching'
+import { matchRoute } from './urlMatching'
 import { handleScriptsInjection } from './handlers/handleScriptsInjection'
 import { handleScript } from './handlers/handleScript'
 import { getCDNHost, getFpLogLevel, getProtectedApis, getPublicKey, getRoutePrefix } from './env'
@@ -14,11 +14,12 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
   console.info('Handling request', request)
 
   try {
-    const matchedUrl = matchUrl(new URL(request.url), request.method, env)
+    const matchedRoute = matchRoute(new URL(request.url), request.method, env)
+    const matchedUrl = matchedRoute?.metadata
 
     switch (matchedUrl?.type) {
       case 'identification':
-        return handleScriptsInjection({ request, env })
+        return handleScriptsInjection({ request, env, route: matchedRoute! })
 
       case 'script':
         return handleScript({
