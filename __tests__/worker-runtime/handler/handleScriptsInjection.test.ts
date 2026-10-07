@@ -476,7 +476,19 @@ describe('Scripts injection', () => {
         }
       )
 
-      it('calls Edge API for static asset on exact identification page pattern', async () => {
+      it.each([
+        ['exact pattern', [`${mockWorkerBaseUrl}/page`], '/page'],
+        [
+          'exact pattern with query string next to wildcard',
+          [`${mockWorkerBaseUrl}/*`, `${mockWorkerBaseUrl}/page`],
+          '/page?a',
+        ],
+        [
+          'exact pattern next to more specific wildcard host',
+          [`${mockWorkerBaseUrl}/*`, 'https://*.com/page'],
+          '/page',
+        ],
+      ])('calls Edge API for static asset on %s', async (_, patterns, path) => {
         vi.mocked(fetch).mockResolvedValueOnce(
           new Response(JSON.stringify(mockEdgeResponseIpV4), {
             headers: {
@@ -494,12 +506,12 @@ describe('Scripts injection', () => {
           })
         )
 
-        const request = new CloudflareRequest(`${mockWorkerBaseUrl}/page`)
+        const request = new CloudflareRequest(`${mockWorkerBaseUrl}${path}`)
         request.headers.set('cf-connecting-ip', '94.142.239.124')
         request.headers.set('Sec-Fetch-Dest', 'script')
         const ctx = createExecutionContext()
 
-        await handler.fetch(request, { ...edgeEnv, IDENTIFICATION_PAGE_URLS: [`${mockWorkerBaseUrl}/page`] }, ctx)
+        await handler.fetch(request, { ...edgeEnv, IDENTIFICATION_PAGE_URLS: patterns }, ctx)
         await waitOnExecutionContext(ctx)
 
         expect(fetch).toHaveBeenCalledTimes(2)
