@@ -51,6 +51,7 @@ describe('shouldSkipEdgeRequest', () => {
     ['path wildcard', ['/*'], '/assets/app.js', true],
     ['wildcard next to exact path', ['/*', '/login'], '/assets/app.js', true],
     ['path with query string under wildcard', ['/*'], '/assets/app.js?v=2', true],
+    ['path under nested wildcard', ['/base/*'], '/base/app.js', true],
 
     // Calls edge: an exact pattern matches
     ['exact path', ['/assets/app.js'], '/assets/app.js', false],
@@ -58,9 +59,12 @@ describe('shouldSkipEdgeRequest', () => {
     ['exact path with query string over wildcard', ['/*', '/login'], '/login?next=/account', false],
     ['wildcard in fragment', ['/page#*'], '/page', false],
 
-    // Calls edge: the root page, even when only a wildcard matches
+    // Calls edge: the wildcard pattern's base path, e.g. the root page
     ['root page under wildcard', ['/*'], '/', false],
     ['root page with query string under wildcard', ['/*'], '/?utm_source=ad', false],
+    ['base path under nested wildcard', ['/base/*'], '/base/', false],
+    ['base path with query string under nested wildcard', ['/base/*'], '/base/?utm_source=ad', false],
+    ['base path under wildcard without slash', ['/base*'], '/base', false],
   ])('identification page pattern: %s', (_, patterns, path, expected) => {
     const env: TypedEnv = { ...mockEnv, IDENTIFICATION_PAGE_URLS: patterns.map(mockUrl) }
 

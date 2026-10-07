@@ -362,7 +362,7 @@ describe('Scripts injection', () => {
       const edgeEnv = {
         ...mockEnv,
         FP_EDGE_API: 'true',
-        IDENTIFICATION_PAGE_URLS: [`${mockWorkerBaseUrl}/*`],
+        IDENTIFICATION_PAGE_URLS: [`${mockWorkerBaseUrl}/*`, `${mockWorkerBaseUrl}/base/*`],
       }
 
       it('skips Edge API for static asset and strips forged Edge headers', async () => {
@@ -441,37 +441,40 @@ describe('Scripts injection', () => {
         expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
       })
 
-      it('calls Edge API for root page with static asset Sec-Fetch-Dest under wildcard', async () => {
-        vi.mocked(fetch).mockResolvedValueOnce(
-          new Response(JSON.stringify(mockEdgeResponseIpV4), {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            status: 200,
-          })
-        )
-        vi.mocked(fetch).mockResolvedValueOnce(
-          new Response(sampleHtml, {
-            headers: {
-              'Content-Type': 'text/html',
-            },
-            status: 200,
-          })
-        )
+      it.each([`${mockWorkerBaseUrl}/?utm_source=ad`, `${mockWorkerBaseUrl}/base/?utm_source=ad`])(
+        'calls Edge API for identification page root with static asset Sec-Fetch-Dest under wildcard - %s',
+        async (url) => {
+          vi.mocked(fetch).mockResolvedValueOnce(
+            new Response(JSON.stringify(mockEdgeResponseIpV4), {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              status: 200,
+            })
+          )
+          vi.mocked(fetch).mockResolvedValueOnce(
+            new Response(sampleHtml, {
+              headers: {
+                'Content-Type': 'text/html',
+              },
+              status: 200,
+            })
+          )
 
-        const request = new CloudflareRequest(`${mockWorkerBaseUrl}/?utm_source=ad`)
-        request.headers.set('cf-connecting-ip', '94.142.239.124')
-        request.headers.set('Sec-Fetch-Dest', 'image')
-        const ctx = createExecutionContext()
+          const request = new CloudflareRequest(url)
+          request.headers.set('cf-connecting-ip', '94.142.239.124')
+          request.headers.set('Sec-Fetch-Dest', 'image')
+          const ctx = createExecutionContext()
 
-        await handler.fetch(request, edgeEnv, ctx)
-        await waitOnExecutionContext(ctx)
+          await handler.fetch(request, edgeEnv, ctx)
+          await waitOnExecutionContext(ctx)
 
-        expect(fetch).toHaveBeenCalledTimes(2)
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const originRequest = vi.mocked(fetch).mock.calls[1][0] as Request
-        expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
-      })
+          expect(fetch).toHaveBeenCalledTimes(2)
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          const originRequest = vi.mocked(fetch).mock.calls[1][0] as Request
+          expect(originRequest.headers.get(EdgeHeaders.IpV4Address)).toEqual('"94.142.239.124"')
+        }
+      )
 
       it('calls Edge API for static asset on exact identification page pattern', async () => {
         vi.mocked(fetch).mockResolvedValueOnce(
