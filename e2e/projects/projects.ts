@@ -200,6 +200,11 @@ export function getTestProjects(): TestProject[] {
       flowWorker: {
         variables: {
           FP_EDGE_API: 'true',
+          // Static asset requests only skip the Edge API on wildcard identification pages
+          IDENTIFICATION_PAGE_URLS: [
+            `https://${getTestProjectHost('edge-api-monitor-mode')}/shop/*`,
+            `https://${getTestProjectHost('edge-api-monitor-mode')}/shop/exact*`,
+          ],
 
           // Deploy in monitor mode
           FP_RULESET_ID: '',

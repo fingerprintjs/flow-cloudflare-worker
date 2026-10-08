@@ -52,6 +52,41 @@ test.describe('Edge API in monitor mode', () => {
     })
   })
 
+  test.describe('Static asset request', () => {
+    test('should skip Edge API on wildcard page, strip spoofed Edge headers and still inject scripts', async ({
+      request,
+    }) => {
+      const response = await request.get('/shop/page', {
+        headers: {
+          'Sec-Fetch-Dest': 'script',
+          'fp-ip-info-v4-address': '"1.2.3.4"',
+          'fp-ip-info-v6-address': '"::1"',
+        },
+      })
+      expect(response.status()).toEqual(200)
+
+      const receivedHeaders = getReceivedHeaders(response)
+      for (const edgeHeader of edgeHeaders) {
+        expect(receivedHeaders.has(edgeHeader), `${edgeHeader} should not be sent`).toBeFalsy()
+      }
+
+      expect(await response.text()).toContain('instrumentor.iife.js')
+    })
+
+    test('should call Edge API on trailing-wildcard page even with static asset Sec-Fetch-Dest', async ({
+      request,
+    }) => {
+      const response = await request.get('/shop/exact?q=1', {
+        headers: {
+          'Sec-Fetch-Dest': 'script',
+        },
+      })
+      expect(response.status()).toEqual(200)
+
+      checkEdgeNoBotHeaders(response)
+    })
+  })
+
   test.describe('Protected API', () => {
     test('should return response with Edge headers', async ({ page, project }) => {
       await page.goto('/', { waitUntil: 'networkidle' })

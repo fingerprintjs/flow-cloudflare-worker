@@ -2,7 +2,7 @@ import { scripts } from './scripts'
 import { TypedEnv } from './types'
 import { getIdentificationPageUrls, getProtectedApis, getRoutePrefix } from './env'
 import { Script } from '../shared/scripts'
-import { findMatchingRoute, parseRoutes } from '@fingerprintjs/url-matcher'
+import { findMatchingRoute, parseRoutes, Route } from '@fingerprintjs/url-matcher'
 import { getCrossOriginUrl } from './utils/request'
 
 export type UrlType =
@@ -22,6 +22,10 @@ export type UrlType =
     }
 
 export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | undefined {
+  return matchRoute(url, method, env)?.metadata
+}
+
+export function matchRoute(url: URL, method: string, env: TypedEnv): Route<UrlType> | undefined {
   console.debug('Matching url', url.toString())
 
   const routePrefix = getRoutePrefix(env)
@@ -72,10 +76,9 @@ export function matchUrl(url: URL, method: string, env: TypedEnv): UrlType | und
 
   if (matchedRoute) {
     console.debug('Matched route', matchedRoute)
-    return matchedRoute.metadata
   }
 
-  return undefined
+  return matchedRoute
 }
 
 /**

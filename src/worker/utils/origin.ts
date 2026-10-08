@@ -1,9 +1,11 @@
+import { Route } from '@fingerprintjs/url-matcher'
 import { TypedEnv } from '../types'
 import { IdentificationClient } from '../fingerprint/identificationClient'
 import { setEdgeResponseHeaders } from './edgeHeaders'
 import { isEdgeApiEnabled } from '../env'
 import { copyRequest } from './request'
 import { EdgeResponse } from '../fingerprint/identificationClientTypes'
+import { shouldSkipEdgeRequest } from './edgeFilter'
 
 export function fetchOrigin(request: Request) {
   const origin = import.meta.env.VITE_ORIGIN
@@ -35,19 +37,27 @@ export function fetchOrigin(request: Request) {
  * @param {Request} request - The incoming HTTP request to be processed.
  * @param {IdentificationClient} identificationClient - The client responsible for interacting with the Edge API.
  * @param {TypedEnv} env - The environment configuration object, used to determine if the Edge API is enabled.
+ * @param {Route} route - The identification page route that matched the request.
  * @return {Promise<Response>} A promise that resolves to the HTTP response from the origin.
  */
 export async function fetchOriginWithEdgeAPIRequest(
   request: Request,
   identificationClient: IdentificationClient,
-  env: TypedEnv
+  env: TypedEnv,
+  route: Route<unknown>
 ): Promise<Response> {
   if (!isEdgeApiEnabled(env)) {
     return fetchOrigin(request)
   }
 
-  const edgeResponse = await identificationClient.safeEdge(request)
+  let edgeResponse: EdgeResponse | undefined
+  if (shouldSkipEdgeRequest(request, env, route)) {
+    console.debug('Skipping Edge API request for static asset:', request.url)
+  } else {
+    edgeResponse = await identificationClient.safeEdge(request)
+  }
 
+  // client-supplied (spoofed) Edge headers are stripped either way here
   return fetchOriginWithEdgeAPIHeaders(request, env, edgeResponse)
 }
 

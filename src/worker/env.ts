@@ -92,6 +92,13 @@ export function isEdgeApiEnabled(env: TypedEnv) {
   return env.FP_EDGE_API === 'true'
 }
 
+/**
+ * When true, static assets still call the Edge API.
+ */
+export function edgeApiAlwaysChecksStaticAssets(env: TypedEnv) {
+  return env.FP_EDGE_INCLUDE_STATIC_ASSETS === 'true'
+}
+
 export function getFpRegion(env: TypedEnv): Region {
   const region = env.FP_REGION
   if (region) {

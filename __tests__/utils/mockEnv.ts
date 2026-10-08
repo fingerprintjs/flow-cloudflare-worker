@@ -20,6 +20,7 @@ export function mockUrl(path: string): string {
 
 export const mockEnv: TypedEnv = {
   FP_EDGE_API: 'false',
+  FP_EDGE_INCLUDE_STATIC_ASSETS: 'false',
   FP_CDN_HOST: 'fpcdn.io',
   FP_INGRESS_BASE_HOST: 'api.fpjs.io',
   PROTECTED_APIS: [
