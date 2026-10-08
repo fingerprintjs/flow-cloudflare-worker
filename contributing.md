@@ -25,6 +25,15 @@ Run `pnpm build` for creating a build in `dist` folder. After building, `dist/fl
 
 > 💡 Don't forget to update the `wrangler.jsonc` with your `FP_SECRET_KEY`, `FP_PUBLIC_KEY`, `FP_REGION`, and `FP_RULESET_ID`.
 
+## Design constraints
+
+The worker design currently follows these constraints:
+
+- URL matching (`@fingerprintjs/url-matcher`) must follow [Cloudflare Worker route matching](https://developers.cloudflare.com/workers/configuration/routing/routes/#matching-behavior).
+- After a URL is matched, only that pattern may affect how the request is processed, not other patterns in the env.
+
+Breaking either requires a team discussion.
+
 ## Local Development
 
 To run the project locally, you need to run these processes in parallel.
