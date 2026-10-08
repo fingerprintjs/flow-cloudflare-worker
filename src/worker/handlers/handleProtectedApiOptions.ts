@@ -1,4 +1,4 @@
-import { SIGNALS_KEY } from '../../shared/const'
+import { FLOW_OWNED_REQUEST_HEADERS } from '../../shared/businessContext'
 import { isSimpleMethod } from '../../shared/types'
 import { TypedEnv } from '../types'
 import { getAllowedOrigin } from '../urlMatching'
@@ -17,26 +17,28 @@ export async function handleProtectedApiOptionsCall({
   env,
 }: HandleProtectedApiOptionsParams): Promise<Response> {
   // Check if the OPTIONS request was caused by the addition
-  // of the signals header to the instrumented request
+  // of Flow-owned headers to the instrumented request
   const accessControlRequestHeaders = request.headers.get('Access-Control-Request-Headers')
   const accessControlRequestMethod = request.headers.get('Access-Control-Request-Method')
+  const requestedHeaders = splitAccessControlRequestHeaders(accessControlRequestHeaders)
+
   if (
-    accessControlRequestHeaders === SIGNALS_KEY &&
+    isOnlyFlowOwnedHeaders(requestedHeaders) &&
     accessControlRequestMethod &&
     isSimpleMethod(accessControlRequestMethod)
   ) {
     const allowedOrigin = getAllowedOrigin(request, env)
     if (allowedOrigin) {
-      // This state implies that the cross-origin request would have been a simple request
-      // if not for the inclusion of the signals in the request headers. As
-      // a result, the worker needs to handle this request because the origin is not
-      // guaranteed to handle it.
+      // Self-handle when the preflight exists only because of Flow-owned headers
+      // (fp-data / fp-tag / fp-linked-id). Note: a customer who sets only fp-tag
+      // without instrumentation would also hit this path — spike tradeoff vs
+      // forwarding to an origin that may not allow those headers.
       console.debug('Handled instrumentation-triggered preflight request without forwarding to origin')
       return new Response(null, {
         status: 204,
         headers: {
           'Access-Control-Allow-Origin': allowedOrigin,
-          'Access-Control-Allow-Headers': SIGNALS_KEY,
+          'Access-Control-Allow-Headers': requestedHeaders.join(','),
           'Access-Control-Allow-Methods': accessControlRequestMethod,
           'Access-Control-Allow-Credentials': 'true',
         },
@@ -54,16 +56,15 @@ export async function handleProtectedApiOptionsCall({
     // Attempt to fail gracefully and let the origin handle this error case.
   }
 
-  const accessControlRequestHeadersValues = accessControlRequestHeaders
-    ? accessControlRequestHeaders.split(',').map((s) => s.trim())
-    : []
-  if (accessControlRequestHeadersValues.includes(SIGNALS_KEY)) {
-    // The SIGNALS_KEY needs to be removed from the forwarded request to
+  if (requestedHeaders.some((header) => isFlowOwnedRequestHeader(header))) {
+    // Flow-owned headers need to be removed from the forwarded request to
     // avoid unexpected results from the origin.
 
     const originRequestHeaders = new Headers(request.headers)
 
-    removeHeaderValue(originRequestHeaders, 'Access-Control-Request-Headers', SIGNALS_KEY)
+    for (const header of FLOW_OWNED_REQUEST_HEADERS) {
+      removeHeaderValue(originRequestHeaders, 'Access-Control-Request-Headers', header)
+    }
 
     const originRequest = copyRequest({
       request,
@@ -85,4 +86,23 @@ export async function handleProtectedApiOptionsCall({
   // instrumented so forward the OPTIONS request to the origin. Protection
   // logic will be applied to the actual request
   return fetchOrigin(request)
+}
+
+function splitAccessControlRequestHeaders(value: string | null): string[] {
+  if (!value) {
+    return []
+  }
+  return value
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+}
+
+function isFlowOwnedRequestHeader(name: string): boolean {
+  const lower = name.toLowerCase()
+  return FLOW_OWNED_REQUEST_HEADERS.some((header) => header.toLowerCase() === lower)
+}
+
+function isOnlyFlowOwnedHeaders(headers: string[]): boolean {
+  return headers.length > 0 && headers.every((header) => isFlowOwnedRequestHeader(header))
 }

@@ -1,4 +1,5 @@
-import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../shared/const'
+import { AGENT_DATA_HEADER } from '../../shared/const'
+import { FLOW_OWNED_REQUEST_HEADERS } from '../../shared/businessContext'
 import { appendHeaderValue } from './headers'
 
 interface CopyRequestParams {
@@ -125,6 +126,8 @@ export function setCorsHeadersForInstrumentation(request: Request, originRespons
       appendHeaderValue(originResponseHeaders, 'Access-Control-Expose-Headers', AGENT_DATA_HEADER)
     }
   } else {
-    appendHeaderValue(originResponseHeaders, 'Access-Control-Allow-Headers', SIGNALS_KEY)
+    for (const header of FLOW_OWNED_REQUEST_HEADERS) {
+      appendHeaderValue(originResponseHeaders, 'Access-Control-Allow-Headers', header)
+    }
   }
 }

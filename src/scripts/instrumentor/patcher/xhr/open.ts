@@ -27,7 +27,9 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
     const callOpen = () => originalOpen.call(this, method, url, async, username, password)
 
     if (!async) {
-      // Sync requests are not supported for now
+      // Sync requests are not supported — clear any leftover async fingerprint context
+      // so a reused XHR instance does not defer send into a microtask.
+      delete this[FingerprintContextSymbol]
       return callOpen()
     }
 
@@ -63,6 +65,7 @@ export function createPatchedOpen(ctx: PatcherContext): typeof XMLHttpRequest.pr
       const nextFingerprintContext: XHRContext = {
         preservedWithCredentials: this[FingerprintContextSymbol]?.preservedWithCredentials,
         signalsCollectionPromise,
+        requestHeaders: new Map(),
         request,
       }
       Object.assign(this, {

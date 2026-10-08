@@ -1,6 +1,7 @@
 import { PatcherContext } from '../context'
 import { SIGNALS_KEY } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
+import { injectWindowBusinessContextAsFormFields } from '../businessContext'
 
 const REMOVE_LISTENER_SYMBOL = Symbol('removeListener')
 
@@ -39,11 +40,13 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
       }
 
       // If signals are already present, we don't need to add them again
-      if (form.querySelector(`input[name="${SIGNALS_KEY}"]`)) {
-        return
+      if (!form.querySelector(`input[name="${SIGNALS_KEY}"]`)) {
+        const field = createSignalsField(signals)
+        form.appendChild(field)
       }
-      const field = createSignalsField(signals)
-      form.appendChild(field)
+
+      // Window → body fields (forms cannot set custom headers)
+      injectWindowBusinessContextAsFormFields(form)
     } catch (e) {
       logger.error('Error getting signals during form submission:', e)
     }

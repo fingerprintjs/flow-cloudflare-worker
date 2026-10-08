@@ -1,3 +1,4 @@
+import { BusinessContext } from '../../shared/businessContext'
 import { RuleAction } from './ruleset'
 import { z } from 'zod/v4'
 
@@ -23,6 +24,15 @@ export type SendBody = {
   client_headers?: Record<string, string>
   /** Ruleset context for rule action evaluation */
   ruleset_context?: RulesetContext
+  /**
+   * SPIKE (proposed /send API): customer event tag for Rules Engine.
+   * Same semantics as JS agent / event tags.
+   */
+  tag?: unknown
+  /**
+   * SPIKE (proposed /send API): customer linked id for Rules Engine.
+   */
+  linked_id?: string
 }
 
 // https://docs.fingerprint.com/reference/server-api-v4-get-event#response-bot-info
@@ -157,6 +167,12 @@ export type ParsedIncomingRequest = {
 
   /** The cookie from the request that needs to be included in the identification request */
   clientCookie: string | undefined
+
+  /**
+   * SPIKE: business context extracted from the protected API request
+   * (headers + body), ready to inject as top-level `/v4/send` fields.
+   */
+  businessContext?: BusinessContext | undefined
 }
 
 const EdgeRequestHeader = z.object({

@@ -3,6 +3,7 @@ import { XHRWithFingerprintContext, FingerprintContextSymbol } from './types'
 import { AGENT_DATA_HEADER } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
 import { injectSignalsIntoRequest } from '../signalsInjection'
+import { injectWindowBusinessContextAsHeaders } from '../businessContext'
 
 /**
  * Creates a patched version of the `send` method for `XMLHttpRequest` instances.
@@ -35,6 +36,11 @@ export function createPatchedSend(ctx: PatcherContext): typeof XMLHttpRequest.pr
               fingerprintContext.request,
               signals
             ).appIncludedCredentials
+            try {
+              injectWindowBusinessContextAsHeaders(fingerprintContext.request, fingerprintContext.requestHeaders)
+            } catch (error) {
+              logger.error('Error injecting window business context into XHR headers:', error)
+            }
           }
         })
         .finally(() => {

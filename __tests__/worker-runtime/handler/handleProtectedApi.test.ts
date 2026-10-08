@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import assert from 'node:assert/strict'
 import { AGENT_DATA_HEADER, SIGNALS_KEY } from '../../../src/shared/const'
+import { FLOW_OWNED_REQUEST_HEADERS } from '../../../src/shared/businessContext'
 import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import handler from '../../../src/worker'
 import { CloudflareRequest } from '../request'
@@ -2138,7 +2139,9 @@ describe('Protected API', () => {
       expect(response.status).toEqual(204)
       expect(response.headers.get('Access-Control-Allow-Origin')).toEqual(mockWorkerBaseUrl)
       expect(response.headers.get('Access-Control-Allow-Credentials')).toEqual('true')
-      expect(response.headers.get('Access-Control-Allow-Headers')).toEqual(`content-type,${SIGNALS_KEY}`)
+      expect(response.headers.get('Access-Control-Allow-Headers')).toEqual(
+        `content-type,${FLOW_OWNED_REQUEST_HEADERS.join(',')}`
+      )
       expect(response.headers.get('Access-Control-Allow-Methods')).toEqual('POST')
 
       const originRequest = getOriginRequest()
