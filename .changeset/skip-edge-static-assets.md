@@ -4,8 +4,6 @@
 
 Skip the Automation Intelligence API call for static asset requests.
 
-* On identification pages matched by a pattern ending with `*` (for example `https://example.com/assets/header.png` matching `https://example.com/*`), `GET` and `HEAD` requests with a static asset `Sec-Fetch-Dest` (`script`, `style`, `image`, `font`, and similar) go straight to the origin.
-* Client-supplied `fp-*` headers are still removed.
-* Page loads, fetch/XHR calls, requests without `Sec-Fetch-Dest`, exact pattern matches, and the base path of a wildcard pattern (like the root page for `https://example.com/*`) call the API as before.
+GET/HEAD identification-page requests whose `Sec-Fetch-Dest` is `script`, `style`, `image`, `font`, and similar go straight to the origin. Client-supplied `fp-*` headers are still removed. Edge always runs when the request path is the matched identification pattern's path (`/` and `/?q=1` for `https://example.com/*`). To guarantee Edge on another page, including with a query string, add `https://example.com/checkout*`.
 
 Set `FP_EDGE_INCLUDE_STATIC_ASSETS` to `true` to restore the previous behavior.

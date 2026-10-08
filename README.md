@@ -47,9 +47,11 @@ The worker is configured using a `wrangler.jsonc` file. An example file `wrangle
 -   `IDENTIFICATION_PAGE_URLS`: An array of url patterns that cannot be relative but can contain wildcards where the Fingerprint identification script should be injected. 
     - Example: `[ 'https://example.com/login', 'https://example.com/signup/*' ]` 
 -   `FP_EDGE_API`: Set to `true` to forward IP and bot intelligence to the origin as `fp-*` headers. Requests to `IDENTIFICATION_PAGE_URLS` call the Automation Intelligence API to get it.
--   `FP_EDGE_INCLUDE_STATIC_ASSETS`: Defaults to `false`. When `FP_EDGE_API` is on, static asset requests skip the Automation Intelligence API call if they only match a pattern ending with `*`, like `https://example.com/*`. A static asset request is a `GET` or `HEAD` with a `Sec-Fetch-Dest` header like `script`, `style`, `image`, or `font`. Set to `true` to call the API for these requests too.
-    - Clients can forge `Sec-Fetch-Dest` to skip the API call. The base path of a wildcard pattern always calls the API, like `/` for `https://example.com/*` or `/shop/` for `https://example.com/shop/*`. To protect another page, add it as an exact pattern next to the wildcard, like `https://example.com/checkout`.
-    - A request without `fp-ip-info-v4-address` or `fp-ip-info-v6-address` headers has no Edge result: the call was skipped or failed.
+-   `FP_EDGE_INCLUDE_STATIC_ASSETS`: Defaults to `false`. When `FP_EDGE_API` is on, the worker skips the Automation Intelligence API call for static assets: GET/HEAD identification-page requests whose `Sec-Fetch-Dest` is `script`, `style`, `image`, `font`, and similar. Edge always runs when the request path is the matched identification pattern's path. Set to `true` to call the API for these requests too.
+    - For `https://example.com/*`, that is `/` and `/?q=1`.
+    - To guarantee Edge on another page, including with a query string, add `https://example.com/checkout*`. That covers `/checkout` and `/checkout?q=1`, not `/checkout/foo` or `/checkout-old`.
+    - The trailing `*` is required so `/checkout?q=1` matches `checkout*` instead of `/*`. Fragments (`#promo`) are not sent to the worker, so they do not need `*`.
+    - A request without `fp-ip-info-v4-address` or `fp-ip-info-v6-address` has no Edge result: the call was skipped or failed.
 
 ## Architecture
 

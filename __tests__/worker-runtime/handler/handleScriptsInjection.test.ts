@@ -477,7 +477,6 @@ describe('Scripts injection', () => {
       )
 
       it.each([
-        ['exact pattern', [`${mockWorkerBaseUrl}/page`], '/page'],
         [
           'exact pattern with query string next to wildcard',
           [`${mockWorkerBaseUrl}/*`, `${mockWorkerBaseUrl}/page`],
@@ -487,6 +486,33 @@ describe('Scripts injection', () => {
           'exact pattern next to more specific wildcard host',
           [`${mockWorkerBaseUrl}/*`, 'https://*.com/page'],
           '/page',
+        ],
+      ])('skips Edge API for static asset on %s', async (_, patterns, path) => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+          new Response(sampleHtml, {
+            headers: {
+              'Content-Type': 'text/html',
+            },
+            status: 200,
+          })
+        )
+
+        const request = new CloudflareRequest(`${mockWorkerBaseUrl}${path}`)
+        request.headers.set('Sec-Fetch-Dest', 'script')
+        const ctx = createExecutionContext()
+
+        await handler.fetch(request, { ...edgeEnv, IDENTIFICATION_PAGE_URLS: patterns }, ctx)
+        await waitOnExecutionContext(ctx)
+
+        expect(fetch).toHaveBeenCalledTimes(1)
+      })
+
+      it.each([
+        ['exact pattern', [`${mockWorkerBaseUrl}/page`], '/page'],
+        [
+          'trailing wildcard covering query string',
+          [`${mockWorkerBaseUrl}/*`, `${mockWorkerBaseUrl}/page*`],
+          '/page?a',
         ],
       ])('calls Edge API for static asset on %s', async (_, patterns, path) => {
         vi.mocked(fetch).mockResolvedValueOnce(

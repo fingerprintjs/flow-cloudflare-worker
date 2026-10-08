@@ -203,7 +203,7 @@ export function getTestProjects(): TestProject[] {
           // Static asset requests only skip the Edge API on wildcard identification pages
           IDENTIFICATION_PAGE_URLS: [
             `https://${getTestProjectHost('edge-api-monitor-mode')}/shop/*`,
-            `https://${getTestProjectHost('edge-api-monitor-mode')}/shop/exact`,
+            `https://${getTestProjectHost('edge-api-monitor-mode')}/shop/exact*`,
           ],
 
           // Deploy in monitor mode

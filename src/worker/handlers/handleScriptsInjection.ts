@@ -1,3 +1,4 @@
+import { Route } from '@fingerprintjs/url-matcher'
 import { TypedEnv } from '../types'
 import { hasContentType } from '../utils/headers'
 import { getScriptUrl } from '../scripts'
@@ -8,6 +9,7 @@ import { IdentificationClient } from '../fingerprint/identificationClient'
 type HandleScriptsInjectionParams = {
   request: Request
   env: TypedEnv
+  route: Route<unknown>
 }
 
 /**
@@ -17,16 +19,17 @@ type HandleScriptsInjectionParams = {
  * @param {Object} params - The parameters for the function.
  * @param {Request} params.request - The incoming HTTP request.
  * @param {Object} params.env - The environment configuration object containing necessary script and resource paths.
+ * @param {Route} params.route - The identification page route that matched the request.
  *
  * @return {Promise<Response>} A Promise that resolves to an HTTP Response, potentially modified with injected scripts if the content type is HTML.
  */
-export async function handleScriptsInjection({ request, env }: HandleScriptsInjectionParams): Promise<Response> {
+export async function handleScriptsInjection({ request, env, route }: HandleScriptsInjectionParams): Promise<Response> {
   const identificationClient = IdentificationClient.fromEnv(env)
 
   console.info('Injecting instrumentation script for page:', request.url)
 
   // Propagate a request to the origin
-  const response = await fetchOriginWithEdgeAPIRequest(request, identificationClient, env)
+  const response = await fetchOriginWithEdgeAPIRequest(request, identificationClient, env, route)
 
   if (hasContentType(response.headers, 'text/html')) {
     try {
