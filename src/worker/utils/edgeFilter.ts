@@ -46,6 +46,11 @@ const SKIPPABLE_METHODS = new Set(['GET', 'HEAD'])
  * That only happens under a wildcard pattern (ending with `*`), excluding its base path,
  * e.g. `/base/` for `https://example.com/base/*` and `/` for `https://example.com/*`.
  *
+ * Other identification pages do not affect this. Exact `https://example.com/page` next to
+ * `https://example.com/*` does not force Edge on `/page?q=` because Cloudflare matching
+ * gives the wildcard the request. Add `https://example.com/page*` so that pattern wins.
+ * That covers `/page` and `/page?q=`, not `/page/foo` or `/page-old`.
+ *
  * @param route - The identification page route that matched the request.
  */
 export function shouldSkipEdgeRequest(request: Request, env: TypedEnv, route: Route<unknown>): boolean {

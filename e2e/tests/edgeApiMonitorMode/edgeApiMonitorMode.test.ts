@@ -73,8 +73,10 @@ test.describe('Edge API in monitor mode', () => {
       expect(await response.text()).toContain('instrumentor.iife.js')
     })
 
-    test('should call Edge API on exact page even with static asset Sec-Fetch-Dest', async ({ request }) => {
-      const response = await request.get('/shop/exact', {
+    test('should call Edge API on trailing-wildcard page even with static asset Sec-Fetch-Dest', async ({
+      request,
+    }) => {
+      const response = await request.get('/shop/exact?q=1', {
         headers: {
           'Sec-Fetch-Dest': 'script',
         },

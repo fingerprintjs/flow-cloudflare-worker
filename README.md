@@ -48,7 +48,7 @@ The worker is configured using a `wrangler.jsonc` file. An example file `wrangle
     - Example: `[ 'https://example.com/login', 'https://example.com/signup/*' ]` 
 -   `FP_EDGE_API`: Set to `true` to forward IP and bot intelligence to the origin as `fp-*` headers. Requests to `IDENTIFICATION_PAGE_URLS` call the Automation Intelligence API to get it.
 -   `FP_EDGE_INCLUDE_STATIC_ASSETS`: Defaults to `false`. When `FP_EDGE_API` is on, static asset requests skip the Automation Intelligence API call if they only match a pattern ending with `*`, like `https://example.com/*`. A static asset request is a `GET` or `HEAD` with a `Sec-Fetch-Dest` header like `script`, `style`, `image`, or `font`. Set to `true` to call the API for these requests too.
-    - Clients can forge `Sec-Fetch-Dest` to skip the API call. The base path of a wildcard pattern always calls the API, like `/` for `https://example.com/*` or `/shop/` for `https://example.com/shop/*`. To protect another page, add it as an exact pattern next to the wildcard, like `https://example.com/checkout`.
+    - Clients can forge `Sec-Fetch-Dest` to skip the API call. The matched pattern's path always calls the API, like `/` for `https://example.com/*` or `/shop/` for `https://example.com/shop/*`. To protect another page, including with a query string, add a trailing-wildcard pattern that wins matching, like `https://example.com/checkout*`. That covers `/checkout` and `/checkout?q=`, not `/checkout/foo` or `/checkout-old`.
     - A request without `fp-ip-info-v4-address` or `fp-ip-info-v6-address` headers has no Edge result: the call was skipped or failed.
 
 ## Architecture

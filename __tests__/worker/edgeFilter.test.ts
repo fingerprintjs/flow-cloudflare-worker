@@ -56,19 +56,23 @@ describe('shouldSkipEdgeRequest', () => {
   })
 
   it.each([
-    // Skips: only a wildcard pattern matches
+    // Skips: matched wildcard and pathname is not the pattern's path
     ['path wildcard', ['/*'], '/assets/app.js', true],
     ['wildcard next to exact path', ['/*', '/login'], '/assets/app.js', true],
     ['path with query string under wildcard', ['/*'], '/assets/app.js?v=2', true],
     ['path under nested wildcard', ['/base/*'], '/base/app.js', true],
+    ['exact path with query string next to wildcard', ['/*', '/login'], '/login?next=/account', true],
+    ['trailing wildcard does not cover suffix', ['/*', '/login*'], '/login-old', true],
+    ['trailing wildcard does not cover nested path', ['/*', '/login*'], '/login/extra', true],
 
-    // Calls edge: an exact pattern matches
+    // Calls edge: matched route path equals pathname
     ['exact path', ['/assets/app.js'], '/assets/app.js', false],
     ['exact path over wildcard', ['/*', '/login'], '/login', false],
-    ['exact path with query string over wildcard', ['/*', '/login'], '/login?next=/account', false],
+    ['trailing wildcard covering query string', ['/*', '/login*'], '/login?next=/account', false],
+    ['trailing wildcard covering exact path', ['/*', '/login*'], '/login', false],
     ['wildcard in fragment', ['/page#*'], '/page', false],
 
-    // Calls edge: the wildcard pattern's base path, e.g. the root page
+    // Calls edge: the matched wildcard pattern's base path, e.g. the root page
     ['root page under wildcard', ['/*'], '/', false],
     ['root page with query string under wildcard', ['/*'], '/?utm_source=ad', false],
     ['base path under nested wildcard', ['/base/*'], '/base/', false],
@@ -81,12 +85,12 @@ describe('shouldSkipEdgeRequest', () => {
   })
 
   it.each([
-    ['longer wildcard', ['https://example.com/login*', 'https://example.com/login']],
-    ['more specific wildcard host', ['https://example.com/*', 'https://*.com/login']],
-  ])('exact path wins over %s', (_, patterns) => {
+    ['longer wildcard', ['https://example.com/login*', 'https://example.com/login'], false],
+    ['more specific wildcard host', ['https://example.com/*', 'https://*.com/login'], true],
+  ])('matched route vs %s', (_, patterns, expected) => {
     const env: TypedEnv = { ...mockEnv, IDENTIFICATION_PAGE_URLS: patterns }
 
-    expect(shouldSkipEdgeRequest(createRequest('GET', 'script', '/login'), env)).toBe(false)
+    expect(shouldSkipEdgeRequest(createRequest('GET', 'script', '/login'), env)).toBe(expected)
   })
 
   describe('FP_EDGE_INCLUDE_STATIC_ASSETS', () => {
