@@ -1,5 +1,15 @@
 # flow-cloudflare-worker
 
+## 0.8.0
+
+### Minor Changes
+
+- Skip the Automation Intelligence API call for static asset requests.
+
+  GET/HEAD identification-page requests whose `Sec-Fetch-Dest` is `script`, `style`, `image`, `font`, and similar go straight to the origin. Client-supplied `fp-*` headers are still removed. Edge always runs when the request path is the matched identification pattern's path (`/` and `/?q=1` for `https://example.com/*`). To guarantee Edge on another page, including with a query string, add `https://example.com/checkout*`.
+
+  Set `FP_EDGE_INCLUDE_STATIC_ASSETS` to `true` to restore the previous behavior. ([3a31b51](https://github.com/fingerprintjs/flow-cloudflare-worker/commit/3a31b512d01d72a0f073ebd08524423382fd0804))
+
 ## 0.7.1
 
 ### Patch Changes
