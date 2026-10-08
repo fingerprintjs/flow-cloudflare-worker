@@ -34,22 +34,18 @@ export const STATIC_ASSET_DESTINATIONS: ReadonlySet<string> = new Set([
 const SKIPPABLE_METHODS = new Set(['GET', 'HEAD'])
 
 /**
- * Returns true when the request is a browser static asset load that should not call the Edge API.
- * For example, `https://example.com/assets/app.js`
+ * True for a static asset that should not call the Edge API.
  *
- * The check relies on `Sec-Fetch-Dest`, which clients can forge.
+ * A static asset is a GET/HEAD identification-page request whose `Sec-Fetch-Dest` is
+ * `script`, `style`, `image`, `font`, and similar.
  * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest
- * A forged value only skips the Edge API call.
- * Client-supplied `fp-*` headers are still stripped before the request reaches the origin.
  *
- * Only skips GET/HEAD static asset requests whose path differs from the matched route's path.
- * That only happens under a wildcard pattern (ending with `*`), excluding its base path,
- * e.g. `/base/` for `https://example.com/base/*` and `/` for `https://example.com/*`.
+ * Clients can forge that header. Edge always runs when the request path is the matched
+ * identification pattern's path (`route.path`). For `https://example.com/*` that is `/`
+ * and `/?q=1`. To cover another page including `?q=`, add `https://example.com/checkout*`.
+ * Fragments are not sent to the worker.
  *
- * Other identification pages do not affect this. Exact `https://example.com/page` next to
- * `https://example.com/*` does not force Edge on `/page?q=` because Cloudflare matching
- * gives the wildcard the request. Add `https://example.com/page*` so that pattern wins.
- * That covers `/page` and `/page?q=`, not `/page/foo` or `/page-old`.
+ * A forged dest only skips the Edge call. Client-supplied `fp-*` headers are still stripped.
  *
  * @param route - The identification page route that matched the request.
  */
