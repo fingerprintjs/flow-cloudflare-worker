@@ -1,6 +1,11 @@
 import { PatcherContext } from '../context'
 import { SIGNALS_KEY } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
+import {
+  extractBusinessContextFromForm,
+  extractBusinessContextFromWindow,
+  resolveBusinessContext,
+} from '../businessContext'
 
 const REMOVE_LISTENER_SYMBOL = Symbol('removeListener')
 
@@ -30,7 +35,12 @@ export function injectSignalsElement(form: HTMLFormElement, ctx: PatcherContext)
       return
     }
 
-    const signals = await ctx.getSignals()
+    const businessContext = resolveBusinessContext({
+      body: extractBusinessContextFromForm(form),
+      window: extractBusinessContextFromWindow(),
+    })
+
+    const signals = await ctx.getSignals(businessContext)
 
     try {
       if (!signals) {

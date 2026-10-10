@@ -42,6 +42,16 @@ describe('Fetch Patcher', () => {
     vi.restoreAllMocks()
   })
 
+  function getForwardedRequest(): Request {
+    const [input, init] = mockedFetch.mock.calls[0]
+    expect(input).toBeInstanceOf(Request)
+    expect(init).toBeUndefined()
+    if (!(input instanceof Request)) {
+      throw new Error('Expected fetch to receive a Request')
+    }
+    return input
+  }
+
   describe('patchFetch', () => {
     it('should patch window.fetch successfully', () => {
       const originalFetch = window.fetch
@@ -63,11 +73,13 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(url, init)
 
-      expect(mockedFetch).toHaveBeenCalledWith(url, {
-        method: 'POST',
-        headers: new Headers({ 'Content-Type': 'application/json', [SIGNALS_KEY]: 'test-signals-data' }),
-        credentials: 'include',
-      })
+      const forwardedRequest = getForwardedRequest()
+      expect(forwardedRequest.url).toBe(url)
+      expect(forwardedRequest.method).toBe('POST')
+      expect(forwardedRequest.credentials).toBe('include')
+      expect(forwardedRequest.headers).toEqual(
+        new Headers({ 'Content-Type': 'application/json', [SIGNALS_KEY]: 'test-signals-data' })
+      )
 
       // Check that original parameters were not modified
       expect('credentials' in init).toBeFalsy()
@@ -84,11 +96,13 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(url, init)
 
-      expect(mockedFetch).toHaveBeenCalledWith(url, {
-        method: 'POST',
-        headers: new Headers({ 'Content-Type': 'application/json', [SIGNALS_KEY]: 'test-signals-data' }),
-        credentials: 'include',
-      })
+      const forwardedRequest = getForwardedRequest()
+      expect(forwardedRequest.url).toBe(mockUrl('/protected/endpoint'))
+      expect(forwardedRequest.method).toBe('POST')
+      expect(forwardedRequest.credentials).toBe('include')
+      expect(forwardedRequest.headers).toEqual(
+        new Headers({ 'Content-Type': 'application/json', [SIGNALS_KEY]: 'test-signals-data' })
+      )
 
       // Check that original parameters were not modified
       expect('credentials' in init).toBeFalsy()
@@ -105,10 +119,10 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(url)
 
-      expect(mockedFetch).toHaveBeenCalledWith(url, {
-        headers: new Headers({ [SIGNALS_KEY]: 'test-signals-data' }),
-        credentials: 'include',
-      })
+      const forwardedRequest = getForwardedRequest()
+      expect(forwardedRequest.url).toBe(url)
+      expect(forwardedRequest.credentials).toBe('include')
+      expect(forwardedRequest.headers).toEqual(new Headers({ [SIGNALS_KEY]: 'test-signals-data' }))
     })
 
     it('should inject signals for protected URLs with URL input', async () => {
@@ -122,11 +136,11 @@ describe('Fetch Patcher', () => {
       await window.fetch(url, init)
 
       expect(mockContext.isProtectedUrl).toHaveBeenCalledWith(url.toString(), 'POST')
-      expect(mockedFetch).toHaveBeenCalledWith(url, {
-        method: 'POST',
-        headers: new Headers({ [SIGNALS_KEY]: 'test-signals-data' }),
-        credentials: 'include',
-      })
+      const forwardedRequest = getForwardedRequest()
+      expect(forwardedRequest.url).toBe(url.toString())
+      expect(forwardedRequest.method).toBe('POST')
+      expect(forwardedRequest.credentials).toBe('include')
+      expect(forwardedRequest.headers).toEqual(new Headers({ [SIGNALS_KEY]: 'test-signals-data' }))
 
       // Check that original parameters were not modified
       expect('credentials' in init).toBeFalsy()
@@ -247,14 +261,15 @@ describe('Fetch Patcher', () => {
         headers: existingHeaders,
       })
 
-      expect(mockedFetch).toHaveBeenCalledWith(url, {
-        method: 'POST',
-        headers: new Headers({
+      const forwardedRequest = getForwardedRequest()
+      expect(forwardedRequest.method).toBe('POST')
+      expect(forwardedRequest.credentials).toBe('include')
+      expect(forwardedRequest.headers).toEqual(
+        new Headers({
           'Content-Type': 'application/json',
           [SIGNALS_KEY]: 'test-signals-data',
-        }),
-        credentials: 'include',
-      })
+        })
+      )
     })
 
     it('should handle existing Headers object in RequestInit', async () => {
@@ -271,14 +286,15 @@ describe('Fetch Patcher', () => {
         },
       })
 
-      expect(mockedFetch).toHaveBeenCalledWith(url, {
-        method: 'POST',
-        headers: new Headers({
+      const forwardedRequest = getForwardedRequest()
+      expect(forwardedRequest.method).toBe('POST')
+      expect(forwardedRequest.credentials).toBe('include')
+      expect(forwardedRequest.headers).toEqual(
+        new Headers({
           'Content-Type': 'application/json',
           [SIGNALS_KEY]: 'test-signals-data',
-        }),
-        credentials: 'include',
-      })
+        })
+      )
     })
 
     it('should handle existing Headers tuple in RequestInit', async () => {
@@ -293,14 +309,15 @@ describe('Fetch Patcher', () => {
         headers: [['Content-Type', 'application/json']],
       })
 
-      expect(mockedFetch).toHaveBeenCalledWith(url, {
-        method: 'POST',
-        headers: new Headers({
+      const forwardedRequest = getForwardedRequest()
+      expect(forwardedRequest.method).toBe('POST')
+      expect(forwardedRequest.credentials).toBe('include')
+      expect(forwardedRequest.headers).toEqual(
+        new Headers({
           'Content-Type': 'application/json',
           [SIGNALS_KEY]: 'test-signals-data',
-        }),
-        credentials: 'include',
-      })
+        })
+      )
     })
 
     it('should overwrite existing signals header', async () => {
@@ -313,13 +330,10 @@ describe('Fetch Patcher', () => {
 
       await window.fetch(url, { method: 'POST', headers })
 
-      expect(mockedFetch).toHaveBeenCalledWith(url, {
-        method: 'POST',
-        headers: new Headers({
-          [SIGNALS_KEY]: 'test-signals-data',
-        }),
-        credentials: 'include',
-      })
+      const forwardedRequest = getForwardedRequest()
+      expect(forwardedRequest.method).toBe('POST')
+      expect(forwardedRequest.credentials).toBe('include')
+      expect(forwardedRequest.headers).toEqual(new Headers({ [SIGNALS_KEY]: 'test-signals-data' }))
     })
 
     it('should handle Request object with existing headers', async () => {

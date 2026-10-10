@@ -1,6 +1,7 @@
 import { isProtectedApiHttpMethod, ProtectedApi, ProtectedApiHttpMethod } from '../../../shared/types'
 import { findMatchingRoute, parseRoutes, Route } from '@fingerprintjs/url-matcher'
 import { logger } from '../../shared/logger'
+import type { BusinessContext } from './businessContext'
 
 /**
  * Function that processes agent data received from the worker for protected API requests.
@@ -22,9 +23,10 @@ type AgentDataProcessor = (data: string) => void
 export type PatcherContext = {
   /**
    * Retrieves the current signals' data.
+   * @param businessContext - Optional tag / linkedId passed through to agent.collect()
    * @returns Signals string if set, undefined otherwise
    */
-  getSignals: () => Promise<string | undefined>
+  getSignals: (businessContext?: BusinessContext) => Promise<string | undefined>
 
   /**
    * Processes agent data received from the worker for protected API requests.
@@ -52,7 +54,7 @@ export class WritablePatcherContext implements PatcherContext {
   /**
    * Function that resolves to the signal data.
    * */
-  private signalsProvider?: () => Promise<string | undefined>
+  private signalsProvider?: (businessContext?: BusinessContext) => Promise<string | undefined>
 
   /**
    * Function that processes agent data received from the worker for protected API requests.
@@ -101,17 +103,18 @@ export class WritablePatcherContext implements PatcherContext {
 
   /**
    * Retrieves the current signals' data using signals' provider.
+   * @param businessContext - Optional tag / linkedId passed through to agent.collect()
    * @returns Signals string if set, undefined otherwise
    */
-  async getSignals(): Promise<string | undefined> {
-    return this.signalsProvider?.()
+  async getSignals(businessContext?: BusinessContext): Promise<string | undefined> {
+    return this.signalsProvider?.(businessContext)
   }
 
   /**
    * Sets signals data provider. Can only be called once - subsequent calls will log a warning and return early.
    * @param signalsProvider - The signals provider to store in the context
    */
-  setSignalsProvider(signalsProvider: () => Promise<string | undefined>) {
+  setSignalsProvider(signalsProvider: (businessContext?: BusinessContext) => Promise<string | undefined>) {
     if (this.signalsProvider) {
       logger.warn('Invalid attempt to set signals provider that are already set.')
       return

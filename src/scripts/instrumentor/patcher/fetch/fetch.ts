@@ -4,6 +4,12 @@ import { collectSignalsForProtectedUrl, injectSignalsIntoRequest } from '../sign
 import { resolvePatcherRequest } from './patcherRequest'
 import { AGENT_DATA_HEADER } from '../../../../shared/const'
 import { logger } from '../../../shared/logger'
+import {
+  extractBusinessContextFromHeaders,
+  extractBusinessContextFromRequest,
+  extractBusinessContextFromWindow,
+  resolveBusinessContext,
+} from '../businessContext'
 
 /**
  * Parameters required for patching the fetch API.
@@ -43,13 +49,18 @@ export function patchFetch(ctx: PatcherContext) {
       const result = resolvePatcherRequest(params)
 
       if (result) {
-        const [request, updatedParams] = result
+        const { request, effectiveRequest, updatedParams } = result
 
         logger.debug('Resolved fetch request and updated params:', request, updatedParams)
-        signals = await collectSignalsForProtectedUrl({ request, ctx })
-        if (signals) {
-          injectSignalsIntoRequest(request, signals)
-          actualParams = updatedParams
+
+        // Resolve business context only for protected URLs — body parsing can be expensive
+        if (ctx.isProtectedUrl(request.url, request.method)) {
+          const businessContext = await resolveFetchBusinessContext(effectiveRequest)
+          signals = await collectSignalsForProtectedUrl({ request, ctx, businessContext })
+          if (signals) {
+            injectSignalsIntoRequest(request, signals)
+            actualParams = updatedParams
+          }
         }
       }
     } catch (error) {
@@ -76,4 +87,15 @@ export function patchFetch(ctx: PatcherContext) {
   }
 
   logger.debug('Fetch patched successfully.')
+}
+
+/**
+ * Resolves business context from the effective fetch Request.
+ */
+async function resolveFetchBusinessContext(request: Request) {
+  return resolveBusinessContext({
+    body: await extractBusinessContextFromRequest(request),
+    headers: extractBusinessContextFromHeaders(request.headers),
+    window: extractBusinessContextFromWindow(),
+  })
 }

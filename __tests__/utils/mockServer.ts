@@ -9,6 +9,7 @@ type MockServerRequest = IncomingMessage & { body?: Buffer }
  */
 export class MockServer {
   private _requests: MockServerRequest[] = []
+  private readonly port: number
 
   private server = createServer(async (req, res) => {
     this.middlewares.forEach((middleware) => middleware(req, res))
@@ -30,6 +31,10 @@ export class MockServer {
 
   requestHandler?: RequestHandler | undefined
 
+  constructor(port = 3000) {
+    this.port = port
+  }
+
   get requests() {
     return this._requests
   }
@@ -37,7 +42,7 @@ export class MockServer {
   listen(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.server.on('error', reject)
-      this.server.listen(3000, '127.0.0.1', () => {
+      this.server.listen(this.port, '127.0.0.1', () => {
         this.server.off('error', reject)
         resolve()
       })
@@ -57,7 +62,7 @@ export class MockServer {
   }
 
   getUrl(path: string) {
-    return `http://localhost:3000${path}`
+    return `http://localhost:${this.port}${path}`
   }
 
   use(middleware: RequestHandler) {

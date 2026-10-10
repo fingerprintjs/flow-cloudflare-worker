@@ -43,9 +43,9 @@ async function setProviders({ fingerprintLoader, endpoint, patcherCtx }: SetupPa
 
   logger.debug('FingerprintJS agent loaded', agent)
 
-  patcherCtx.setSignalsProvider(async () => {
-    logger.debug('Collecting signals...')
-    const signals = await agent.collect()
+  patcherCtx.setSignalsProvider(async (businessContext) => {
+    logger.debug('Collecting signals...', businessContext)
+    const signals = await agent.collect(businessContext)
     logger.debug('Signals collected:', signals)
     return signals
   })

@@ -1,5 +1,16 @@
+/**
+ * Business context passed to the JS agent `collect()` call (ODI).
+ * @see https://docs.fingerprint.com/docs/on-demand-identification#calling-the-collect-method
+ */
+export type BusinessContext = {
+  tag?: unknown
+  linkedId?: string
+}
+
+export type CollectOptions = BusinessContext
+
 export type Agent = {
-  collect: () => Promise<string | undefined>
+  collect: (options?: CollectOptions) => Promise<string | undefined>
 }
 
 type StartOptions = {
