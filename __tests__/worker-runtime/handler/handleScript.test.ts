@@ -126,6 +126,7 @@ describe('Handle script', () => {
         const response = await handler.fetch(request, mockEnv, ctx)
         await waitOnExecutionContext(ctx)
 
+        assertRemovedCookieInFetchCall()
         expect(response.headers.get('cache-control')).toBeNull()
       })
 
