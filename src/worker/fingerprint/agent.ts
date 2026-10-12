@@ -8,7 +8,7 @@ import { addIntegrationInfo } from '../../shared/integrationInfo'
  * @param {Request} incomingRequest - The incoming HTTP request received by the worker.
  * @param {string} publicApiKey - The public API key used to generate the script URL.
  * @param {string} cdnHost - Hostname of the Fingerprint CDN.
- * @return {Promise<Response>} A promise that resolves to a Response object containing the fetched script with the 'Content-Type' header set to 'application/javascript'.
+ * @return {Promise<Response>} A promise that resolves to the unchanged Fingerprint CDN response.
  */
 export async function getAgentLoader(
   incomingRequest: Request,
