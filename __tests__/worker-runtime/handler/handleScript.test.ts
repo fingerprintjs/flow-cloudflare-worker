@@ -129,7 +129,7 @@ describe('Handle script', () => {
         expect(response.headers.get('cache-control')).toBeNull()
       })
 
-      it('should not store the agent in Cloudflare cache', async () => {
+      it('should fetch the agent without Cloudflare cache options', async () => {
         vi.mocked(fetch).mockResolvedValue(new Response('agent-script'))
 
         const url = getScriptUrl('loader.js')
@@ -143,12 +143,13 @@ describe('Handle script', () => {
         expect(fetchInit?.cf).toBeUndefined()
       })
 
-      it('should pass cache-control and age headers through unchanged', async () => {
+      it('should pass cache-control, age and etag headers through unchanged', async () => {
         vi.mocked(fetch).mockResolvedValue(
           new Response('agent-script', {
             headers: {
               'cache-control': 'public, max-age=7200',
-              age: '0',
+              age: '120',
+              etag: 'W/"abc123"',
             },
           })
         )
@@ -160,7 +161,8 @@ describe('Handle script', () => {
         await waitOnExecutionContext(ctx)
 
         expect(response.headers.get('cache-control')).toEqual('public, max-age=7200')
-        expect(response.headers.get('age')).toEqual('0')
+        expect(response.headers.get('age')).toEqual('120')
+        expect(response.headers.get('etag')).toEqual('W/"abc123"')
       })
 
       it('should pass cache-control with s-maxage through unchanged', async () => {
@@ -187,6 +189,7 @@ describe('Handle script', () => {
             status: 304,
             headers: {
               'cache-control': 'public, max-age=3762',
+              age: '120',
               etag: '"abc123"',
             },
           })
@@ -210,6 +213,7 @@ describe('Handle script', () => {
         expect(response.headers.get('content-type')).toBeNull()
         expect(response.headers.get('etag')).toEqual('"abc123"')
         expect(response.headers.get('cache-control')).toEqual('public, max-age=3762')
+        expect(response.headers.get('age')).toEqual('120')
       })
     })
   })
