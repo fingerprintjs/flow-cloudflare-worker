@@ -1,6 +1,6 @@
 ---
 name: verify-flow-worker
-description: Investigate a Flow worker change live by deploying a throwaway worker to real Cloudflare and probing it over HTTP against the real Fingerprint backend. Use for exploratory checks, main-vs-branch comparisons, or a specific Fingerprint environment. For checks that can be stable assertions, use the e2e suite instead.
+description: Investigate a Flow worker change live by deploying a throwaway worker to real Cloudflare and probing it over HTTP against the real Fingerprint backend. Use for exploratory checks, main-vs-branch comparisons, or a specific Fingerprint environment. For final checks that can be stable assertions, add a normal e2e test instead.
 ---
 
 # Verify the Flow worker
