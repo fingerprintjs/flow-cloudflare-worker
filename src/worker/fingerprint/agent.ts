@@ -1,17 +1,14 @@
-import { createResponseWithMaxAge, fetchCacheable } from '../utils/cache'
 import { copyRequest } from '../utils/request'
 import { addIntegrationInfo } from '../../shared/integrationInfo'
 
-const workerTtl = 60
-
 /**
  * Fetches and returns a script with FingerprintJS Pro agent loader for the specified public API key.
- * Note: The fetched script is cached using the `fetchCacheable` function.
+ * The response is returned as received, without platform caching or header changes.
  *
  * @param {Request} incomingRequest - The incoming HTTP request received by the worker.
  * @param {string} publicApiKey - The public API key used to generate the script URL.
  * @param {string} cdnHost - Hostname of the Fingerprint CDN.
- * @return {Promise<Response>} A promise that resolves to a Response object containing the fetched script with the 'Content-Type' header set to 'application/javascript'.
+ * @return {Promise<Response>} A promise that resolves to the unchanged Fingerprint CDN response.
  */
 export async function getAgentLoader(
   incomingRequest: Request,
@@ -35,12 +32,5 @@ export async function getAgentLoader(
     },
   })
 
-  const response = await fetchCacheable(request, workerTtl)
-
-  return createResponseWithMaxAge(response, {
-    // Cache in browser for up to 1 hour
-    maxAge: 3600,
-    // Cache in CDN for up to 1 minute
-    sMaxAge: 60,
-  })
+  return fetch(request)
 }

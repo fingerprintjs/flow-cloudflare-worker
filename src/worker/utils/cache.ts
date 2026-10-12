@@ -11,24 +11,6 @@ if (cacheDisabled) {
 }
 
 /**
- * Fetches a resource while applying a cacheable mechanism with a specified TTL (time-to-live).
- *
- * @param {Request<unknown, IncomingRequestCfProperties>} request - The request object containing the resource to fetch and properties related to the Cloudflare environment.
- * @param {number} ttl - The time-to-live (TTL) value for the cacheable mechanism.
- * @return {Promise<Response>} A promise that resolves to a Response object.
- */
-export async function fetchCacheable(
-  request: Request<unknown, IncomingRequestCfProperties>,
-  ttl: number
-): Promise<Response> {
-  if (cacheDisabled) {
-    return fetch(request)
-  }
-
-  return fetch(request, { cf: { cacheTtl: ttl } })
-}
-
-/**
  * Ensures that the specified cache directive in the directives list does not exceed a given maximum value.
  * If the directive is not present in the list, it is added with the maximum value specified.
  * If the directive is already present and its value exceeds the specified maximum, it is updated to the maximum value.

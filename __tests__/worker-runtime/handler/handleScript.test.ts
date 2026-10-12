@@ -112,16 +112,29 @@ describe('Handle script', () => {
       expect(await response.text()).toEqual('agent-script')
     })
 
+    it('should strip cookies before fetching the agent', async () => {
+      vi.mocked(fetch).mockResolvedValue(new Response('agent-script'))
+
+      const url = getScriptUrl('loader.js')
+      const request = new CloudflareRequest(url, {
+        headers: {
+          cookie: '_iidt=12345',
+        },
+      })
+      const ctx = createExecutionContext()
+      await handler.fetch(request, mockEnv, ctx)
+      await waitOnExecutionContext(ctx)
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      assertRemovedCookieInFetchCall()
+    })
+
     describe('Cache', () => {
       it('should not apply cache-control headers if origin response has none', async () => {
         vi.mocked(fetch).mockResolvedValue(new Response('agent-script'))
 
         const url = getScriptUrl('loader.js')
-        const request = new CloudflareRequest(url, {
-          headers: {
-            cookie: '_iidt=12345',
-          },
-        })
+        const request = new CloudflareRequest(url)
         const ctx = createExecutionContext()
         const response = await handler.fetch(request, mockEnv, ctx)
         await waitOnExecutionContext(ctx)
@@ -129,11 +142,34 @@ describe('Handle script', () => {
         expect(response.headers.get('cache-control')).toBeNull()
       })
 
-      it('should not modify cache-control headers if they do not exceed max value', async () => {
+      it('should fetch the agent without Cloudflare cache options', async () => {
+        vi.mocked(fetch).mockResolvedValue(new Response('agent-script'))
+
+        const url = getScriptUrl('loader.js')
+        const request = new CloudflareRequest(url)
+        const ctx = createExecutionContext()
+        await handler.fetch(request, mockEnv, ctx)
+        await waitOnExecutionContext(ctx)
+
+        expect(fetch).toHaveBeenCalledTimes(1)
+        const [fetchRequest, fetchInit] = vi.mocked(fetch).mock.calls[0]
+        expect(fetchInit?.cf).toBeUndefined()
+        // Cache options can also be set on the Request itself.
+        expect(fetchRequest).toBeInstanceOf(Request)
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const requestCf = (fetchRequest as Request<unknown, RequestInitCfProperties>).cf
+        expect(requestCf?.cacheTtl).toBeUndefined()
+        expect(requestCf?.cacheEverything).toBeUndefined()
+        expect(requestCf?.cacheTtlByStatus).toBeUndefined()
+      })
+
+      it('should pass cache-control, age and etag headers through unchanged', async () => {
         vi.mocked(fetch).mockResolvedValue(
           new Response('agent-script', {
             headers: {
-              'cache-control': 'public, max-age=10, s-maxage=10',
+              'cache-control': 'public, max-age=7200',
+              age: '120',
+              etag: 'W/"abc123"',
             },
           })
         )
@@ -144,10 +180,12 @@ describe('Handle script', () => {
         const response = await handler.fetch(request, mockEnv, ctx)
         await waitOnExecutionContext(ctx)
 
-        expect(response.headers.get('cache-control')).equals('public, max-age=10, s-maxage=10')
+        expect(response.headers.get('cache-control')).toEqual('public, max-age=7200')
+        expect(response.headers.get('age')).toEqual('120')
+        expect(response.headers.get('etag')).toEqual('W/"abc123"')
       })
 
-      it('should modify cache-control headers if they exceed max value', async () => {
+      it('should pass cache-control with s-maxage through unchanged', async () => {
         vi.mocked(fetch).mockResolvedValue(
           new Response('agent-script', {
             headers: {
@@ -162,7 +200,40 @@ describe('Handle script', () => {
         const response = await handler.fetch(request, mockEnv, ctx)
         await waitOnExecutionContext(ctx)
 
-        expect(response.headers.get('cache-control')).equals('public, max-age=3600, s-maxage=60')
+        expect(response.headers.get('cache-control')).toEqual('public, max-age=10000, s-maxage=10000')
+      })
+
+      it('should forward If-None-Match and pass a 304 response through unchanged', async () => {
+        vi.mocked(fetch).mockResolvedValue(
+          new Response(null, {
+            status: 304,
+            headers: {
+              'cache-control': 'public, max-age=3762',
+              age: '120',
+              etag: '"abc123"',
+            },
+          })
+        )
+
+        const url = getScriptUrl('loader.js')
+        const request = new CloudflareRequest(url, {
+          headers: {
+            'If-None-Match': '"abc123"',
+          },
+        })
+        const ctx = createExecutionContext()
+        const response = await handler.fetch(request, mockEnv, ctx)
+        await waitOnExecutionContext(ctx)
+
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const fetchRequest = vi.mocked(fetch).mock.calls[0][0] as Request
+        expect(fetchRequest.headers.get('If-None-Match')).toEqual('"abc123"')
+
+        expect(response.status).toEqual(304)
+        expect(response.headers.get('content-type')).toBeNull()
+        expect(response.headers.get('etag')).toEqual('"abc123"')
+        expect(response.headers.get('cache-control')).toEqual('public, max-age=3762')
+        expect(response.headers.get('age')).toEqual('120')
       })
     })
   })
