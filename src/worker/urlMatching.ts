@@ -34,7 +34,8 @@ export function matchRoute(url: URL, method: string, env: TypedEnv): Route<UrlTy
     [
       ...scripts.map((script) => {
         return {
-          url: new URL(`/${routePrefix}/${script}`, url.origin).toString(),
+          // Exact routes don't match a query string, so a trailing wildcard is needed to match e.g. `loader.js?q=1`
+          url: new URL(`/${routePrefix}/${script}*`, url.origin).toString(),
           metadata: {
             type: 'script' as const,
             script,

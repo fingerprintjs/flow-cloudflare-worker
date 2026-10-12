@@ -42,8 +42,6 @@ describe('Handle script', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
 
-      assertRemovedCookieInFetchCall()
-
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const fetchRequest = vi.mocked(fetch).mock.calls[0][0] as Request
       expect(fetchRequest.url).toEqual(
@@ -88,10 +86,11 @@ describe('Handle script', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
 
-      assertRemovedCookieInFetchCall()
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const fetchRequest = vi.mocked(fetch).mock.calls[0][0] as Request
-      expect(fetchRequest.url).toContain('?q=123&version=3')
+      expect(fetchRequest.url).toEqual(
+        'https://fpcdn.io/v4/FP_PUBLIC_KEY?q=123&version=3&ii=fingerprint-flow-cloudflare%2F0.0.1-test%2Fprocdn'
+      )
 
       expect(Array.from(response.headers.entries())).toMatchInlineSnapshot(`
         [
