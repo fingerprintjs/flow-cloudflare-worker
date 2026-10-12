@@ -112,21 +112,33 @@ describe('Handle script', () => {
       expect(await response.text()).toEqual('agent-script')
     })
 
+    it('should strip cookies before fetching the agent', async () => {
+      vi.mocked(fetch).mockResolvedValue(new Response('agent-script'))
+
+      const url = getScriptUrl('loader.js')
+      const request = new CloudflareRequest(url, {
+        headers: {
+          cookie: '_iidt=12345',
+        },
+      })
+      const ctx = createExecutionContext()
+      await handler.fetch(request, mockEnv, ctx)
+      await waitOnExecutionContext(ctx)
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      assertRemovedCookieInFetchCall()
+    })
+
     describe('Cache', () => {
       it('should not apply cache-control headers if origin response has none', async () => {
         vi.mocked(fetch).mockResolvedValue(new Response('agent-script'))
 
         const url = getScriptUrl('loader.js')
-        const request = new CloudflareRequest(url, {
-          headers: {
-            cookie: '_iidt=12345',
-          },
-        })
+        const request = new CloudflareRequest(url)
         const ctx = createExecutionContext()
         const response = await handler.fetch(request, mockEnv, ctx)
         await waitOnExecutionContext(ctx)
 
-        assertRemovedCookieInFetchCall()
         expect(response.headers.get('cache-control')).toBeNull()
       })
 
@@ -140,8 +152,15 @@ describe('Handle script', () => {
         await waitOnExecutionContext(ctx)
 
         expect(fetch).toHaveBeenCalledTimes(1)
-        const fetchInit = vi.mocked(fetch).mock.calls[0][1]
+        const [fetchRequest, fetchInit] = vi.mocked(fetch).mock.calls[0]
         expect(fetchInit?.cf).toBeUndefined()
+        // Cache options can also be set on the Request itself.
+        expect(fetchRequest).toBeInstanceOf(Request)
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const requestCf = (fetchRequest as Request<unknown, RequestInitCfProperties>).cf
+        expect(requestCf?.cacheTtl).toBeUndefined()
+        expect(requestCf?.cacheEverything).toBeUndefined()
+        expect(requestCf?.cacheTtlByStatus).toBeUndefined()
       })
 
       it('should pass cache-control, age and etag headers through unchanged', async () => {

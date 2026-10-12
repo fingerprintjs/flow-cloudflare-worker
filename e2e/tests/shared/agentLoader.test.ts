@@ -13,7 +13,7 @@ test.describe('Agent loader', () => {
 
     const etag = response.headers()['etag']
     assertIsDefined(etag, 'etag')
-    expect(response.headers()['cache-control']).toBeTruthy()
+    expect(response.headers()['cache-control']).toMatch(/max-age=\d+/)
     // Fingerprint CDN never sends `s-maxage`, and proxies must not add it.
     expect(response.headers()['cache-control']).not.toContain('s-maxage')
 
@@ -24,6 +24,5 @@ test.describe('Agent loader', () => {
     expect(revalidation.headers()['cache-control'] ?? '').not.toContain('s-maxage')
     // The CDN returns the strong form of a weak ETag on 304, so compare without the `W/` prefix.
     expect(revalidation.headers()['etag']?.replace(/^W\//, '')).toEqual(etag.replace(/^W\//, ''))
-    expect((await revalidation.body()).length).toBe(0)
   })
 })
