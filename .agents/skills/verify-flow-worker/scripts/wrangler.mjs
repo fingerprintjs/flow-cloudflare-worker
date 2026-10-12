@@ -11,7 +11,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { parseEnv } from 'node:util'
 
-const FINGERPRINT_SECRETS = ['FP_PUBLIC_KEY', 'FP_SECRET_KEY', 'FP_REGION', 'FP_CDN_HOST', 'FP_INGRESS_BASE_HOST']
+const FINGERPRINT_SECRETS = [
+  'FP_PUBLIC_KEY',
+  'FP_SECRET_KEY',
+  'FP_RULESET_ID',
+  'FP_REGION',
+  'FP_CDN_HOST',
+  'FP_INGRESS_BASE_HOST',
+]
 
 function fail(message) {
   console.error(message)
@@ -31,6 +38,11 @@ if (!name || wranglerArgs.length === 0) {
 }
 if (!name.startsWith('verify-')) {
   fail(`Worker name must start with "verify-" so it can't overwrite a real worker: ${name}`)
+}
+// These would let wrangler target a different worker than the checked name.
+const overrideFlag = wranglerArgs.find((arg) => /^(--name|--config|-c|--env|-e)(=|$)/.test(arg))
+if (overrideFlag) {
+  fail(`${overrideFlag} isn't allowed: the script sets the worker name and config itself.`)
 }
 
 for (const file of envFiles) {
