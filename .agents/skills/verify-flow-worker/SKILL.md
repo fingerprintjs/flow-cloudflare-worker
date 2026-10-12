@@ -25,7 +25,7 @@ If a file is missing, copy its template there and ask the user to fill it in. Do
 
 ## Deploy
 
-1. `pnpm build`. It writes the bundle to `dist/flow_cloudflare_worker/index.js` and wipes the previous contents of that folder. The build needs a root `wrangler.jsonc`. In a fresh worktree, copy `wrangler.example.jsonc` to it first. The build doesn't use its values.
+1. `pnpm build`. It writes the bundle to `dist/flow_cloudflare_worker/index.js` and wipes the previous contents of that folder. In a fresh checkout or worktree, first run `pnpm install --frozen-lockfile --offline` and copy `wrangler.example.jsonc` to `wrangler.jsonc`. The build needs that file but doesn't use its values.
 2. Deploy, then upload the Fingerprint file as secrets. Secrets survive later deploys.
    ```sh
    node .agents/skills/verify-flow-worker/scripts/wrangler.mjs <name> deploy
@@ -35,7 +35,7 @@ If a file is missing, copy its template there and ask the user to fill it in. Do
 3. Wait until `/<prefix>/loader.js` returns 200 before testing. A fresh worker first returns 530 while DNS propagates, then 500 `FP_PUBLIC_KEY is not set` until the secrets land, about 10 to 20 seconds in all. Don't count those responses. If curl can't resolve the new host, it may have cached the lookup from before the DNS record existed: use `curl --resolve <host>:443:$(dig +short <host> @1.1.1.1 | head -1)`.
 
 To compare branches, deploy `main` and the branch as two workers and run the same requests against both. Build the second one in a git worktree:
-- Run `pnpm install --frozen-lockfile --offline` in it, then copy in the env files, plus this skill folder if it isn't committed there.
+- Copy in the env files, plus this skill folder if it isn't committed there.
 - Run build, deploy, secrets and delete for each worker from the checkout it was built in, because the script and `dist/` are relative to the current directory.
 
 ## Drive
