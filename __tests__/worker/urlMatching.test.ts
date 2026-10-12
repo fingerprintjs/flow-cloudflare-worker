@@ -286,6 +286,19 @@ describe('URL matching', () => {
         }
       )
 
+      it.each(['loader.js.map', 'loader.js/foo', 'loader.jsx'])('should not match %s as a script', (path) => {
+        const env: TypedEnv = {
+          ...mockEnv,
+          WORKER_ROUTE_PREFIX: 'scripts',
+        }
+
+        const result = matchUrl(new URL(`https://example.com/scripts/${path}`), 'GET', env)
+
+        expect(result).toEqual({
+          type: 'browserCache',
+        })
+      })
+
       it('should not match url that does not contain script behavior path', () => {
         const env: TypedEnv = {
           ...mockEnv,
