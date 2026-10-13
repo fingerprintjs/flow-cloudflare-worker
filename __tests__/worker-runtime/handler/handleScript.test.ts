@@ -42,8 +42,6 @@ describe('Handle script', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
 
-      assertRemovedCookieInFetchCall()
-
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const fetchRequest = vi.mocked(fetch).mock.calls[0][0] as Request
       expect(fetchRequest.url).toEqual(
@@ -69,47 +67,15 @@ describe('Handle script', () => {
       expect(await response.text()).toEqual('agent-script')
     })
 
-    it('should fetch loader code with custom query params', async () => {
-      vi.mocked(fetch).mockResolvedValue(
-        new Response('agent-script', {
-          headers: {
-            'Content-Type': 'text/javascript; charset=utf-8',
-            Via: '1.1 a1b9623058220e111430672a0ebed6ea.cloudfront.net (CloudFront)',
-            'x-cache': 'Hit from cloudfront',
-          },
-        })
-      )
-
+    it('should return 404 without fetching when loader.js has a query string', async () => {
       const url = `${getScriptUrl('loader.js')}?q=123&version=3`
       const request = new CloudflareRequest(url)
       const ctx = createExecutionContext()
       const response = await handler.fetch(request, mockEnv, ctx)
       await waitOnExecutionContext(ctx)
 
-      expect(fetch).toHaveBeenCalledTimes(1)
-
-      assertRemovedCookieInFetchCall()
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const fetchRequest = vi.mocked(fetch).mock.calls[0][0] as Request
-      expect(fetchRequest.url).toContain('?q=123&version=3')
-
-      expect(Array.from(response.headers.entries())).toMatchInlineSnapshot(`
-        [
-          [
-            "content-type",
-            "text/javascript; charset=utf-8",
-          ],
-          [
-            "via",
-            "1.1 a1b9623058220e111430672a0ebed6ea.cloudfront.net (CloudFront)",
-          ],
-          [
-            "x-cache",
-            "Hit from cloudfront",
-          ],
-        ]
-      `)
-      expect(await response.text()).toEqual('agent-script')
+      expect(response.status).toEqual(404)
+      expect(fetch).not.toHaveBeenCalled()
     })
 
     it('should strip cookies before fetching the agent', async () => {

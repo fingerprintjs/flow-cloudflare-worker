@@ -25,4 +25,9 @@ test.describe('Agent loader', () => {
     // The CDN returns the strong form of a weak ETag on 304, so compare without the `W/` prefix.
     expect(revalidation.headers()['etag']?.replace(/^W\//, '')).toEqual(etag.replace(/^W\//, ''))
   })
+
+  test('should return 404 when loader.js has a query string', async ({ request }) => {
+    const response = await request.get(`/${WORKER_ROUTE_PREFIX}/loader.js?q=1`)
+    expect(response.status()).toBe(404)
+  })
 })
