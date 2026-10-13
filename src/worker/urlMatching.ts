@@ -33,13 +33,8 @@ export function matchRoute(url: URL, method: string, env: TypedEnv): Route<UrlTy
   const routes = parseRoutes<UrlType>(
     [
       ...scripts.map((script) => {
-        // Percent-encoded, like `url.pathname`
-        const scriptPath = new URL(`/${routePrefix}/${script}`, url.origin).pathname
-        // Exact routes don't match a query string, so a trailing wildcard is needed to match e.g. `loader.js?q=1`.
-        // Add it only for this exact path, so `loader.js.map` or `loader.js/foo` don't match.
-        const wildcard = url.pathname === scriptPath ? '*' : ''
         return {
-          url: new URL(`${scriptPath}${wildcard}`, url.origin).toString(),
+          url: new URL(`/${routePrefix}/${script}`, url.origin).toString(),
           metadata: {
             type: 'script' as const,
             script,

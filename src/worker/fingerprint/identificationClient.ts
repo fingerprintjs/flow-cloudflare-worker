@@ -153,7 +153,8 @@ export class IdentificationClient {
 
     // Remove the route prefix from the path
     const path = clientRequestUrl.pathname.replace(`/${this.routePrefix}`, '')
-    const ingressUrl = new URL(path, this.url)
+    const ingressUrl = new URL(this.url)
+    ingressUrl.pathname = path
     ingressUrl.search = clientRequestUrl.search
 
     const headers = new Headers(clientRequest.headers)

@@ -269,50 +269,6 @@ describe('URL matching', () => {
         })
       })
 
-      it.each(['instrumentor.iife.js', 'loader.js', 'agent-processor.iife.js'] as const)(
-        'should match %s with a query string',
-        (script) => {
-          const env: TypedEnv = {
-            ...mockEnv,
-            WORKER_ROUTE_PREFIX: 'scripts',
-          }
-
-          const result = matchUrl(new URL(`https://example.com/scripts/${script}?q=123`), 'GET', env)
-
-          expect(result).toEqual({
-            type: 'script',
-            script,
-          })
-        }
-      )
-
-      it('should match script with a query string when the prefix needs percent-encoding', () => {
-        const env: TypedEnv = {
-          ...mockEnv,
-          WORKER_ROUTE_PREFIX: 'my scripts',
-        }
-
-        const result = matchUrl(new URL('https://example.com/my%20scripts/loader.js?q=123'), 'GET', env)
-
-        expect(result).toEqual({
-          type: 'script',
-          script: 'loader.js',
-        })
-      })
-
-      it.each(['loader.js.map', 'loader.js/foo', 'loader.jsx'])('should not match %s as a script', (path) => {
-        const env: TypedEnv = {
-          ...mockEnv,
-          WORKER_ROUTE_PREFIX: 'scripts',
-        }
-
-        const result = matchUrl(new URL(`https://example.com/scripts/${path}`), 'GET', env)
-
-        expect(result).toEqual({
-          type: 'browserCache',
-        })
-      })
-
       it('should not match url that does not contain script behavior path', () => {
         const env: TypedEnv = {
           ...mockEnv,

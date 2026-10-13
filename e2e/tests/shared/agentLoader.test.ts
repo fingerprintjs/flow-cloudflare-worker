@@ -26,9 +26,8 @@ test.describe('Agent loader', () => {
     expect(revalidation.headers()['etag']?.replace(/^W\//, '')).toEqual(etag.replace(/^W\//, ''))
   })
 
-  test('should serve the agent when loader.js has a query string', async ({ request }) => {
+  test('should return 404 when loader.js has a query string', async ({ request }) => {
     const response = await request.get(`/${WORKER_ROUTE_PREFIX}/loader.js?q=1`)
-    expect(response.status()).toBe(200)
-    expect(response.headers()['content-type']).toContain('javascript')
+    expect(response.status()).toBe(404)
   })
 })

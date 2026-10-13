@@ -15,8 +15,8 @@ export async function getAgentLoader(
   publicApiKey: string,
   cdnHost: string
 ): Promise<Response> {
+  // Query params from the incoming request are not forwarded to the CDN
   const fpScriptUrl = new URL(`https://${cdnHost}/v4/${publicApiKey}`)
-  fpScriptUrl.search = new URL(incomingRequest.url).search
   addIntegrationInfo(fpScriptUrl, 'procdn')
 
   console.debug('Fetching agent loader from:', fpScriptUrl)

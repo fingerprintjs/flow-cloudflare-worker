@@ -33,6 +33,12 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
         })
 
       case 'browserCache':
+        // `loader.js` with a query string misses the exact script route and lands here.
+        // Query strings aren't supported for the agent loader, so don't proxy it.
+        if (isAgentLoaderPath(request, env)) {
+          return new Response(null, { status: 404 })
+        }
+
         if (request.method === 'GET') {
           return IdentificationClient.fromEnv(env).browserCache(request)
         }
@@ -60,4 +66,11 @@ export async function handleRequest(request: Request, env: TypedEnv): Promise<Re
   } catch (error) {
     return handleError(error)
   }
+}
+
+function isAgentLoaderPath(request: Request, env: TypedEnv): boolean {
+  const url = new URL(request.url)
+  // Percent-encoded, like `url.pathname`
+  const loaderPath = new URL(`/${getRoutePrefix(env)}/loader.js`, url.origin).pathname
+  return url.pathname === loaderPath
 }
