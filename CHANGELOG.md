@@ -1,5 +1,12 @@
 # flow-cloudflare-worker
 
+## 0.8.1
+
+### Patch Changes
+
+- Return the agent loader response unchanged. The worker no longer stores it in the Cloudflare cache, adds `s-maxage`, or caps `max-age`. `Cache-Control`, `Age` and `ETag` now match what Fingerprint's CDN sends. ([390f2f9](https://github.com/fingerprintjs/flow-cloudflare-worker/commit/390f2f93575098b0af59287ef06392227f68735d))
+- Return 404 for `loader.js` requested with a query string, instead of forwarding it to the Fingerprint API. Query parameters are no longer forwarded to the CDN when fetching the agent loader. ([7ea52b7](https://github.com/fingerprintjs/flow-cloudflare-worker/commit/7ea52b731bb2400915daf6dbffb450a6271506fc))
+
 ## 0.8.0
 
 ### Minor Changes
