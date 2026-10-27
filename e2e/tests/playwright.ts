@@ -4,10 +4,7 @@ import { TestWorkerProjectData } from '../projects/types'
 export const test = baseTest.extend<{
   project: TestWorkerProjectData
 }>({
-  project: async ({}, use, testInfo) => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const project = (testInfo.project.use as any).project as TestWorkerProjectData
-
-    await use(project)
-  },
+  // Option fixture: the value is provided per project via `use.project` in playwright.config.ts
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  project: [undefined as unknown as TestWorkerProjectData, { option: true }],
 })
