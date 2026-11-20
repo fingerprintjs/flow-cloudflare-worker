@@ -25,7 +25,7 @@ jobs:
           echo POSTFIX=$postfix >> $GITHUB_OUTPUT
           echo SUBDOMAIN=test-$postfix >> $GITHUB_OUTPUT
 
-      - name: 'Checkout project for pull_request_target trigger'
+      - name: 'Checkout project'
         uses: actions/checkout@v4
 
       - name: 'Install pnpm'
