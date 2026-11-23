@@ -24,6 +24,7 @@
     "./vite-env.d.ts",
     "./worker-configuration.d.ts",
     "./__tests__/**/*",
+    "./e2e/deploy/utils/**/*",
     "vitest.config.ts",
     "./src/**/*"
   ]
