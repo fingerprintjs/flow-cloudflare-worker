@@ -61,57 +61,15 @@ function captureOutput(process: ChildProcess) {
 }
 
 const WORKER_NOT_FOUND_MESSAGE = 'This Worker does not exist on your account'
-const WORKER_NOT_FOUND_ERROR_CODE = '[code: 10007]'
-const UNKNOWN_API_ERROR_CODE = '[code: 10013]'
-// Matches Wrangler's API failure line: "A request to the Cloudflare API (/accounts/.../workers/scripts/<name>/subdomain) failed."
-const SUBDOMAIN_ENDPOINT_PATTERN = /\/workers\/scripts\/[^/\s)]+\/subdomain\)/
-
-const MAX_ATTEMPTS = 4
+const MAX_ATTEMPTS = 3
 const INITIAL_RETRY_DELAY_MS = 2000
-
-type WranglerRunResult =
-  | { status: 'succeeded' }
-  | { status: 'not_found' }
-  | { status: 'failed'; code: number | null; stdout: string; stderr: string }
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function isWorkerNotFoundOutput(stdout: string, stderr: string): boolean {
-  return stdout.includes(WORKER_NOT_FOUND_MESSAGE) || stderr.includes(WORKER_NOT_FOUND_MESSAGE)
-}
-
-function getTransientCloudflareErrorReason(
-  output: string,
-  options: { retrySubdomainNotFound: boolean }
-): string | null {
-  if (output.includes(UNKNOWN_API_ERROR_CODE)) {
-    return 'Cloudflare API error 10013'
-  }
-
-  if (
-    options.retrySubdomainNotFound &&
-    SUBDOMAIN_ENDPOINT_PATTERN.test(output) &&
-    (output.includes(WORKER_NOT_FOUND_ERROR_CODE) || output.includes(WORKER_NOT_FOUND_MESSAGE))
-  ) {
-    return 'Cloudflare API error 10007 on /subdomain'
-  }
-
-  return null
-}
 
 export async function wranglerDeploy(cwd: string, args: string[] = []): Promise<void> {
   if (shouldSkip()) {
     return
   }
 
-  await spawnWrangler({
-    operationName: 'Deployment',
-    cwd,
-    retrySubdomainNotFound: true,
-    args: ['deploy', ...args],
-  })
+  await spawnWrangler({ operationName: 'Deployment', cwd, args: ['deploy', ...args] })
 }
 
 export async function wranglerDelete(cwd: string = process.cwd(), args: string[] = []): Promise<boolean> {
@@ -127,13 +85,8 @@ export async function wranglerDelete(cwd: string = process.cwd(), args: string[]
   })
 }
 
-function runWranglerOnce(params: {
-  cwd: string
-  ignoreWorkerNotFound: boolean
-  args: string[]
-}): Promise<WranglerRunResult> {
-  return new Promise<WranglerRunResult>((resolve, reject) => {
-    const { cwd, ignoreWorkerNotFound, args } = params
+function runWrangler(cwd: string, args: string[]) {
+  return new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve, reject) => {
     const wranglerProcess = spawn('npx', ['wrangler', ...args], {
       cwd,
       stdio: 'pipe',
@@ -141,39 +94,14 @@ function runWranglerOnce(params: {
     const { getOutput } = captureOutput(wranglerProcess)
 
     wranglerProcess.on('close', (code) => {
-      const { stdout, stderr } = getOutput()
-
-      if (code === 0) {
-        resolve({ status: 'succeeded' })
-      } else if (ignoreWorkerNotFound && isWorkerNotFoundOutput(stdout, stderr)) {
-        resolve({ status: 'not_found' })
-      } else {
-        resolve({ status: 'failed', code, stdout, stderr })
-      }
+      resolve({ code, ...getOutput() })
     })
-    wranglerProcess.on('error', (e) => {
-      reject(e)
-    })
+    wranglerProcess.on('error', reject)
   })
 }
 
-async function logFailedWranglerOutput(stdout: string, stderr: string): Promise<void> {
-  if (stdout) {
-    console.log(`-----START wrangler stdout-----\n\n${stdout}\n\n-----END wrangler stdout-----`)
-  }
-  if (stderr) {
-    console.log(`-----START wrangler stderr-----\n\n${stderr}\n\n-----END wrangler stderr-----`)
-  }
-
-  try {
-    await logWranglerLogs(stdout, stderr)
-  } catch (e) {
-    console.error(`Failed to log wrangler logs: ${e}`)
-  }
-}
-
 /**
- * Invokes wrangler using spawn, retrying transient Cloudflare API errors, and outputs debugging logs when execution fails.
+ * Invokes wrangler using spawn, retrying non-zero exits with exponential backoff, and outputs debugging logs when execution fails.
  *
  * @param params the parameters for invoking wrangler
  * @returns true, if the execution succeeded; false if params.ignoreWorkerNotFound was true and the worker was not found.
@@ -184,40 +112,47 @@ async function spawnWrangler(params: {
   cwd: string
   /** true if the "worker not found" error returned by wrangler for a nonexistent worker should not be treated as a failure */
   ignoreWorkerNotFound?: boolean
-  /** true to retry Cloudflare's post-upload /subdomain read-after-write race (code 10007) */
-  retrySubdomainNotFound?: boolean
   args: string[]
 }): Promise<boolean> {
-  const { operationName, cwd, ignoreWorkerNotFound = false, retrySubdomainNotFound = false, args } = params
+  const { operationName, cwd, ignoreWorkerNotFound = false, args } = params
 
   for (let attempt = 1; ; attempt++) {
-    const result = await runWranglerOnce({ cwd, ignoreWorkerNotFound, args })
+    const { code, stdout, stderr } = await runWrangler(cwd, args)
 
-    switch (result.status) {
-      case 'succeeded':
-        return true
-      case 'not_found':
-        return false
-      case 'failed': {
-        const combinedOutput = `${result.stdout}\n${result.stderr}`
-        const retryReason = getTransientCloudflareErrorReason(combinedOutput, { retrySubdomainNotFound })
-        if (attempt < MAX_ATTEMPTS && retryReason) {
-          const delayMs = INITIAL_RETRY_DELAY_MS * 2 ** (attempt - 1)
-          console.warn(
-            `${operationName} failed with ${retryReason} (attempt ${attempt}/${MAX_ATTEMPTS}), retrying in ${delayMs}ms...`
-          )
-          await sleep(delayMs)
-          continue
-        }
-
-        await logFailedWranglerOutput(result.stdout, result.stderr)
-        throw new Error(`${operationName} failed with code ${result.code}`)
-      }
-      default: {
-        const _exhaustive: never = result
-        return _exhaustive
-      }
+    if (code === 0) {
+      return true
     }
+
+    if (
+      ignoreWorkerNotFound &&
+      (stdout.includes(WORKER_NOT_FOUND_MESSAGE) || stderr.includes(WORKER_NOT_FOUND_MESSAGE))
+    ) {
+      return false
+    }
+
+    if (attempt < MAX_ATTEMPTS) {
+      const delayMs = INITIAL_RETRY_DELAY_MS * 2 ** (attempt - 1)
+      console.warn(
+        `${operationName} failed with code ${code} (attempt ${attempt}/${MAX_ATTEMPTS}), retrying in ${delayMs}ms...`
+      )
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+      continue
+    }
+
+    if (stdout) {
+      console.log(`-----START wrangler stdout-----\n\n${stdout}\n\n-----END wrangler stdout-----`)
+    }
+    if (stderr) {
+      console.log(`-----START wrangler stderr-----\n\n${stderr}\n\n-----END wrangler stderr-----`)
+    }
+
+    try {
+      await logWranglerLogs(stdout, stderr)
+    } catch (e) {
+      console.error(`Failed to log wrangler logs: ${e}`)
+    }
+
+    throw new Error(`${operationName} failed with code ${code}`)
   }
 }
 

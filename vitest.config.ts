@@ -53,17 +53,6 @@ export default defineConfig({
           include: ['__tests__/worker/**/*.test.ts'],
         },
       },
-      {
-        test: {
-          setupFiles: ['__tests__/utils/setupTests.ts'],
-          environment: 'node',
-          name: {
-            label: 'E2E utils',
-            color: 'yellow',
-          },
-          include: ['__tests__/e2e/**/*.test.ts'],
-        },
-      },
     ],
   },
 })
