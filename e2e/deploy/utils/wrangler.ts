@@ -60,6 +60,10 @@ function captureOutput(process: ChildProcess) {
   }
 }
 
+const WORKER_NOT_FOUND_MESSAGE = 'This Worker does not exist on your account'
+const MAX_ATTEMPTS = 3
+const INITIAL_RETRY_DELAY_MS = 2000
+
 export async function wranglerDeploy(cwd: string, args: string[] = []): Promise<void> {
   if (shouldSkip()) {
     return
@@ -81,8 +85,23 @@ export async function wranglerDelete(cwd: string = process.cwd(), args: string[]
   })
 }
 
+function runWrangler(cwd: string, args: string[]) {
+  return new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve, reject) => {
+    const wranglerProcess = spawn('npx', ['wrangler', ...args], {
+      cwd,
+      stdio: 'pipe',
+    })
+    const { getOutput } = captureOutput(wranglerProcess)
+
+    wranglerProcess.on('close', (code) => {
+      resolve({ code, ...getOutput() })
+    })
+    wranglerProcess.on('error', reject)
+  })
+}
+
 /**
- * Invokes wrangler using spawn and outputs debugging logs from wrangler when execution fails
+ * Invokes wrangler using spawn, retrying non-zero exits with exponential backoff, and outputs debugging logs when execution fails.
  *
  * @param params the parameters for invoking wrangler
  * @returns true, if the execution succeeded; false if params.ignoreWorkerNotFound was true and the worker was not found.
@@ -94,43 +113,47 @@ async function spawnWrangler(params: {
   /** true if the "worker not found" error returned by wrangler for a nonexistent worker should not be treated as a failure */
   ignoreWorkerNotFound?: boolean
   args: string[]
-}) {
-  return new Promise<boolean>((resolve, reject) => {
-    const { operationName, cwd, ignoreWorkerNotFound = false, args } = params
-    const wranglerProcess = spawn('npx', ['wrangler', ...args], {
-      cwd,
-      stdio: 'pipe',
-    })
-    const { getOutput } = captureOutput(wranglerProcess)
+}): Promise<boolean> {
+  const { operationName, cwd, ignoreWorkerNotFound = false, args } = params
 
-    wranglerProcess.on('close', async (code) => {
-      const { stdout, stderr } = getOutput()
+  for (let attempt = 1; ; attempt++) {
+    const { code, stdout, stderr } = await runWrangler(cwd, args)
 
-      if (code === 0) {
-        resolve(true)
-      } else {
-        if (stdout) {
-          if (ignoreWorkerNotFound && stdout.includes('This Worker does not exist on your account')) {
-            return resolve(false)
-          }
-          console.log(`-----START wrangler stdout-----\n\n${stdout}\n\n-----END wrangler stdout-----`)
-        }
-        if (stderr) {
-          console.log(`-----START wrangler stderr-----\n\n${stderr}\n\n-----END wrangler stderr-----`)
-        }
+    if (code === 0) {
+      return true
+    }
 
-        try {
-          await logWranglerLogs(stdout, stderr)
-        } catch (e) {
-          console.error(`Failed to log wrangler logs: ${e}`)
-        }
-        reject(new Error(`${operationName} failed with code ${code}`))
-      }
-    })
-    wranglerProcess.on('error', (e) => {
-      reject(e)
-    })
-  })
+    if (
+      ignoreWorkerNotFound &&
+      (stdout.includes(WORKER_NOT_FOUND_MESSAGE) || stderr.includes(WORKER_NOT_FOUND_MESSAGE))
+    ) {
+      return false
+    }
+
+    if (attempt < MAX_ATTEMPTS) {
+      const delayMs = INITIAL_RETRY_DELAY_MS * 2 ** (attempt - 1)
+      console.warn(
+        `${operationName} failed with code ${code} (attempt ${attempt}/${MAX_ATTEMPTS}), retrying in ${delayMs}ms...`
+      )
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+      continue
+    }
+
+    if (stdout) {
+      console.log(`-----START wrangler stdout-----\n\n${stdout}\n\n-----END wrangler stdout-----`)
+    }
+    if (stderr) {
+      console.log(`-----START wrangler stderr-----\n\n${stderr}\n\n-----END wrangler stderr-----`)
+    }
+
+    try {
+      await logWranglerLogs(stdout, stderr)
+    } catch (e) {
+      console.error(`Failed to log wrangler logs: ${e}`)
+    }
+
+    throw new Error(`${operationName} failed with code ${code}`)
+  }
 }
 
 const WRANGLER_LOGS_WRITTEN_REGEX: RegExp = /Logs were written to "(?<wranglerLogPath>[^"]+)"/
